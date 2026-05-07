@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Zap, BarChart3, Users, MessageSquare, ArrowRight, ShieldCheck, Sparkles, Hexagon } from 'lucide-react';
-import heroImage from '../assets/wstore_hero.png'; // We'll need to move the generated image here
+import heroImage from '../assets/friska_hero.png';
+import logo from '../assets/logo.png';
 
 export default function Landing() {
     return (
@@ -9,8 +10,8 @@ export default function Landing() {
             <nav className="landing-nav">
                 <div className="container flex-between">
                     <div className="landing-logo">
-                        <Hexagon className="vibrant-icon" size={32} />
-                        <span className="brand-name">WStore</span>
+                        <img src={logo} alt="Friska" />
+                        <span className="brand-name">Friska</span>
                     </div>
                     <div className="nav-links">
                         <Link to="/login" className="nav-link">Login</Link>
@@ -180,8 +181,8 @@ export default function Landing() {
                     <div className="footer-grid">
                         <div className="footer-brand">
                             <div className="landing-logo">
-                                <Hexagon className="vibrant-icon" size={24} />
-                                <span className="brand-name">WStore</span>
+                                <img src={logo} alt="Friska" style={{ width: '32px', height: '32px' }} />
+                                <span className="brand-name" style={{ fontSize: '18px' }}>Friska</span>
                             </div>
                             <p>Transforming how the world shops on chat.</p>
                         </div>
@@ -199,7 +200,7 @@ export default function Landing() {
                         </div>
                     </div>
                     <div className="footer-bottom">
-                        &copy; 2026 WStore Technologies. All rights reserved.
+                        &copy; 2026 Friska. All rights reserved.
                     </div>
                 </div>
             </footer>

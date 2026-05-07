@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, ArrowRight, Hexagon, ShieldCheck, Sparkles, Layers } from 'lucide-react';
 import { API_ENDPOINTS } from '../apiConfig';
+import logo from '../assets/logo.png';
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -25,7 +26,7 @@ export default function Login() {
                 localStorage.setItem('adminRole', data.role);
                 localStorage.setItem('branchId', data.branchId || '');
                 localStorage.setItem('branchName', data.branchName || 'Superadmin');
-                localStorage.setItem('tenantName', data.tenantName || 'WStore');
+                localStorage.setItem('tenantName', data.tenantName || 'Friska');
                 navigate('/admin');
             } else {
                 setError(data.error || 'Login failed');
@@ -42,7 +43,7 @@ export default function Login() {
             <div className="login-left-panel">
                 <div className="hero-gradient-overlay"></div>
                 <div className="left-content">
-                    <Hexagon size={64} className="hero-icon" />
+                    <img src={logo} alt="Friska Logo" style={{ width: '120px', height: '120px', marginBottom: '32px', objectFit: 'contain' }} />
                     <h1>Elevate Your<br/>Commerce Workspace</h1>
                     <p>Experience a next-generation dashboard built for speed, robust analytics, and seamless content control across your entire catalog.</p>
                     <div className="features-list">

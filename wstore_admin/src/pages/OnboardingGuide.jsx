@@ -51,7 +51,7 @@ const steps = [
     {
         title: "Webhook Configuration",
         icon: <Globe className="vibrant-icon" size={32} />,
-        content: "In the 'Configuration' tab, set the Callback URL to your WStore domain and enter your specific Verify Token.",
+        content: "In the 'Configuration' tab, set the Callback URL to your Friska domain and enter your specific Verify Token.",
         link: null
     },
     {
@@ -69,7 +69,7 @@ const steps = [
     {
         title: "Finalize Dashboard Toggle",
         icon: <ToggleRight className="vibrant-icon" size={32} />,
-        content: "Return to your WStore Admin Dashboard and enable the 'WhatsApp Bot' toggle to activate your AI storefront.",
+        content: "Return to your Friska Admin Dashboard and enable the 'WhatsApp Bot' toggle to activate your AI storefront.",
         link: null
     }
 ];
@@ -102,7 +102,7 @@ export default function OnboardingGuide() {
                 <header className="guide-header-minimal">
                     <div className="landing-logo">
                         <Hexagon className="vibrant-icon pulse" size={32} />
-                        <span className="brand-name">WStore Setup</span>
+                        <span className="brand-name">Friska Setup</span>
                     </div>
                     <div className="step-dots">
                         {steps.map((_, i) => (
@@ -159,7 +159,7 @@ export default function OnboardingGuide() {
 
 const indexToTip = [
     "Ensure you have administrative access to your Facebook Business Manager for a smoother verification process.",
-    "Naming your app clearly (e.g., 'WStore [YourStoreName]') helps identify it in the Meta dashboard.",
+    "Naming your app clearly (e.g., 'Friska [YourStoreName]') helps identify it in the Meta dashboard.",
     "Double-check your business address and website URL; they must match your official business records.",
     "Selecting the wrong business account can cause integration errors later. Take a moment to confirm.",
     "Defining your use case correctly helps Meta optimize your messaging experience and approval speed.",

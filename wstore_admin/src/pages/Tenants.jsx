@@ -64,7 +64,7 @@ export default function Tenants() {
     };
 
     const handleEnableWebhooks = async (id) => {
-        if (!confirm('Are you sure you want to enable webhooks for this tenant? This will subscribe the WhatsApp account to your WStore app on Meta.')) return;
+        if (!confirm('Are you sure you want to enable webhooks for this tenant? This will subscribe the WhatsApp account to your Friska app on Meta.')) return;
 
         try {
             const res = await fetch(`${API_ENDPOINTS.TENANTS}/${id}/enable-webhooks`, {

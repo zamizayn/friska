@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
+import logo from '../assets/logo.png';
 
 const ALL_PAGES = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard, keywords: ['home', 'overview', 'stats', 'metrics'], roles: ['superadmin', 'tenant', 'branch'] },
@@ -195,10 +196,10 @@ export default function DashboardLayout() {
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="brand-logo">
-                        <Hexagon size={20} />
+                        <img src={logo} alt="Logo" />
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '18px', letterSpacing: '-0.5px' }}>
-                        {localStorage.getItem('tenantName')?.split(' ')[0] || 'Flux'}
+                    <div style={{ fontWeight: 800, fontSize: '20px', letterSpacing: '-0.5px', color: 'var(--text-heading)' }}>
+                        {localStorage.getItem('tenantName') || 'Friska'}
                     </div>
                 </div>
 

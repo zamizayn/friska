@@ -15,7 +15,8 @@ const {
     Customer,
     Branch,
     Tenant,
-    CustomerLog
+    CustomerLog,
+    Offer
 } = require('../models');
 
 const { Op, Sequelize } = require('sequelize');
@@ -811,15 +812,24 @@ const handleCart = async (from, session) => {
     if (userCart.length === 0) {
         await sendButtonMessage(from, '🛒 Your cart is empty', [{ id: 'shop', title: 'Shop' }], session.config);
     } else {
-        let total = 0;
-        const cartText = userCart.map(item => {
-            total += item.price * item.quantity;
+        let subtotal = 0;
+        const cartItemsText = userCart.map(item => {
+            subtotal += item.price * item.quantity;
             return `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}`;
         }).join('\n');
 
+        const bestOffer = await calculateBestOffer(from, session.branchId, subtotal);
+        let total = subtotal;
+        let offerText = '';
+
+        if (bestOffer) {
+            total = subtotal - bestOffer.calculatedDiscount;
+            offerText = `\n\n🎁 *Offer Applied: ${bestOffer.code}*\nDiscount: -₹${bestOffer.calculatedDiscount}${bestOffer.discountType === 'percentage' ? ` (${bestOffer.discountValue}%)` : ''}`;
+        }
+
         await sendButtonMessage(
             from,
-            `🛒 Your Cart\n\n${cartText}\n\n💰 Total: ₹${total}`,
+            `🛒 Your Cart\n\n${cartItemsText}\n\n💰 Subtotal: ₹${subtotal}${offerText}\n\n✅ *Final Total: ₹${total}*`,
             [
                 { id: 'shop', title: 'Shop More' },
                 { id: 'checkout', title: 'Checkout' }
@@ -858,9 +868,19 @@ const handlePaymentSelection = async (from, text, session) => {
     const paymentMethod = text === 'pay_cod' ? 'Cash on Delivery' : 'Online Payment';
     const address = session.address || 'N/A';
     const userCart = carts[from] || [];
-    let total = 0;
+    let subtotal = 0;
+    userCart.forEach(item => { subtotal += item.price * item.quantity; });
 
-    userCart.forEach(item => { total += item.price * item.quantity; });
+    const bestOffer = await calculateBestOffer(from, session.branchId, subtotal);
+    let total = subtotal;
+    let discountAmount = 0;
+    let appliedOfferCode = null;
+
+    if (bestOffer) {
+        discountAmount = bestOffer.calculatedDiscount;
+        total = subtotal - discountAmount;
+        appliedOfferCode = bestOffer.code;
+    }
 
     let savedOrder;
     try {
@@ -869,6 +889,8 @@ const handlePaymentSelection = async (from, text, session) => {
             address,
             items: userCart,
             total,
+            discountAmount,
+            appliedOfferCode,
             status: 'pending',
             branchId: session.branchId,
             paymentMethod,
@@ -1146,6 +1168,66 @@ const receiveWebhook = async (req, res) => {
 
     } catch (error) {
         console.error(error.response?.data || error.message);
+    }
+};
+
+// =========================
+// OFFER CALCULATION HELPERS
+// =========================
+
+const calculateBestOffer = async (from, branchId, cartTotal) => {
+    try {
+        const offers = await Offer.findAll({
+            where: {
+                branchId,
+                isActive: true,
+                minOrderValue: { [Op.lte]: cartTotal },
+                [Op.or]: [
+                    { startDate: null },
+                    { startDate: { [Op.lte]: new Date() } }
+                ],
+                [Op.or]: [
+                    { endDate: null },
+                    { endDate: { [Op.gte]: new Date() } }
+                ]
+            }
+        });
+
+        if (offers.length === 0) return null;
+
+        const customerOrdersCount = await Order.count({ where: { customerPhone: from, status: { [Op.ne]: 'cancelled' } } });
+
+        let bestOffer = null;
+        let maxDiscountAmount = 0;
+
+        for (const offer of offers) {
+            // Check usage limits
+            if (offer.usageType === 'first_order_only' && customerOrdersCount > 0) continue;
+            if (offer.usageType === 'once_per_customer') {
+                const usedBefore = await Order.findOne({ where: { customerPhone: from, appliedOfferCode: offer.code, status: { [Op.ne]: 'cancelled' } } });
+                if (usedBefore) continue;
+            }
+
+            let discount = 0;
+            if (offer.discountType === 'flat') {
+                discount = offer.discountValue;
+            } else {
+                discount = (cartTotal * offer.discountValue) / 100;
+                if (offer.maxDiscount && discount > offer.maxDiscount) {
+                    discount = offer.maxDiscount;
+                }
+            }
+
+            if (discount > maxDiscountAmount) {
+                maxDiscountAmount = discount;
+                bestOffer = { ...offer.toJSON(), calculatedDiscount: discount };
+            }
+        }
+
+        return bestOffer;
+    } catch (error) {
+        console.error('[Offer Calc Error]', error.message);
+        return null;
     }
 };
 

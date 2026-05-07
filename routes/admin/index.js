@@ -29,5 +29,6 @@ router.use('/analytics', require('./analytics'));
 router.get('/product-sales', require('../../controllers/analyticsController').getProductSales);
 router.use('/notifications', require('./notification'));
 router.use('/fcm', require('./fcm'));
+router.use('/offers', require('./offer'));
 
 module.exports = router;

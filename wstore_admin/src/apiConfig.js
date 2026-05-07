@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
     NOTIFICATIONS: `${BASE_URL}/notifications`,
     NOTIFICATIONS_READ: `${BASE_URL}/notifications/read`,
     PRODUCT_SALES: `${BASE_URL}/product-sales`,
+    OFFERS: `${BASE_URL}/offers`,
 };
 
 export const getHeaders = () => {

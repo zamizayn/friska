@@ -14,6 +14,7 @@ const ALL_PAGES = [
     { label: 'Categories', path: '/admin/categories', icon: Tags, keywords: ['category', 'group', 'tag', 'organize'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Customers', path: '/admin/customers', icon: Users, keywords: ['customer', 'user', 'audience', 'broadcast', 'whatsapp'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Inventory', path: '/admin/inventory', icon: Boxes, keywords: ['inventory', 'stock', 'warehouse', 'supply'], roles: ['superadmin', 'tenant', 'branch'] },
+    { label: 'Offers', path: '/admin/offers', icon: Tags, keywords: ['offer', 'discount', 'coupon', 'promo', 'rules'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub'], roles: ['superadmin', 'tenant'] },
 ];
@@ -232,6 +233,9 @@ export default function DashboardLayout() {
                     </NavLink>
                     <NavLink to="/admin/inventory" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                         <Boxes size={18} /> <span>Inventory</span>
+                    </NavLink>
+                    <NavLink to="/admin/offers" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                        <Tags size={18} /> <span>Offers</span>
                     </NavLink>
 
                     <div className="nav-section-label">Support</div>

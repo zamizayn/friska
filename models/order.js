@@ -25,7 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     branchId: DataTypes.INTEGER,
     cancellationReason: DataTypes.STRING,
     paymentMethod: DataTypes.STRING,
-    paymentStatus: DataTypes.STRING
+    paymentStatus: DataTypes.STRING,
+    discountAmount: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
+    appliedOfferCode: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Order',

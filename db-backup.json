@@ -1,0 +1,4158 @@
+{
+  "tenants": [
+    {
+      "id": 1,
+      "name": "aventus",
+      "phoneNumberId": "1069183292953599",
+      "whatsappToken": "EAAQtHRZBtZBAMBRXTyw7PAFsEdS1DZChUaQaa4wGZAVtU8W1XwiNz0FJw86TPx3NZB8bPDdKZBPpg7O4OPEZA0LFyT8BLgLzw1WV9VqYwz0TzAoUjJp1QQ5aLA5piKtRjucL9C5JfAPDsS10qLwOcI453MiGACrpcs8qwrwkTiLzCK2UZBSs05HdAGRMBO7ZBcR035tFC30FQc8kcnpmZBC3SgabDf8gLuidpg5a80ZCaTD",
+      "wabaId": "1402436765250902",
+      "verifyToken": null,
+      "onboardingStep": 1,
+      "isActive": true,
+      "username": "aventus",
+      "password": "aventus",
+      "webhooksEnabled": true,
+      "catalogId": "4587984068102388",
+      "displayMode": "carousel",
+      "createdAt": "2026-05-04T05:34:10.623Z",
+      "updatedAt": "2026-05-06T04:48:05.045Z"
+    }
+  ],
+  "branches": [
+    {
+      "id": 2,
+      "name": "downtown outlet",
+      "username": "down",
+      "password": "down",
+      "tenantId": 1,
+      "openingTime": "00:00",
+      "closingTime": "23:59",
+      "createdAt": "2026-05-05T12:17:30.984Z",
+      "updatedAt": "2026-05-05T12:17:30.984Z"
+    },
+    {
+      "id": 1,
+      "name": "Test branch",
+      "username": "testbranch",
+      "password": "testbranch",
+      "tenantId": 1,
+      "openingTime": "10:00",
+      "closingTime": "14:20",
+      "createdAt": "2026-05-05T07:34:41.961Z",
+      "updatedAt": "2026-05-06T06:51:39.084Z"
+    }
+  ],
+  "admins": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin",
+      "createdAt": "2026-05-06T04:23:46.638Z",
+      "updatedAt": "2026-05-06T04:23:46.638Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Sample category",
+      "branchId": 1,
+      "createdAt": "2026-05-05T07:34:53.850Z",
+      "updatedAt": "2026-05-05T07:34:53.850Z"
+    },
+    {
+      "id": 2,
+      "name": "Second category",
+      "branchId": 1,
+      "createdAt": "2026-05-05T07:34:59.087Z",
+      "updatedAt": "2026-05-05T07:34:59.087Z"
+    },
+    {
+      "id": 3,
+      "name": "Electronics",
+      "branchId": 2,
+      "createdAt": "2026-05-05T12:18:46.459Z",
+      "updatedAt": "2026-05-05T12:18:46.459Z"
+    }
+  ],
+  "products": [
+    {
+      "id": 18,
+      "name": "Screen Guards X300 Pro",
+      "price": 599,
+      "description": "screen guard",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfeFv-05MRnq6HAqrL2xc4CMOP-UXJUhtHNw&s",
+      "categoryId": 3,
+      "stock": 46,
+      "branchId": 2,
+      "retailerId": "wstore_1777983571475_803",
+      "createdAt": "2026-05-05T12:19:31.475Z",
+      "updatedAt": "2026-05-06T10:02:24.799Z"
+    },
+    {
+      "id": 16,
+      "name": "product test",
+      "price": 455,
+      "description": "fvfdg",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo1aI60pX8lfzkNlqAg7L6Pw59i3uPBKpZqg&s",
+      "categoryId": 1,
+      "stock": 20,
+      "branchId": 1,
+      "retailerId": "wstore_1777973581971_29",
+      "createdAt": "2026-05-05T09:33:01.973Z",
+      "updatedAt": "2026-05-06T08:21:18.321Z"
+    },
+    {
+      "id": 17,
+      "name": "Cricket Bat",
+      "price": 622,
+      "description": "KASHMIR WILLOW CONSTRUCTION: The SG Scorer Classic Cricket Bat is meticulously crafted from high-quality Kashmir Willow, providing a perfect blend of performance and durability for both men and boys.",
+      "image": "https://nagrathsports.com/wp-content/uploads/2023/08/IMG-20250310-WA0057-scaled.jpg",
+      "categoryId": 1,
+      "stock": 12,
+      "branchId": 1,
+      "retailerId": "wstore_1777973844265_692",
+      "createdAt": "2026-05-05T09:37:24.266Z",
+      "updatedAt": "2026-05-06T08:23:41.632Z"
+    }
+  ],
+  "customers": [
+    {
+      "id": 123,
+      "phone": "918943685547",
+      "name": "Raoof Subi",
+      "lastInteraction": "2026-05-05T10:13:28.934Z",
+      "branchId": 1,
+      "createdAt": "2026-05-05T10:13:28.934Z",
+      "updatedAt": "2026-05-05T12:16:19.461Z"
+    },
+    {
+      "id": 143,
+      "phone": "919539092205",
+      "name": "azlam NP",
+      "lastInteraction": "2026-05-05T10:48:52.647Z",
+      "branchId": 1,
+      "createdAt": "2026-05-05T10:48:52.647Z",
+      "updatedAt": "2026-05-05T12:16:19.461Z"
+    },
+    {
+      "id": 211,
+      "phone": "919633027889",
+      "name": "Ubaise",
+      "lastInteraction": "2026-05-05T12:11:01.152Z",
+      "branchId": 1,
+      "createdAt": "2026-05-05T12:11:01.152Z",
+      "updatedAt": "2026-05-05T12:16:19.461Z"
+    },
+    {
+      "id": 1,
+      "phone": "917012738756",
+      "name": "shijinmathewsimon",
+      "lastInteraction": "2026-05-04T05:54:05.814Z",
+      "branchId": 2,
+      "createdAt": "2026-05-04T05:54:05.815Z",
+      "updatedAt": "2026-05-06T10:01:58.972Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1,
+      "customerPhone": "917012738756",
+      "address": "[LOCATION] https://maps.google.com/?q=10.266734,76.357466",
+      "items": [
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        },
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "pending",
+      "branchId": null,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T09:57:23.861Z",
+      "updatedAt": "2026-05-05T09:57:23.861Z"
+    },
+    {
+      "id": 2,
+      "customerPhone": "917012738756",
+      "address": "[LOCATION] https://maps.google.com/?q=10.2666913,76.3574922",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "shipped",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T09:59:55.236Z",
+      "updatedAt": "2026-05-05T10:00:03.517Z"
+    },
+    {
+      "id": 3,
+      "customerPhone": "917012738756",
+      "address": "[LOCATION] https://maps.google.com/?q=10.2667119,76.3575609",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T10:01:19.853Z",
+      "updatedAt": "2026-05-05T10:01:19.853Z"
+    },
+    {
+      "id": 4,
+      "customerPhone": "918943685547",
+      "address": "koratty",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 2
+        }
+      ],
+      "total": 1699,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T10:15:06.325Z",
+      "updatedAt": "2026-05-05T10:15:06.325Z"
+    },
+    {
+      "id": 5,
+      "customerPhone": "918943685547",
+      "address": "[LOCATION] https://maps.google.com/?q=10.264133453369,76.358871459961",
+      "items": [
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        },
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T10:25:13.903Z",
+      "updatedAt": "2026-05-05T10:25:13.903Z"
+    },
+    {
+      "id": 6,
+      "customerPhone": "917012738756",
+      "address": "[LOCATION] https://maps.google.com/?q=10.26664965,76.35746972",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 2
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1532,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T10:32:07.524Z",
+      "updatedAt": "2026-05-05T10:32:07.524Z"
+    },
+    {
+      "id": 7,
+      "customerPhone": "917012738756",
+      "address": "[LOCATION] https://maps.google.com/?q=10.2667348,76.3574798",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 2
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 4
+        }
+      ],
+      "total": 3398,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T11:22:41.064Z",
+      "updatedAt": "2026-05-05T11:22:41.064Z"
+    },
+    {
+      "id": 8,
+      "customerPhone": "917012738756",
+      "address": "[LOCATION] https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "delivered",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T11:23:19.759Z",
+      "updatedAt": "2026-05-05T11:46:48.469Z"
+    },
+    {
+      "id": 9,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T11:50:15.322Z",
+      "updatedAt": "2026-05-05T11:50:15.322Z"
+    },
+    {
+      "id": 10,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 455,
+      "status": "cancelled",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T11:57:08.770Z",
+      "updatedAt": "2026-05-05T11:57:29.533Z"
+    },
+    {
+      "id": 11,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T11:58:52.582Z",
+      "updatedAt": "2026-05-05T11:58:52.582Z"
+    },
+    {
+      "id": 12,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26669727,76.35753941",
+      "items": [
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 622,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T11:59:52.970Z",
+      "updatedAt": "2026-05-05T11:59:52.970Z"
+    },
+    {
+      "id": 13,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.2667114,76.357419",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 455,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:09:39.488Z",
+      "updatedAt": "2026-05-05T12:09:39.488Z"
+    },
+    {
+      "id": 14,
+      "customerPhone": "919633027889",
+      "address": "https://maps.google.com/?q=10.26668548584,76.357192993164",
+      "items": [
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 622,
+      "status": "pending",
+      "branchId": null,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:11:24.973Z",
+      "updatedAt": "2026-05-05T12:11:24.973Z"
+    },
+    {
+      "id": 15,
+      "customerPhone": "919633027889",
+      "address": "https://maps.google.com/?q=10.266633987427,76.357559204102",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 3
+        }
+      ],
+      "total": 2321,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:13:39.720Z",
+      "updatedAt": "2026-05-05T12:13:39.720Z"
+    },
+    {
+      "id": 16,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 18,
+          "name": "Screen Guards X300 Pro",
+          "price": 599,
+          "quantity": 2
+        }
+      ],
+      "total": 1198,
+      "status": "cancelled",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:22:27.778Z",
+      "updatedAt": "2026-05-05T12:25:27.888Z"
+    },
+    {
+      "id": 19,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26669727,76.35753941",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 455,
+      "status": "delivered",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:36:37.631Z",
+      "updatedAt": "2026-05-06T05:25:51.642Z"
+    },
+    {
+      "id": 18,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        },
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "delivered",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:28:00.037Z",
+      "updatedAt": "2026-05-06T05:03:08.070Z"
+    },
+    {
+      "id": 17,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        },
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 1077,
+      "status": "cancelled",
+      "branchId": 1,
+      "cancellationReason": "Delivery area is not covered",
+      "paymentMethod": null,
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-05T12:26:13.527Z",
+      "updatedAt": "2026-05-06T05:06:09.866Z"
+    },
+    {
+      "id": 20,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 18,
+          "name": "Screen Guards X300 Pro",
+          "price": 599,
+          "quantity": 1
+        }
+      ],
+      "total": 599,
+      "status": "delivered",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "completed",
+      "createdAt": "2026-05-06T05:29:32.518Z",
+      "updatedAt": "2026-05-06T05:29:46.558Z"
+    },
+    {
+      "id": 21,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 2
+        }
+      ],
+      "total": 910,
+      "status": "pending",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-06T06:35:12.158Z",
+      "updatedAt": "2026-05-06T06:35:12.158Z"
+    },
+    {
+      "id": 22,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 16,
+          "name": "product test",
+          "price": 455,
+          "quantity": 1
+        }
+      ],
+      "total": 455,
+      "status": "delivered",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "paid",
+      "createdAt": "2026-05-06T06:39:32.023Z",
+      "updatedAt": "2026-05-06T06:42:10.091Z"
+    },
+    {
+      "id": 24,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 18,
+          "name": "Screen Guards X300 Pro",
+          "price": 599,
+          "quantity": 1
+        }
+      ],
+      "total": 599,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-06T09:52:36.899Z",
+      "updatedAt": "2026-05-06T09:52:36.899Z"
+    },
+    {
+      "id": 23,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667068,76.35753691",
+      "items": [
+        {
+          "id": 17,
+          "name": "wstore product",
+          "price": 622,
+          "quantity": 1
+        }
+      ],
+      "total": 622,
+      "status": "delivered",
+      "branchId": 1,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "paid",
+      "createdAt": "2026-05-06T06:52:27.018Z",
+      "updatedAt": "2026-05-06T06:53:08.233Z"
+    },
+    {
+      "id": 25,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 18,
+          "name": "Screen Guards X300 Pro",
+          "price": 599,
+          "quantity": 1
+        }
+      ],
+      "total": 599,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-06T09:55:10.694Z",
+      "updatedAt": "2026-05-06T09:55:10.694Z"
+    },
+    {
+      "id": 26,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26669727,76.35753941",
+      "items": [
+        {
+          "id": 18,
+          "name": "Screen Guards X300 Pro",
+          "price": 599,
+          "quantity": 1
+        }
+      ],
+      "total": 599,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "createdAt": "2026-05-06T10:02:24.796Z",
+      "updatedAt": "2026-05-06T10:02:24.796Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "title": "🛒 New Order #21",
+      "body": "₹910 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "total": 910,
+        "orderId": 21,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T06:35:12.164Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 2,
+      "title": "🛒 New Order #22",
+      "body": "₹455 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "total": 455,
+        "orderId": 22,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T06:39:32.027Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 3,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: this order is taking too much time",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "message": "this order is taking too much time",
+        "orderId": null,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T06:40:54.088Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 4,
+      "title": "🛒 New Order #23",
+      "body": "₹622 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "total": 622,
+        "orderId": 23,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T06:52:27.024Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 5,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: very bad product",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "message": "very bad product",
+        "orderId": null,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T06:53:39.997Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 6,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: test",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "message": "test",
+        "orderId": null,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T09:42:58.007Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 7,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: sample",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "message": "sample",
+        "orderId": null,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T09:43:32.441Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 8,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: bxhxnd",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "message": "bxhxnd",
+        "orderId": null,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T09:46:45.961Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 9,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: bgjjnk",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 1,
+      "data": {
+        "message": "bgjjnk",
+        "orderId": null,
+        "branchId": 1,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T09:48:04.921Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 10,
+      "title": "🛒 New Order #24",
+      "body": "₹599 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 599,
+        "orderId": 24,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T09:52:36.906Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 11,
+      "title": "🛒 New Order #25",
+      "body": "₹599 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 599,
+        "orderId": 25,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T09:55:10.703Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 12,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: ndudnydbdgd",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "message": "ndudnydbdgd",
+        "orderId": null,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T10:01:22.542Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 13,
+      "title": "🛒 New Order #26",
+      "body": "₹599 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 599,
+        "orderId": 26,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T10:02:24.801Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 14,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: not delivered yet 😕",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "message": "not delivered yet 😕",
+        "orderId": null,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T10:05:14.096Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    },
+    {
+      "id": 15,
+      "title": "🆘 New Support Request",
+      "body": "From +917012738756: latest issue",
+      "type": "support_request",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "message": "latest issue",
+        "orderId": null,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-06T10:07:03.290Z",
+      "updatedAt": "2026-05-06T10:08:42.985Z"
+    }
+  ],
+  "customerLogs": [
+    {
+      "id": 1,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T07:33:07.559Z",
+      "updatedAt": "2026-05-05T07:33:07.559Z"
+    },
+    {
+      "id": 2,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T07:33:24.798Z",
+      "updatedAt": "2026-05-05T07:33:24.798Z"
+    },
+    {
+      "id": 3,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T07:36:55.832Z",
+      "updatedAt": "2026-05-05T07:36:55.832Z"
+    },
+    {
+      "id": 4,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T07:37:03.086Z",
+      "updatedAt": "2026-05-05T07:37:03.086Z"
+    },
+    {
+      "id": 5,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T07:37:09.917Z",
+      "updatedAt": "2026-05-05T07:37:09.917Z"
+    },
+    {
+      "id": 6,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:10:26.032Z",
+      "updatedAt": "2026-05-05T08:10:26.032Z"
+    },
+    {
+      "id": 7,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:10:32.126Z",
+      "updatedAt": "2026-05-05T08:10:32.126Z"
+    },
+    {
+      "id": 8,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:10:37.739Z",
+      "updatedAt": "2026-05-05T08:10:37.739Z"
+    },
+    {
+      "id": 9,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:11:51.877Z",
+      "updatedAt": "2026-05-05T08:11:51.877Z"
+    },
+    {
+      "id": 10,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:11:57.484Z",
+      "updatedAt": "2026-05-05T08:11:57.484Z"
+    },
+    {
+      "id": 11,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:12:02.913Z",
+      "updatedAt": "2026-05-05T08:12:02.913Z"
+    },
+    {
+      "id": 12,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:12:25.892Z",
+      "updatedAt": "2026-05-05T08:12:25.892Z"
+    },
+    {
+      "id": 13,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:12:32.585Z",
+      "updatedAt": "2026-05-05T08:12:32.585Z"
+    },
+    {
+      "id": 14,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:12:39.258Z",
+      "updatedAt": "2026-05-05T08:12:39.258Z"
+    },
+    {
+      "id": 15,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:16:42.897Z",
+      "updatedAt": "2026-05-05T08:16:42.897Z"
+    },
+    {
+      "id": 16,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:16:53.398Z",
+      "updatedAt": "2026-05-05T08:16:53.398Z"
+    },
+    {
+      "id": 17,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:17:41.082Z",
+      "updatedAt": "2026-05-05T08:17:41.082Z"
+    },
+    {
+      "id": 18,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:17:48.460Z",
+      "updatedAt": "2026-05-05T08:17:48.460Z"
+    },
+    {
+      "id": 19,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:17:54.162Z",
+      "updatedAt": "2026-05-05T08:17:54.162Z"
+    },
+    {
+      "id": 20,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:18:27.741Z",
+      "updatedAt": "2026-05-05T08:18:27.741Z"
+    },
+    {
+      "id": 21,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:18:36.434Z",
+      "updatedAt": "2026-05-05T08:18:36.434Z"
+    },
+    {
+      "id": 22,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:18:41.608Z",
+      "updatedAt": "2026-05-05T08:18:41.608Z"
+    },
+    {
+      "id": 23,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:19:03.731Z",
+      "updatedAt": "2026-05-05T08:19:03.731Z"
+    },
+    {
+      "id": 24,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:19:11.364Z",
+      "updatedAt": "2026-05-05T08:19:11.364Z"
+    },
+    {
+      "id": 25,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:21:08.613Z",
+      "updatedAt": "2026-05-05T08:21:08.613Z"
+    },
+    {
+      "id": 26,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:21:15.668Z",
+      "updatedAt": "2026-05-05T08:21:15.668Z"
+    },
+    {
+      "id": 27,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:21:22.200Z",
+      "updatedAt": "2026-05-05T08:21:22.200Z"
+    },
+    {
+      "id": 28,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:27:44.159Z",
+      "updatedAt": "2026-05-05T08:27:44.159Z"
+    },
+    {
+      "id": 29,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:27:54.377Z",
+      "updatedAt": "2026-05-05T08:27:54.377Z"
+    },
+    {
+      "id": 30,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:28:00.884Z",
+      "updatedAt": "2026-05-05T08:28:00.884Z"
+    },
+    {
+      "id": 31,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:28:58.047Z",
+      "updatedAt": "2026-05-05T08:28:58.047Z"
+    },
+    {
+      "id": 32,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:29:03.951Z",
+      "updatedAt": "2026-05-05T08:29:03.951Z"
+    },
+    {
+      "id": 33,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:29:08.935Z",
+      "updatedAt": "2026-05-05T08:29:08.935Z"
+    },
+    {
+      "id": 34,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:29:42.465Z",
+      "updatedAt": "2026-05-05T08:29:42.465Z"
+    },
+    {
+      "id": 35,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:29:50.007Z",
+      "updatedAt": "2026-05-05T08:29:50.007Z"
+    },
+    {
+      "id": 36,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:29:55.744Z",
+      "updatedAt": "2026-05-05T08:29:55.744Z"
+    },
+    {
+      "id": 37,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:31:05.214Z",
+      "updatedAt": "2026-05-05T08:31:05.214Z"
+    },
+    {
+      "id": 38,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:31:12.689Z",
+      "updatedAt": "2026-05-05T08:31:12.689Z"
+    },
+    {
+      "id": 39,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:35:49.840Z",
+      "updatedAt": "2026-05-05T08:35:49.840Z"
+    },
+    {
+      "id": 40,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:35:56.410Z",
+      "updatedAt": "2026-05-05T08:35:56.410Z"
+    },
+    {
+      "id": 41,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:36:03.717Z",
+      "updatedAt": "2026-05-05T08:36:03.717Z"
+    },
+    {
+      "id": 42,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:36:58.365Z",
+      "updatedAt": "2026-05-05T08:36:58.365Z"
+    },
+    {
+      "id": 43,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:37:04.076Z",
+      "updatedAt": "2026-05-05T08:37:04.076Z"
+    },
+    {
+      "id": 44,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:38:04.441Z",
+      "updatedAt": "2026-05-05T08:38:04.441Z"
+    },
+    {
+      "id": 45,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:38:09.908Z",
+      "updatedAt": "2026-05-05T08:38:09.908Z"
+    },
+    {
+      "id": 46,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:40:19.691Z",
+      "updatedAt": "2026-05-05T08:40:19.691Z"
+    },
+    {
+      "id": 47,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:40:25.719Z",
+      "updatedAt": "2026-05-05T08:40:25.719Z"
+    },
+    {
+      "id": 48,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:41:15.470Z",
+      "updatedAt": "2026-05-05T08:41:15.470Z"
+    },
+    {
+      "id": 49,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T08:41:21.549Z",
+      "updatedAt": "2026-05-05T08:41:21.549Z"
+    },
+    {
+      "id": 50,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T08:41:27.159Z",
+      "updatedAt": "2026-05-05T08:41:27.159Z"
+    },
+    {
+      "id": 51,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:34:18.188Z",
+      "updatedAt": "2026-05-05T09:34:18.188Z"
+    },
+    {
+      "id": 52,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:34:24.189Z",
+      "updatedAt": "2026-05-05T09:34:24.189Z"
+    },
+    {
+      "id": 53,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:34:29.083Z",
+      "updatedAt": "2026-05-05T09:34:29.083Z"
+    },
+    {
+      "id": 54,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:35:40.521Z",
+      "updatedAt": "2026-05-05T09:35:40.521Z"
+    },
+    {
+      "id": 55,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:35:45.731Z",
+      "updatedAt": "2026-05-05T09:35:45.731Z"
+    },
+    {
+      "id": 56,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:38:07.993Z",
+      "updatedAt": "2026-05-05T09:38:07.993Z"
+    },
+    {
+      "id": 57,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:38:14.084Z",
+      "updatedAt": "2026-05-05T09:38:14.084Z"
+    },
+    {
+      "id": 58,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:38:19.712Z",
+      "updatedAt": "2026-05-05T09:38:19.712Z"
+    },
+    {
+      "id": 59,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:39:07.427Z",
+      "updatedAt": "2026-05-05T09:39:07.427Z"
+    },
+    {
+      "id": 60,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:39:14.398Z",
+      "updatedAt": "2026-05-05T09:39:14.398Z"
+    },
+    {
+      "id": 61,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:39:19.688Z",
+      "updatedAt": "2026-05-05T09:39:19.688Z"
+    },
+    {
+      "id": 62,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:40:14.860Z",
+      "updatedAt": "2026-05-05T09:40:14.860Z"
+    },
+    {
+      "id": 63,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:40:19.993Z",
+      "updatedAt": "2026-05-05T09:40:19.993Z"
+    },
+    {
+      "id": 64,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:40:26.302Z",
+      "updatedAt": "2026-05-05T09:40:26.302Z"
+    },
+    {
+      "id": 65,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:42:49.541Z",
+      "updatedAt": "2026-05-05T09:42:49.541Z"
+    },
+    {
+      "id": 66,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:42:58.828Z",
+      "updatedAt": "2026-05-05T09:42:58.828Z"
+    },
+    {
+      "id": 67,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:43:03.437Z",
+      "updatedAt": "2026-05-05T09:43:03.437Z"
+    },
+    {
+      "id": 68,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:47:46.402Z",
+      "updatedAt": "2026-05-05T09:47:46.402Z"
+    },
+    {
+      "id": 69,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:47:58.943Z",
+      "updatedAt": "2026-05-05T09:47:58.943Z"
+    },
+    {
+      "id": 70,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:49:28.953Z",
+      "updatedAt": "2026-05-05T09:49:28.953Z"
+    },
+    {
+      "id": 71,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:49:36.269Z",
+      "updatedAt": "2026-05-05T09:49:36.269Z"
+    },
+    {
+      "id": 72,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:52:57.514Z",
+      "updatedAt": "2026-05-05T09:52:57.514Z"
+    },
+    {
+      "id": 73,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:53:03.790Z",
+      "updatedAt": "2026-05-05T09:53:03.790Z"
+    },
+    {
+      "id": 74,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:53:09.876Z",
+      "updatedAt": "2026-05-05T09:53:09.876Z"
+    },
+    {
+      "id": 75,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T09:57:08.349Z",
+      "updatedAt": "2026-05-05T09:57:08.349Z"
+    },
+    {
+      "id": 76,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:57:53.649Z",
+      "updatedAt": "2026-05-05T09:57:53.649Z"
+    },
+    {
+      "id": 77,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:57:58.965Z",
+      "updatedAt": "2026-05-05T09:57:58.965Z"
+    },
+    {
+      "id": 78,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T09:58:05.122Z",
+      "updatedAt": "2026-05-05T09:58:05.122Z"
+    },
+    {
+      "id": 79,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:59:02.511Z",
+      "updatedAt": "2026-05-05T09:59:02.511Z"
+    },
+    {
+      "id": 80,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T09:59:30.989Z",
+      "updatedAt": "2026-05-05T09:59:30.989Z"
+    },
+    {
+      "id": 81,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T09:59:46.636Z",
+      "updatedAt": "2026-05-05T09:59:46.636Z"
+    },
+    {
+      "id": 82,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:00:56.273Z",
+      "updatedAt": "2026-05-05T10:00:56.273Z"
+    },
+    {
+      "id": 83,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:01:01.277Z",
+      "updatedAt": "2026-05-05T10:01:01.277Z"
+    },
+    {
+      "id": 84,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T10:01:13.821Z",
+      "updatedAt": "2026-05-05T10:01:13.821Z"
+    },
+    {
+      "id": 85,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:06:57.811Z",
+      "updatedAt": "2026-05-05T10:06:57.811Z"
+    },
+    {
+      "id": 86,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:07:05.216Z",
+      "updatedAt": "2026-05-05T10:07:05.216Z"
+    },
+    {
+      "id": 87,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:07:21.739Z",
+      "updatedAt": "2026-05-05T10:07:21.739Z"
+    },
+    {
+      "id": 88,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:08:25.846Z",
+      "updatedAt": "2026-05-05T10:08:25.846Z"
+    },
+    {
+      "id": 89,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:08:33.569Z",
+      "updatedAt": "2026-05-05T10:08:33.569Z"
+    },
+    {
+      "id": 90,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "2"
+      },
+      "createdAt": "2026-05-05T10:08:40.115Z",
+      "updatedAt": "2026-05-05T10:08:40.115Z"
+    },
+    {
+      "id": 91,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:08:44.984Z",
+      "updatedAt": "2026-05-05T10:08:44.984Z"
+    },
+    {
+      "id": 92,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:08:49.859Z",
+      "updatedAt": "2026-05-05T10:08:49.859Z"
+    },
+    {
+      "id": 93,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:09:15.140Z",
+      "updatedAt": "2026-05-05T10:09:15.140Z"
+    },
+    {
+      "id": 94,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:09:20.174Z",
+      "updatedAt": "2026-05-05T10:09:20.174Z"
+    },
+    {
+      "id": 95,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:10:08.651Z",
+      "updatedAt": "2026-05-05T10:10:08.651Z"
+    },
+    {
+      "id": 96,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:10:14.400Z",
+      "updatedAt": "2026-05-05T10:10:14.400Z"
+    },
+    {
+      "id": 97,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "2"
+      },
+      "createdAt": "2026-05-05T10:10:20.061Z",
+      "updatedAt": "2026-05-05T10:10:20.061Z"
+    },
+    {
+      "id": 98,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:10:27.856Z",
+      "updatedAt": "2026-05-05T10:10:27.856Z"
+    },
+    {
+      "id": 99,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:10:33.025Z",
+      "updatedAt": "2026-05-05T10:10:33.025Z"
+    },
+    {
+      "id": 100,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:10:48.873Z",
+      "updatedAt": "2026-05-05T10:10:48.873Z"
+    },
+    {
+      "id": 101,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:10:53.857Z",
+      "updatedAt": "2026-05-05T10:10:53.857Z"
+    },
+    {
+      "id": 102,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:11:48.110Z",
+      "updatedAt": "2026-05-05T10:11:48.110Z"
+    },
+    {
+      "id": 103,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:11:53.591Z",
+      "updatedAt": "2026-05-05T10:11:53.591Z"
+    },
+    {
+      "id": 104,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "2"
+      },
+      "createdAt": "2026-05-05T10:11:58.974Z",
+      "updatedAt": "2026-05-05T10:11:58.974Z"
+    },
+    {
+      "id": 105,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:12:04.577Z",
+      "updatedAt": "2026-05-05T10:12:04.577Z"
+    },
+    {
+      "id": 106,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:12:09.598Z",
+      "updatedAt": "2026-05-05T10:12:09.598Z"
+    },
+    {
+      "id": 107,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T10:12:15.016Z",
+      "updatedAt": "2026-05-05T10:12:15.016Z"
+    },
+    {
+      "id": 108,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:13:38.609Z",
+      "updatedAt": "2026-05-05T10:13:38.609Z"
+    },
+    {
+      "id": 109,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "2"
+      },
+      "createdAt": "2026-05-05T10:13:49.355Z",
+      "updatedAt": "2026-05-05T10:13:49.355Z"
+    },
+    {
+      "id": 110,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:14:03.898Z",
+      "updatedAt": "2026-05-05T10:14:03.898Z"
+    },
+    {
+      "id": 111,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T10:14:13.938Z",
+      "updatedAt": "2026-05-05T10:14:13.938Z"
+    },
+    {
+      "id": 112,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T10:14:48.860Z",
+      "updatedAt": "2026-05-05T10:14:48.860Z"
+    },
+    {
+      "id": 113,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T10:24:50.801Z",
+      "updatedAt": "2026-05-05T10:24:50.801Z"
+    },
+    {
+      "id": 114,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:26:48.275Z",
+      "updatedAt": "2026-05-05T10:26:48.275Z"
+    },
+    {
+      "id": 115,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:31:05.303Z",
+      "updatedAt": "2026-05-05T10:31:05.303Z"
+    },
+    {
+      "id": 116,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:31:10.285Z",
+      "updatedAt": "2026-05-05T10:31:10.285Z"
+    },
+    {
+      "id": 117,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "2"
+      },
+      "createdAt": "2026-05-05T10:31:16.712Z",
+      "updatedAt": "2026-05-05T10:31:16.712Z"
+    },
+    {
+      "id": 118,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:31:22.642Z",
+      "updatedAt": "2026-05-05T10:31:22.642Z"
+    },
+    {
+      "id": 119,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:31:27.286Z",
+      "updatedAt": "2026-05-05T10:31:27.286Z"
+    },
+    {
+      "id": 120,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T10:31:31.743Z",
+      "updatedAt": "2026-05-05T10:31:31.743Z"
+    },
+    {
+      "id": 121,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T10:32:00.063Z",
+      "updatedAt": "2026-05-05T10:32:00.063Z"
+    },
+    {
+      "id": 122,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:48:52.650Z",
+      "updatedAt": "2026-05-05T10:48:52.650Z"
+    },
+    {
+      "id": 123,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T10:49:32.266Z",
+      "updatedAt": "2026-05-05T10:49:32.266Z"
+    },
+    {
+      "id": 124,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": "1"
+      },
+      "createdAt": "2026-05-05T10:49:46.471Z",
+      "updatedAt": "2026-05-05T10:49:46.471Z"
+    },
+    {
+      "id": 125,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:17:11.366Z",
+      "updatedAt": "2026-05-05T11:17:11.366Z"
+    },
+    {
+      "id": 126,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:18:11.595Z",
+      "updatedAt": "2026-05-05T11:18:11.595Z"
+    },
+    {
+      "id": 127,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:18:18.564Z",
+      "updatedAt": "2026-05-05T11:18:18.564Z"
+    },
+    {
+      "id": 128,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:18:31.248Z",
+      "updatedAt": "2026-05-05T11:18:31.248Z"
+    },
+    {
+      "id": 129,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:19:15.107Z",
+      "updatedAt": "2026-05-05T11:19:15.107Z"
+    },
+    {
+      "id": 130,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:19:22.686Z",
+      "updatedAt": "2026-05-05T11:19:22.686Z"
+    },
+    {
+      "id": 131,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:19:28.165Z",
+      "updatedAt": "2026-05-05T11:19:28.165Z"
+    },
+    {
+      "id": 132,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:21:42.183Z",
+      "updatedAt": "2026-05-05T11:21:42.183Z"
+    },
+    {
+      "id": 133,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:21:48.302Z",
+      "updatedAt": "2026-05-05T11:21:48.302Z"
+    },
+    {
+      "id": 134,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:21:53.242Z",
+      "updatedAt": "2026-05-05T11:21:53.242Z"
+    },
+    {
+      "id": 135,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 16,
+        "productName": "product test"
+      },
+      "createdAt": "2026-05-05T11:22:01.524Z",
+      "updatedAt": "2026-05-05T11:22:01.524Z"
+    },
+    {
+      "id": 136,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:22:13.099Z",
+      "updatedAt": "2026-05-05T11:22:13.099Z"
+    },
+    {
+      "id": 137,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 17,
+        "productName": "wstore product"
+      },
+      "createdAt": "2026-05-05T11:22:21.897Z",
+      "updatedAt": "2026-05-05T11:22:21.897Z"
+    },
+    {
+      "id": 138,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:22:30.400Z",
+      "updatedAt": "2026-05-05T11:22:30.400Z"
+    },
+    {
+      "id": 139,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-05T11:22:34.539Z",
+      "updatedAt": "2026-05-05T11:22:34.539Z"
+    },
+    {
+      "id": 140,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:22:51.403Z",
+      "updatedAt": "2026-05-05T11:22:51.403Z"
+    },
+    {
+      "id": 141,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:22:56.357Z",
+      "updatedAt": "2026-05-05T11:22:56.357Z"
+    },
+    {
+      "id": 142,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:23:00.775Z",
+      "updatedAt": "2026-05-05T11:23:00.775Z"
+    },
+    {
+      "id": 143,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T11:23:12.563Z",
+      "updatedAt": "2026-05-05T11:23:12.563Z"
+    },
+    {
+      "id": 144,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:49:37.034Z",
+      "updatedAt": "2026-05-05T11:49:37.034Z"
+    },
+    {
+      "id": 145,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:49:42.963Z",
+      "updatedAt": "2026-05-05T11:49:42.963Z"
+    },
+    {
+      "id": 146,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:49:48.846Z",
+      "updatedAt": "2026-05-05T11:49:48.846Z"
+    },
+    {
+      "id": 147,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T11:50:02.337Z",
+      "updatedAt": "2026-05-05T11:50:02.337Z"
+    },
+    {
+      "id": 148,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:50:43.574Z",
+      "updatedAt": "2026-05-05T11:50:43.574Z"
+    },
+    {
+      "id": 149,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:50:48.338Z",
+      "updatedAt": "2026-05-05T11:50:48.338Z"
+    },
+    {
+      "id": 150,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:55:00.581Z",
+      "updatedAt": "2026-05-05T11:55:00.581Z"
+    },
+    {
+      "id": 151,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:55:49.277Z",
+      "updatedAt": "2026-05-05T11:55:49.277Z"
+    },
+    {
+      "id": 152,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:56:23.965Z",
+      "updatedAt": "2026-05-05T11:56:23.965Z"
+    },
+    {
+      "id": 153,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:56:30.290Z",
+      "updatedAt": "2026-05-05T11:56:30.290Z"
+    },
+    {
+      "id": 154,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:56:35.750Z",
+      "updatedAt": "2026-05-05T11:56:35.750Z"
+    },
+    {
+      "id": 155,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T11:56:57.007Z",
+      "updatedAt": "2026-05-05T11:56:57.007Z"
+    },
+    {
+      "id": 156,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ORDER_CANCELLED",
+      "details": {},
+      "createdAt": "2026-05-05T11:57:29.530Z",
+      "updatedAt": "2026-05-05T11:57:29.530Z"
+    },
+    {
+      "id": 157,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T11:58:40.661Z",
+      "updatedAt": "2026-05-05T11:58:40.661Z"
+    },
+    {
+      "id": 158,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:59:13.593Z",
+      "updatedAt": "2026-05-05T11:59:13.593Z"
+    },
+    {
+      "id": 159,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T11:59:18.548Z",
+      "updatedAt": "2026-05-05T11:59:18.548Z"
+    },
+    {
+      "id": 160,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T11:59:23.024Z",
+      "updatedAt": "2026-05-05T11:59:23.024Z"
+    },
+    {
+      "id": 161,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T11:59:42.709Z",
+      "updatedAt": "2026-05-05T11:59:42.709Z"
+    },
+    {
+      "id": 162,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:09:06.159Z",
+      "updatedAt": "2026-05-05T12:09:06.159Z"
+    },
+    {
+      "id": 163,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:09:11.283Z",
+      "updatedAt": "2026-05-05T12:09:11.283Z"
+    },
+    {
+      "id": 164,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T12:09:16.176Z",
+      "updatedAt": "2026-05-05T12:09:16.176Z"
+    },
+    {
+      "id": 165,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T12:09:28.696Z",
+      "updatedAt": "2026-05-05T12:09:28.696Z"
+    },
+    {
+      "id": 166,
+      "customerPhone": "919633027889",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T12:11:01.154Z",
+      "updatedAt": "2026-05-05T12:11:01.154Z"
+    },
+    {
+      "id": 167,
+      "customerPhone": "919633027889",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:12:57.995Z",
+      "updatedAt": "2026-05-05T12:12:57.995Z"
+    },
+    {
+      "id": 168,
+      "customerPhone": "919633027889",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:13:04.347Z",
+      "updatedAt": "2026-05-05T12:13:04.347Z"
+    },
+    {
+      "id": 169,
+      "customerPhone": "919633027889",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T12:13:10.858Z",
+      "updatedAt": "2026-05-05T12:13:10.858Z"
+    },
+    {
+      "id": 170,
+      "customerPhone": "919633027889",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T12:13:25.139Z",
+      "updatedAt": "2026-05-05T12:13:25.139Z"
+    },
+    {
+      "id": 171,
+      "customerPhone": "919633027889",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:13:58.975Z",
+      "updatedAt": "2026-05-05T12:13:58.975Z"
+    },
+    {
+      "id": 172,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:21:12.499Z",
+      "updatedAt": "2026-05-05T12:21:12.499Z"
+    },
+    {
+      "id": 173,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:21:20.734Z",
+      "updatedAt": "2026-05-05T12:21:20.734Z"
+    },
+    {
+      "id": 174,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Electronics"
+      },
+      "createdAt": "2026-05-05T12:21:40.564Z",
+      "updatedAt": "2026-05-05T12:21:40.564Z"
+    },
+    {
+      "id": 175,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 18,
+        "productName": "Screen Guards X300 Pro"
+      },
+      "createdAt": "2026-05-05T12:22:06.814Z",
+      "updatedAt": "2026-05-05T12:22:06.814Z"
+    },
+    {
+      "id": 176,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-05T12:22:16.304Z",
+      "updatedAt": "2026-05-05T12:22:16.304Z"
+    },
+    {
+      "id": 177,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:24:58.192Z",
+      "updatedAt": "2026-05-05T12:24:58.192Z"
+    },
+    {
+      "id": 178,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ORDER_CANCELLED",
+      "details": {},
+      "createdAt": "2026-05-05T12:25:27.885Z",
+      "updatedAt": "2026-05-05T12:25:27.885Z"
+    },
+    {
+      "id": 179,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:25:32.605Z",
+      "updatedAt": "2026-05-05T12:25:32.605Z"
+    },
+    {
+      "id": 180,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T12:25:46.547Z",
+      "updatedAt": "2026-05-05T12:25:46.547Z"
+    },
+    {
+      "id": 181,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T12:26:00.074Z",
+      "updatedAt": "2026-05-05T12:26:00.074Z"
+    },
+    {
+      "id": 182,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T12:27:49.959Z",
+      "updatedAt": "2026-05-05T12:27:49.959Z"
+    },
+    {
+      "id": 183,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:35:43.165Z",
+      "updatedAt": "2026-05-05T12:35:43.165Z"
+    },
+    {
+      "id": 184,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-05T12:35:48.816Z",
+      "updatedAt": "2026-05-05T12:35:48.816Z"
+    },
+    {
+      "id": 185,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-05T12:36:06.128Z",
+      "updatedAt": "2026-05-05T12:36:06.128Z"
+    },
+    {
+      "id": 186,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT",
+      "details": {
+        "type": "native_order"
+      },
+      "createdAt": "2026-05-05T12:36:27.252Z",
+      "updatedAt": "2026-05-05T12:36:27.252Z"
+    },
+    {
+      "id": 187,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:19:06.967Z",
+      "updatedAt": "2026-05-06T04:19:06.967Z"
+    },
+    {
+      "id": 188,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:19:15.223Z",
+      "updatedAt": "2026-05-06T04:19:15.223Z"
+    },
+    {
+      "id": 189,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:47:25.803Z",
+      "updatedAt": "2026-05-06T04:47:25.803Z"
+    },
+    {
+      "id": 190,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:47:36.254Z",
+      "updatedAt": "2026-05-06T04:47:36.254Z"
+    },
+    {
+      "id": 191,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T04:47:52.084Z",
+      "updatedAt": "2026-05-06T04:47:52.084Z"
+    },
+    {
+      "id": 192,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:48:09.213Z",
+      "updatedAt": "2026-05-06T04:48:09.213Z"
+    },
+    {
+      "id": 193,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:48:14.547Z",
+      "updatedAt": "2026-05-06T04:48:14.547Z"
+    },
+    {
+      "id": 194,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T04:48:24.477Z",
+      "updatedAt": "2026-05-06T04:48:24.477Z"
+    },
+    {
+      "id": 195,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:48:42.969Z",
+      "updatedAt": "2026-05-06T04:48:42.969Z"
+    },
+    {
+      "id": 196,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:48:49.658Z",
+      "updatedAt": "2026-05-06T04:48:49.658Z"
+    },
+    {
+      "id": 197,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:50:24.009Z",
+      "updatedAt": "2026-05-06T04:50:24.009Z"
+    },
+    {
+      "id": 198,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:50:29.814Z",
+      "updatedAt": "2026-05-06T04:50:29.814Z"
+    },
+    {
+      "id": 199,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:50:36.361Z",
+      "updatedAt": "2026-05-06T04:50:36.361Z"
+    },
+    {
+      "id": 200,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:50:47.538Z",
+      "updatedAt": "2026-05-06T04:50:47.538Z"
+    },
+    {
+      "id": 201,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:52:08.158Z",
+      "updatedAt": "2026-05-06T04:52:08.158Z"
+    },
+    {
+      "id": 202,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:52:14.490Z",
+      "updatedAt": "2026-05-06T04:52:14.490Z"
+    },
+    {
+      "id": 203,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:53:26.508Z",
+      "updatedAt": "2026-05-06T04:53:26.508Z"
+    },
+    {
+      "id": 204,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T04:53:32.597Z",
+      "updatedAt": "2026-05-06T04:53:32.597Z"
+    },
+    {
+      "id": 205,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Electronics"
+      },
+      "createdAt": "2026-05-06T04:55:46.105Z",
+      "updatedAt": "2026-05-06T04:55:46.105Z"
+    },
+    {
+      "id": 206,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:01:27.004Z",
+      "updatedAt": "2026-05-06T05:01:27.004Z"
+    },
+    {
+      "id": 207,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:16:19.384Z",
+      "updatedAt": "2026-05-06T05:16:19.384Z"
+    },
+    {
+      "id": 208,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:18:46.471Z",
+      "updatedAt": "2026-05-06T05:18:46.471Z"
+    },
+    {
+      "id": 210,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:26:18.527Z",
+      "updatedAt": "2026-05-06T05:26:18.527Z"
+    },
+    {
+      "id": 211,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:26:24.678Z",
+      "updatedAt": "2026-05-06T05:26:24.678Z"
+    },
+    {
+      "id": 212,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:26:47.151Z",
+      "updatedAt": "2026-05-06T05:26:47.151Z"
+    },
+    {
+      "id": 213,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:27:08.378Z",
+      "updatedAt": "2026-05-06T05:27:08.378Z"
+    },
+    {
+      "id": 214,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Electronics"
+      },
+      "createdAt": "2026-05-06T05:27:16.822Z",
+      "updatedAt": "2026-05-06T05:27:16.822Z"
+    },
+    {
+      "id": 215,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 18,
+        "productName": "Screen Guards X300 Pro"
+      },
+      "createdAt": "2026-05-06T05:27:20.158Z",
+      "updatedAt": "2026-05-06T05:27:20.158Z"
+    },
+    {
+      "id": 216,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-06T05:27:44.713Z",
+      "updatedAt": "2026-05-06T05:27:44.713Z"
+    },
+    {
+      "id": 217,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:30:57.428Z",
+      "updatedAt": "2026-05-06T05:30:57.428Z"
+    },
+    {
+      "id": 219,
+      "customerPhone": "917012738756",
+      "tenantId": null,
+      "branchId": 2,
+      "actionType": "SUPPORT_REPLY",
+      "details": {
+        "reply": "thank you for contacting , we will resolve this issue as soon as possible",
+        "originalRequestId": 218
+      },
+      "createdAt": "2026-05-06T05:33:26.410Z",
+      "updatedAt": "2026-05-06T05:33:26.410Z"
+    },
+    {
+      "id": 220,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:36:07.442Z",
+      "updatedAt": "2026-05-06T05:36:07.442Z"
+    },
+    {
+      "id": 209,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "bad product received",
+        "orderId": "19"
+      },
+      "createdAt": "2026-05-06T05:19:12.026Z",
+      "updatedAt": "2026-05-06T05:39:25.927Z"
+    },
+    {
+      "id": 218,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "very bad service",
+        "orderId": "17"
+      },
+      "createdAt": "2026-05-06T05:31:20.018Z",
+      "updatedAt": "2026-05-06T05:39:25.931Z"
+    },
+    {
+      "id": 221,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "test",
+        "orderId": "19"
+      },
+      "createdAt": "2026-05-06T05:36:30.809Z",
+      "updatedAt": "2026-05-06T05:39:25.932Z"
+    },
+    {
+      "id": 222,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T05:43:02.179Z",
+      "updatedAt": "2026-05-06T05:43:02.179Z"
+    },
+    {
+      "id": 223,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:34:25.474Z",
+      "updatedAt": "2026-05-06T06:34:25.474Z"
+    },
+    {
+      "id": 224,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T06:34:47.020Z",
+      "updatedAt": "2026-05-06T06:34:47.020Z"
+    },
+    {
+      "id": 225,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 16,
+        "productName": "product test"
+      },
+      "createdAt": "2026-05-06T06:34:50.910Z",
+      "updatedAt": "2026-05-06T06:34:50.910Z"
+    },
+    {
+      "id": 226,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-06T06:34:59.823Z",
+      "updatedAt": "2026-05-06T06:34:59.823Z"
+    },
+    {
+      "id": 227,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:38:35.885Z",
+      "updatedAt": "2026-05-06T06:38:35.885Z"
+    },
+    {
+      "id": 228,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:38:41.750Z",
+      "updatedAt": "2026-05-06T06:38:41.750Z"
+    },
+    {
+      "id": 229,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T06:38:50.240Z",
+      "updatedAt": "2026-05-06T06:38:50.240Z"
+    },
+    {
+      "id": 230,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 16,
+        "productName": "product test"
+      },
+      "createdAt": "2026-05-06T06:38:53.855Z",
+      "updatedAt": "2026-05-06T06:38:53.855Z"
+    },
+    {
+      "id": 231,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:39:18.771Z",
+      "updatedAt": "2026-05-06T06:39:18.771Z"
+    },
+    {
+      "id": 232,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-06T06:39:22.230Z",
+      "updatedAt": "2026-05-06T06:39:22.230Z"
+    },
+    {
+      "id": 233,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:40:30.272Z",
+      "updatedAt": "2026-05-06T06:40:30.272Z"
+    },
+    {
+      "id": 234,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "this order is taking too much time",
+        "orderId": "22"
+      },
+      "createdAt": "2026-05-06T06:40:54.086Z",
+      "updatedAt": "2026-05-06T06:40:54.086Z"
+    },
+    {
+      "id": 235,
+      "customerPhone": "917012738756",
+      "tenantId": null,
+      "branchId": 1,
+      "actionType": "SUPPORT_REPLY",
+      "details": {
+        "reply": "the delivery boy is on the way to deliver the prduct",
+        "originalRequestId": 234
+      },
+      "createdAt": "2026-05-06T06:41:55.873Z",
+      "updatedAt": "2026-05-06T06:41:55.873Z"
+    },
+    {
+      "id": 236,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:50:54.182Z",
+      "updatedAt": "2026-05-06T06:50:54.182Z"
+    },
+    {
+      "id": 237,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:51:00.124Z",
+      "updatedAt": "2026-05-06T06:51:00.124Z"
+    },
+    {
+      "id": 238,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:51:42.789Z",
+      "updatedAt": "2026-05-06T06:51:42.789Z"
+    },
+    {
+      "id": 239,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:51:48.349Z",
+      "updatedAt": "2026-05-06T06:51:48.349Z"
+    },
+    {
+      "id": 240,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T06:51:56.569Z",
+      "updatedAt": "2026-05-06T06:51:56.569Z"
+    },
+    {
+      "id": 241,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 16,
+        "productName": "product test"
+      },
+      "createdAt": "2026-05-06T06:52:01.824Z",
+      "updatedAt": "2026-05-06T06:52:01.824Z"
+    },
+    {
+      "id": 242,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 17,
+        "productName": "wstore product"
+      },
+      "createdAt": "2026-05-06T06:52:09.367Z",
+      "updatedAt": "2026-05-06T06:52:09.367Z"
+    },
+    {
+      "id": 243,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-06T06:52:16.790Z",
+      "updatedAt": "2026-05-06T06:52:16.790Z"
+    },
+    {
+      "id": 244,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T06:53:15.647Z",
+      "updatedAt": "2026-05-06T06:53:15.647Z"
+    },
+    {
+      "id": 245,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "very bad product",
+        "orderId": "23"
+      },
+      "createdAt": "2026-05-06T06:53:39.993Z",
+      "updatedAt": "2026-05-06T06:53:39.993Z"
+    },
+    {
+      "id": 246,
+      "customerPhone": "917012738756",
+      "tenantId": null,
+      "branchId": 1,
+      "actionType": "SUPPORT_REPLY",
+      "details": {
+        "reply": "sorry",
+        "originalRequestId": 245
+      },
+      "createdAt": "2026-05-06T06:53:55.272Z",
+      "updatedAt": "2026-05-06T06:53:55.272Z"
+    },
+    {
+      "id": 247,
+      "customerPhone": "917012738756",
+      "tenantId": null,
+      "branchId": 1,
+      "actionType": "SUPPORT_REPLY",
+      "details": {
+        "reply": "we will look into it",
+        "originalRequestId": 245
+      },
+      "createdAt": "2026-05-06T07:29:08.855Z",
+      "updatedAt": "2026-05-06T07:29:08.855Z"
+    },
+    {
+      "id": 248,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T08:21:35.023Z",
+      "updatedAt": "2026-05-06T08:21:35.023Z"
+    },
+    {
+      "id": 249,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T08:22:01.854Z",
+      "updatedAt": "2026-05-06T08:22:01.854Z"
+    },
+    {
+      "id": 250,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T08:22:11.319Z",
+      "updatedAt": "2026-05-06T08:22:11.319Z"
+    },
+    {
+      "id": 251,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T08:22:58.714Z",
+      "updatedAt": "2026-05-06T08:22:58.714Z"
+    },
+    {
+      "id": 252,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T08:23:04.193Z",
+      "updatedAt": "2026-05-06T08:23:04.193Z"
+    },
+    {
+      "id": 253,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T08:23:12.764Z",
+      "updatedAt": "2026-05-06T08:23:12.764Z"
+    },
+    {
+      "id": 254,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 17,
+        "productName": "Cricket Bat"
+      },
+      "createdAt": "2026-05-06T08:23:22.534Z",
+      "updatedAt": "2026-05-06T08:23:22.534Z"
+    },
+    {
+      "id": 255,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 17,
+        "productName": "Cricket Bat"
+      },
+      "createdAt": "2026-05-06T08:23:45.848Z",
+      "updatedAt": "2026-05-06T08:23:45.848Z"
+    },
+    {
+      "id": 256,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T08:23:54.247Z",
+      "updatedAt": "2026-05-06T08:23:54.247Z"
+    },
+    {
+      "id": 257,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 1,
+        "categoryName": "Sample category"
+      },
+      "createdAt": "2026-05-06T08:24:02.161Z",
+      "updatedAt": "2026-05-06T08:24:02.161Z"
+    },
+    {
+      "id": 258,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 17,
+        "productName": "Cricket Bat"
+      },
+      "createdAt": "2026-05-06T08:24:08.404Z",
+      "updatedAt": "2026-05-06T08:24:08.404Z"
+    },
+    {
+      "id": 259,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:42:40.354Z",
+      "updatedAt": "2026-05-06T09:42:40.354Z"
+    },
+    {
+      "id": 260,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "test",
+        "orderId": "23"
+      },
+      "createdAt": "2026-05-06T09:42:58.005Z",
+      "updatedAt": "2026-05-06T09:42:58.005Z"
+    },
+    {
+      "id": 261,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:43:18.781Z",
+      "updatedAt": "2026-05-06T09:43:18.781Z"
+    },
+    {
+      "id": 262,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "sample",
+        "orderId": null
+      },
+      "createdAt": "2026-05-06T09:43:32.440Z",
+      "updatedAt": "2026-05-06T09:43:32.440Z"
+    },
+    {
+      "id": 263,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:46:34.550Z",
+      "updatedAt": "2026-05-06T09:46:34.550Z"
+    },
+    {
+      "id": 264,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "bxhxnd",
+        "orderId": null
+      },
+      "createdAt": "2026-05-06T09:46:45.958Z",
+      "updatedAt": "2026-05-06T09:46:45.958Z"
+    },
+    {
+      "id": 265,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:47:48.637Z",
+      "updatedAt": "2026-05-06T09:47:48.637Z"
+    },
+    {
+      "id": 266,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "bgjjnk",
+        "orderId": null
+      },
+      "createdAt": "2026-05-06T09:48:04.919Z",
+      "updatedAt": "2026-05-06T09:48:04.919Z"
+    },
+    {
+      "id": 267,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:51:44.948Z",
+      "updatedAt": "2026-05-06T09:51:44.948Z"
+    },
+    {
+      "id": 268,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 1,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:51:51.269Z",
+      "updatedAt": "2026-05-06T09:51:51.269Z"
+    },
+    {
+      "id": 269,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Electronics"
+      },
+      "createdAt": "2026-05-06T09:52:08.892Z",
+      "updatedAt": "2026-05-06T09:52:08.892Z"
+    },
+    {
+      "id": 270,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 18,
+        "productName": "Screen Guards X300 Pro"
+      },
+      "createdAt": "2026-05-06T09:52:12.535Z",
+      "updatedAt": "2026-05-06T09:52:12.535Z"
+    },
+    {
+      "id": 271,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-06T09:52:23.789Z",
+      "updatedAt": "2026-05-06T09:52:23.789Z"
+    },
+    {
+      "id": 272,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T09:54:44.150Z",
+      "updatedAt": "2026-05-06T09:54:44.150Z"
+    },
+    {
+      "id": 273,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Electronics"
+      },
+      "createdAt": "2026-05-06T09:54:54.108Z",
+      "updatedAt": "2026-05-06T09:54:54.108Z"
+    },
+    {
+      "id": 274,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 18,
+        "productName": "Screen Guards X300 Pro"
+      },
+      "createdAt": "2026-05-06T09:54:57.864Z",
+      "updatedAt": "2026-05-06T09:54:57.864Z"
+    },
+    {
+      "id": 275,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T10:01:07.715Z",
+      "updatedAt": "2026-05-06T10:01:07.715Z"
+    },
+    {
+      "id": 276,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "ndudnydbdgd",
+        "orderId": null
+      },
+      "createdAt": "2026-05-06T10:01:22.539Z",
+      "updatedAt": "2026-05-06T10:01:22.539Z"
+    },
+    {
+      "id": 277,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T10:01:46.479Z",
+      "updatedAt": "2026-05-06T10:01:46.479Z"
+    },
+    {
+      "id": 278,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T10:01:54.208Z",
+      "updatedAt": "2026-05-06T10:01:54.208Z"
+    },
+    {
+      "id": 279,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Electronics"
+      },
+      "createdAt": "2026-05-06T10:02:05.936Z",
+      "updatedAt": "2026-05-06T10:02:05.936Z"
+    },
+    {
+      "id": 280,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 18,
+        "productName": "Screen Guards X300 Pro"
+      },
+      "createdAt": "2026-05-06T10:02:09.904Z",
+      "updatedAt": "2026-05-06T10:02:09.904Z"
+    },
+    {
+      "id": 281,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T10:04:49.351Z",
+      "updatedAt": "2026-05-06T10:04:49.351Z"
+    },
+    {
+      "id": 282,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "not delivered yet 😕",
+        "orderId": "24"
+      },
+      "createdAt": "2026-05-06T10:05:14.095Z",
+      "updatedAt": "2026-05-06T10:05:14.095Z"
+    },
+    {
+      "id": 283,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-06T10:06:50.394Z",
+      "updatedAt": "2026-05-06T10:06:50.394Z"
+    },
+    {
+      "id": 284,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SUPPORT_REQUEST",
+      "details": {
+        "message": "latest issue",
+        "orderId": null
+      },
+      "createdAt": "2026-05-06T10:07:03.288Z",
+      "updatedAt": "2026-05-06T10:07:03.288Z"
+    }
+  ],
+  "fcmTokens": [
+    {
+      "id": 8,
+      "token": "eVKHdQWsnh6Y_0yfulpwng:APA91bG8gAYhV8dkKqrKTLZnZ0yvX7nDHn0yAPTvbt7uzqJkd3emJsmpqu0vA-FCRBr-CScXn4eMVKaWoKM2XfvrP96Ez9mQRY_c9DQoA9ylSDnPLRml1t0",
+      "adminId": 1,
+      "tenantId": 1,
+      "branchId": null,
+      "role": "tenant",
+      "createdAt": "2026-05-06T07:02:49.786Z",
+      "updatedAt": "2026-05-06T07:02:49.786Z"
+    },
+    {
+      "id": 9,
+      "token": "dgUWkSxdtPb3019rwZ2wGh:APA91bGGV26HdzXatk5lIJtqQyvcp7B3u9mCNRwi0yiMPR3YEn50Rg-5tjCoTVgqlKe093vGPWLunoZSeL5rgdjp8UwdVCF7Lev_MMc0N4livYnIwP6hNZw",
+      "adminId": 0,
+      "tenantId": null,
+      "branchId": null,
+      "role": "superadmin",
+      "createdAt": "2026-05-06T07:15:15.523Z",
+      "updatedAt": "2026-05-06T07:15:15.523Z"
+    }
+  ]
+}

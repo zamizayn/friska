@@ -83,6 +83,13 @@ export default function Dashboard() {
 
     useEffect(() => { fetchDashboardData(); }, []);
 
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good morning';
+        if (hour < 17) return 'Good afternoon';
+        return 'Good evening';
+    };
+
     const formatActivity = (log) => {
         const { details, actionType } = log;
         switch (actionType) {
@@ -110,7 +117,7 @@ export default function Dashboard() {
             <section className="hero-banner">
                 <div style={{ position: 'relative', zIndex: 10 }}>
                     <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-                    <h1>Good morning, {localStorage.getItem('adminName')?.split(' ')[0] || 'Admin'}</h1>
+                    <h1>{getGreeting()}, {localStorage.getItem('adminName')?.split(' ')[0] || 'Admin'}</h1>
                     <p>Here's what's happening with your store today.</p>
                 </div>
 

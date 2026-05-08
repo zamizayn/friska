@@ -12,6 +12,8 @@ router.put('/:id', tenantController.updateTenant);
 router.delete('/:id', tenantController.deleteTenant);
 
 // Operations
+router.get('/me/settings', tenantController.getSettings);
+router.put('/me/settings', tenantController.updateSettings);
 router.post('/:id/enable-webhooks', tenantController.enableWebhooks);
 
 module.exports = router;

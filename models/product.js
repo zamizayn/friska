@@ -29,8 +29,12 @@ module.exports = (sequelize, DataTypes) => {
     stock: DataTypes.INTEGER,
     branchId: DataTypes.INTEGER,
     retailerId: {
-      type: DataTypes.TEXT,
-      allowNull: false
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    priority: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
     }
   }, {
     sequelize,

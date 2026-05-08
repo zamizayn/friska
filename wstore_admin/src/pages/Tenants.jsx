@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Building2, Globe, Key, Phone, Settings2, Edit, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, Trash2, Building2, Globe, Key, Phone, Settings2, Edit, CheckCircle2, XCircle, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
@@ -14,6 +14,7 @@ export default function Tenants() {
         username: '',
         password: '',
         catalogId: '',
+        displayMode: 'catalog',
         isActive: true
     });
     const [editingId, setEditingId] = useState(null);
@@ -43,7 +44,7 @@ export default function Tenants() {
         if (res.ok) {
             setModalOpen(false);
             setEditingId(null);
-            setFormData({ name: '', phoneNumberId: '', whatsappToken: '', wabaId: '', username: '', password: '', catalogId: '', isActive: true });
+            setFormData({ name: '', phoneNumberId: '', whatsappToken: '', wabaId: '', username: '', password: '', catalogId: '', displayMode: 'catalog', isActive: true });
             fetchTenants();
         }
     };
@@ -58,6 +59,7 @@ export default function Tenants() {
             username: tenant.username || '',
             password: '', // Don't pre-fill password for security
             catalogId: tenant.catalogId || '',
+            displayMode: tenant.displayMode || 'catalog',
             isActive: tenant.isActive
         });
         setModalOpen(true);
@@ -210,6 +212,20 @@ export default function Tenants() {
                             <div className="input-group">
                                 <label>Meta Catalog ID (Optional)</label>
                                 <input type="text" value={formData.catalogId} onChange={e => setFormData({ ...formData, catalogId: e.target.value })} />
+                            </div>
+
+
+
+                            <div className="input-group">
+                                <label>Display Mode (WhatsApp Chatbot)</label>
+                                <select 
+                                    value={formData.displayMode} 
+                                    onChange={e => setFormData({ ...formData, displayMode: e.target.value })}
+                                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'white' }}
+                                >
+                                    <option value="catalog">Vertical List (Meta Catalog)</option>
+                                    <option value="carousel">Horizontal Carousel (Custom Cards)</option>
+                                </select>
                             </div>
 
                             <div style={{ padding: '20px', background: 'var(--accent-light)', borderRadius: '16px', marginBottom: '24px' }}>

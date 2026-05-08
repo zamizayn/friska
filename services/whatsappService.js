@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const getUrl = (config) => {
-    const version = config.version || process.env.GRAPH_API_VERSION || 'v17.0';
+    const version = config.version || process.env.GRAPH_API_VERSION || 'v19.0';
     const phoneId = config.phoneNumberId || process.env.PHONE_NUMBER_ID;
     return `https://graph.facebook.com/${version}/${phoneId}/messages`;
 };

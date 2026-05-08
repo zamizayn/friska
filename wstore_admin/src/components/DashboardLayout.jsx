@@ -17,6 +17,7 @@ const ALL_PAGES = [
     { label: 'Offers', path: '/admin/offers', icon: Tags, keywords: ['offer', 'discount', 'coupon', 'promo', 'rules'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub'], roles: ['superadmin', 'tenant'] },
+    { label: 'Settings', path: '/admin/settings', icon: Settings, keywords: ['settings', 'config', 'preferences', 'razorpay', 'keys'], roles: ['tenant'] },
 ];
 
 export default function DashboardLayout() {
@@ -246,6 +247,11 @@ export default function DashboardLayout() {
                     {(role === 'superadmin' || role === 'tenant') && (
                         <NavLink to="/admin/branches" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                             <MapPin size={18} /> <span>Branches</span>
+                        </NavLink>
+                    )}
+                    {role === 'tenant' && (
+                        <NavLink to="/admin/settings" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                            <Settings size={18} /> <span>Settings</span>
                         </NavLink>
                     )}
                 </div>

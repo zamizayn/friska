@@ -313,6 +313,7 @@ export default function Orders() {
                             <th>Total</th>
                             <th>Status</th>
                             <th>Payment</th>
+                            <th>Payment</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -321,11 +322,23 @@ export default function Orders() {
                             <tr key={order.id}>
                                 <td style={{ fontWeight: 700 }}>#{order.id}</td>
                                 <td>
-                                    <div style={{ fontWeight: 600 }}>{order.customerPhone}</div>
-                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
+                                    <div style={{ fontWeight: 700, fontSize: '15px' }}>{order.customer?.name || 'Guest Customer'}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-main)', marginTop: '2px' }}>{order.customerPhone}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
                                 </td>
                                 <td>{order.items?.length || 0} items</td>
                                 <td style={{ fontWeight: 700 }}>₹{order.total}</td>
+                                <td>
+                                    <div style={{ fontSize: '13px', fontWeight: 600 }}>{order.paymentMethod || 'COD'}</div>
+                                    <div style={{ fontSize: '11px', color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--text-muted)' }}>
+                                        {order.paymentStatus === 'paid' ? '● Paid' : '○ Pending'}
+                                    </div>
+                                    {order.paymentTransactionId && (
+                                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'monospace' }}>
+                                            ID: {order.paymentTransactionId}
+                                        </div>
+                                    )}
+                                </td>
                                 <td>
                                     <select
                                         className={`status-pill ${order.status === 'delivered' ? 'success' : order.status === 'pending' ? 'warning' : order.status === 'cancelled' ? 'danger' : 'info'}`}
@@ -389,6 +402,10 @@ export default function Orders() {
                                     <div className="input-group">
                                         <label>Customer Phone (WhatsApp)</label>
                                         <input type="text" placeholder="919876543210" value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} required />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Customer Name</label>
+                                        <input type="text" placeholder="e.g. John Doe" value={formData.customerName} onChange={e => setFormData({ ...formData, customerName: e.target.value })} required />
                                     </div>
                                     <div className="input-group">
                                         <label>Full Address</label>

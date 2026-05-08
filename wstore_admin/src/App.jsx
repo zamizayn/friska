@@ -18,6 +18,7 @@ import ProductSales from './pages/ProductSales';
 import Support from './pages/Support';
 import Notifications from './pages/Notifications';
 import Offers from './pages/Offers';
+import Settings from './pages/Settings';
 
 const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem('adminToken');
@@ -53,6 +54,7 @@ export default function App() {
                     <Route path="support" element={<Support />} />
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="offers" element={<Offers />} />
+                    <Route path="settings" element={<Settings />} />
                 </Route>
             </Routes>
         </Router>

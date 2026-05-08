@@ -8,9 +8,15 @@ const getAllProducts = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
-        const { search, categoryId, stockStatus } = req.query;
+        const { search, categoryId, stockStatus, sortBy, sortOrder } = req.query;
 
         const where = await req.getScope();
+
+        const order = [];
+        if (sortBy === 'priority') {
+            order.push(['priority', sortOrder === 'ASC' ? 'ASC' : 'DESC']);
+        }
+        order.push(['createdAt', 'DESC']);
 
         if (search) {
             where.name = { [Op.iLike]: `%${search}%` };
@@ -33,7 +39,7 @@ const getAllProducts = async (req, res) => {
             include: [{ model: Category, as: 'category' }],
             limit,
             offset,
-            order: [['createdAt', 'DESC']]
+            order
         });
 
         res.json({
@@ -76,6 +82,14 @@ const createProduct = async (req, res) => {
     const data = { ...req.body };
     if (req.user.role === 'branch') data.branchId = req.user.branchId;
 
+    if (req.file) {
+        data.image = req.file.path;
+    }
+
+    if (data.price) data.price = parseFloat(data.price);
+    if (data.stock) data.stock = parseInt(data.stock);
+    if (data.priority !== undefined) data.priority = parseInt(data.priority) || 0;
+
     if (!data.retailerId) {
         data.retailerId = `wstore_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     }
@@ -105,7 +119,16 @@ const updateProduct = async (req, res) => {
         const item = await Product.findByPk(req.params.id);
         if (!item) return res.status(404).send();
 
-        await item.update(req.body);
+        const data = { ...req.body };
+        if (req.file) {
+            data.image = req.file.path;
+        }
+
+        if (data.price) data.price = parseFloat(data.price);
+        if (data.stock) data.stock = parseInt(data.stock);
+        if (data.priority !== undefined) data.priority = parseInt(data.priority) || 0;
+
+        await item.update(data);
 
         // Auto-sync update to Meta Catalog
         try {

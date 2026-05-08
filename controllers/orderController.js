@@ -59,6 +59,9 @@ const getAllOrders = async (req, res) => {
 
         const { count, rows } = await Order.findAndCountAll({
             where,
+            include: [
+                { model: Customer, as: 'customer', attributes: ['name'] }
+            ],
             limit,
             offset,
             order: [['createdAt', 'DESC']]

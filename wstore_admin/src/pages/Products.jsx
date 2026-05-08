@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Trash2, Plus, Type, IndianRupee, AlignLeft, Image as ImageIcon, ListFilter, Fingerprint, Search, RotateCcw } from 'lucide-react';
+import { Edit2, Trash2, Plus, Type, IndianRupee, AlignLeft, Image as ImageIcon, ListFilter, Fingerprint, Search, RotateCcw, X } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 export default function Products() {
     const [products, setProducts] = useState([]);
-    const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+    const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
     const [categories, setCategories] = useState([]);
     const [tenants, setTenants] = useState([]);
     const [selectedTenant, setSelectedTenant] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, name: '', price: '', categoryId: '', description: '', image: '', stock: 50, retailerId: '' });
-    
+    const [formData, setFormData] = useState({ id: null, name: '', price: '', categoryId: '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
+    const [imagePreview, setImagePreview] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const initialFilters = {
         search: '',
         categoryId: '',
-        stockStatus: ''
+        stockStatus: '',
+        sortBy: 'newest',
+        sortOrder: 'DESC'
     };
     const [filters, setFilters] = useState(initialFilters);
     const navigate = useNavigate();
@@ -26,17 +34,20 @@ export default function Products() {
     const fetchProducts = async (page = 1, overrideTenant = selectedTenant) => {
         const branchId = localStorage.getItem('selectedBranchId') || '';
         let url = `${API_ENDPOINTS.PRODUCTS}?page=${page}&limit=10&branchId=${branchId}`;
-        
+
         if (isAdmin && overrideTenant) url += `&tenantId=${overrideTenant}`;
         if (filters.search) url += `&search=${filters.search}`;
         if (filters.categoryId) url += `&categoryId=${filters.categoryId}`;
         if (filters.stockStatus) url += `&stockStatus=${filters.stockStatus}`;
+        if (filters.sortBy === 'priority') {
+            url += `&sortBy=priority&sortOrder=${filters.sortOrder}`;
+        }
 
         const res = await fetch(url, { headers: getHeaders() });
         if (res.status === 401) return navigate('/login');
         const result = await res.json();
         setProducts(result.data || []);
-        setPagination({ page: result.page, totalPages: result.totalPages });
+        setPagination({ page: result.page, totalPages: result.totalPages, total: result.total || 0 });
     };
 
     const fetchCategories = async () => {
@@ -57,11 +68,45 @@ export default function Products() {
         }
     };
 
+    const fetchSuggestions = async (query) => {
+        if (query.length < 2) {
+            setSuggestions([]);
+            return;
+        }
+        const branchId = localStorage.getItem('selectedBranchId') || '';
+        let url = `${API_ENDPOINTS.PRODUCTS}/basic?search=${query}&branchId=${branchId}`;
+        if (isAdmin && selectedTenant) url += `&tenantId=${selectedTenant}`;
+
+        try {
+            const res = await fetch(url, { headers: getHeaders() });
+            const data = await res.json();
+            setSuggestions(data || []);
+        } catch (e) {
+            console.error('Error fetching suggestions', e);
+        }
+    };
+
     useEffect(() => {
         fetchProducts();
         fetchCategories();
         fetchTenants();
-    }, [filters, selectedTenant]);
+    }, [filters.categoryId, filters.stockStatus, filters.search, filters.sortBy, filters.sortOrder, selectedTenant]);
+
+    useEffect(() => {
+        if (!searchTerm) {
+            setSuggestions([]);
+            return;
+        }
+        const timer = setTimeout(() => {
+            fetchSuggestions(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const handleSearchSubmit = (value) => {
+        setFilters({ ...filters, search: value });
+        setShowSuggestions(false);
+    };
 
     const handlePageChange = (newPage) => {
         fetchProducts(newPage);
@@ -69,25 +114,49 @@ export default function Products() {
 
     const clearFilters = () => {
         setFilters(initialFilters);
+        setSearchTerm('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = formData.id ? `${API_ENDPOINTS.PRODUCTS}/${formData.id}` : API_ENDPOINTS.PRODUCTS;
-        const method = formData.id ? 'PUT' : 'POST';
+        setLoading(true);
+        try {
+            const url = formData.id ? `${API_ENDPOINTS.PRODUCTS}/${formData.id}` : API_ENDPOINTS.PRODUCTS;
+            const method = formData.id ? 'PUT' : 'POST';
 
-        const body = { ...formData };
-        const branchId = localStorage.getItem('selectedBranchId');
-        if (!formData.id && branchId) body.branchId = branchId;
+            const data = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key !== 'image' && formData[key] !== null) {
+                    data.append(key, formData[key]);
+                }
+            });
 
-        await fetch(url, {
-            method,
-            headers: getHeaders(),
-            body: JSON.stringify(body)
-        });
+            if (selectedFile) {
+                data.append('image', selectedFile);
+            } else if (formData.image) {
+                data.append('image', formData.image);
+            }
 
-        setModalOpen(false);
-        fetchProducts(pagination.page);
+            const branchId = localStorage.getItem('selectedBranchId');
+            if (!formData.id && branchId) data.append('branchId', branchId);
+
+            const headers = getHeaders();
+            delete headers['Content-Type'];
+
+            await fetch(url, {
+                method,
+                headers,
+                body: data
+            });
+
+            setModalOpen(false);
+            fetchProducts(pagination.page);
+        } catch (error) {
+            console.error('Error saving product:', error);
+            alert('Failed to save product');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -103,17 +172,36 @@ export default function Products() {
     const openModal = (item = null) => {
         if (item) {
             setFormData({ ...item });
+            setImagePreview(item.image);
+            setSelectedFile(null);
         } else {
-            setFormData({ id: null, name: '', price: '', categoryId: categories[0]?.id || '', description: '', image: '', stock: 50, retailerId: '' });
+            setFormData({ id: null, name: '', price: '', categoryId: categories[0]?.id || '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
+            setImagePreview(null);
+            setSelectedFile(null);
         }
         setModalOpen(true);
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result);
+            reader.readAsDataURL(file);
+        }
     };
 
     return (
         <div className="dashboard-content">
             <header className="top-header">
                 <div>
-                    <h1>Product Catalog</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <h1>Product Catalog</h1>
+                        <span style={{ background: 'var(--accent-light)', color: 'var(--accent)', padding: '4px 10px', borderRadius: '20px', fontSize: '13px', fontWeight: 700 }}>
+                            {pagination.total} Products
+                        </span>
+                    </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Manage your inventory, pricing, and product details</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
@@ -142,21 +230,82 @@ export default function Products() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', alignItems: 'flex-end' }}>
                     <div className="input-group" style={{ marginBottom: 0 }}>
                         <label>Search Product</label>
-                        <div className="input-with-icon">
+                        <div className="input-with-icon" style={{ position: 'relative' }}>
                             <Search size={16} className="field-icon" />
-                            <input 
-                                type="text" 
-                                placeholder="Name or ID..." 
-                                value={filters.search} 
-                                onChange={e => setFilters({ ...filters, search: e.target.value })} 
+                            <input
+                                type="text"
+                                placeholder="Name or ID..."
+                                value={searchTerm}
+                                onChange={e => {
+                                    setSearchTerm(e.target.value);
+                                    setShowSuggestions(true);
+                                }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') handleSearchSubmit(searchTerm);
+                                }}
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                onFocus={() => setShowSuggestions(true)}
                             />
+                            {searchTerm && (
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        handleSearchSubmit('');
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '12px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-muted)',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <X size={14} />
+                                </button>
+                            )}
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    right: 0,
+                                    background: 'white',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    marginTop: '4px',
+                                    zIndex: 100,
+                                    boxShadow: 'var(--shadow-md)',
+                                    maxHeight: '200px',
+                                    overflowY: 'auto'
+                                }}>
+                                    {suggestions.map(s => (
+                                        <div
+                                            key={s.id}
+                                            style={{ padding: '10px 16px', cursor: 'pointer', fontSize: '14px', borderBottom: '1px solid var(--border-color)' }}
+                                            className="suggestion-item"
+                                            onClick={() => {
+                                                setSearchTerm(s.name);
+                                                handleSearchSubmit(s.name);
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: 600 }}>{s.name}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Stock: {s.stock} | ₹{s.price}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
-                    
+
                     <div className="input-group" style={{ marginBottom: 0 }}>
                         <label>Category</label>
-                        <select 
-                            value={filters.categoryId} 
+                        <select
+                            value={filters.categoryId}
                             onChange={e => setFilters({ ...filters, categoryId: e.target.value })}
                         >
                             <option value="">All Categories</option>
@@ -166,8 +315,8 @@ export default function Products() {
 
                     <div className="input-group" style={{ marginBottom: 0 }}>
                         <label>Stock Status</label>
-                        <select 
-                            value={filters.stockStatus} 
+                        <select
+                            value={filters.stockStatus}
                             onChange={e => setFilters({ ...filters, stockStatus: e.target.value })}
                         >
                             <option value="">All Stock Levels</option>
@@ -177,19 +326,34 @@ export default function Products() {
                         </select>
                     </div>
 
+                    <div className="input-group" style={{ marginBottom: 0 }}>
+                        <label>Sort By</label>
+                        <select
+                            value={`${filters.sortBy}-${filters.sortOrder}`}
+                            onChange={e => {
+                                const [by, order] = e.target.value.split('-');
+                                setFilters({ ...filters, sortBy: by, sortOrder: order });
+                            }}
+                        >
+                            <option value="newest-DESC">Newest First</option>
+                            <option value="priority-ASC">Priority (1 to 10)</option>
+                            <option value="priority-DESC">Priority (10 to 1)</option>
+                        </select>
+                    </div>
+
                     <div>
-                        <button 
-                            className="btn-outline" 
-                            style={{ 
-                                width: '100%', 
-                                height: '45px', 
-                                justifyContent: 'center', 
-                                color: 'var(--danger)', 
-                                borderColor: 'var(--danger)', 
-                                opacity: filters.search || filters.categoryId || filters.stockStatus ? 1 : 0.5 
-                            }} 
+                        <button
+                            className="btn-outline"
+                            style={{
+                                width: '100%',
+                                height: '45px',
+                                justifyContent: 'center',
+                                color: 'var(--danger)',
+                                borderColor: 'var(--danger)',
+                                opacity: filters.search || filters.categoryId || filters.stockStatus || filters.sortBy !== 'newest' ? 1 : 0.5
+                            }}
                             onClick={clearFilters}
-                            disabled={!(filters.search || filters.categoryId || filters.stockStatus)}
+                            disabled={!(filters.search || filters.categoryId || filters.stockStatus || filters.sortBy !== 'newest')}
                         >
                             <RotateCcw size={16} /> Reset
                         </button>
@@ -205,6 +369,7 @@ export default function Products() {
                             <th>Product Details</th>
                             <th>Category</th>
                             <th>Inventory</th>
+                            <th>Priority</th>
                             <th>Price</th>
                             <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
@@ -213,10 +378,10 @@ export default function Products() {
                         {products.map(prod => (
                             <tr key={prod.id}>
                                 <td>
-                                    <img 
-                                        src={prod.image} 
-                                        alt={prod.name} 
-                                        style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover', background: '#f1f5f9' }} 
+                                    <img
+                                        src={prod.image}
+                                        alt={prod.name}
+                                        style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover', background: '#f1f5f9' }}
                                     />
                                 </td>
                                 <td>
@@ -230,6 +395,9 @@ export default function Products() {
                                     <div className={`status-pill ${prod.stock === 0 ? 'danger' : prod.stock <= 10 ? 'warning' : 'success'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                         <span style={{ fontWeight: 700 }}>{prod.stock}</span> units
                                     </div>
+                                </td>
+                                <td>
+                                    <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{prod.priority || 0}</span>
                                 </td>
                                 <td>
                                     <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--accent)' }}>₹{prod.price}</div>
@@ -302,8 +470,23 @@ export default function Products() {
                             </div>
 
                             <div className="input-group">
-                                <label>Image URL</label>
-                                <input type="url" placeholder="https://images.unsplash.com/..." value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} required />
+                                <label>Product Image</label>
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                    {imagePreview && (
+                                        <div style={{ width: '100px', height: '100px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--border-color)', flexShrink: 0 }}>
+                                            <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                    )}
+                                    <div style={{ flex: 1 }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            style={{ padding: '8px' }}
+                                        />
+                                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Recommended: Square image (800x800px)</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div style={{ padding: '20px', background: 'var(--accent-light)', borderRadius: '16px', marginBottom: '32px' }}>
@@ -311,16 +494,30 @@ export default function Products() {
                                     <Fingerprint size={18} className="text-accent" />
                                     <h4 style={{ fontSize: '14px', color: 'var(--accent)' }}>Meta Integration</h4>
                                 </div>
-                                <div className="input-group" style={{ marginBottom: 0 }}>
+                                <div className="input-group">
                                     <label>Retailer ID (Meta Content ID)</label>
                                     <input type="text" placeholder="e.g. SKU_123" value={formData.retailerId} onChange={e => setFormData({ ...formData, retailerId: e.target.value })} />
                                     <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Must match the Content ID in your Meta Commerce Manager catalog.</p>
                                 </div>
+                                <div className="input-group" style={{ marginBottom: 0, marginTop: '16px' }}>
+                                    <label>Priority (1 shows first, then 2, 3...)</label>
+                                    <input type="number" placeholder="e.g. 1" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })} />
+                                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Products with lower priority numbers will appear first in the WhatsApp catalog.</p>
+                                </div>
                             </div>
 
                             <div className="modal-actions" style={{ gap: '12px' }}>
-                                <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setModalOpen(false)}>Cancel</button>
-                                <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>{formData.id ? 'Save Changes' : 'Create Product'}</button>
+                                <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setModalOpen(false)} disabled={loading}>Cancel</button>
+                                <button type="submit" className="btn-primary" style={{ flex: 2, justifyContent: 'center' }} disabled={loading}>
+                                    {loading ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+                                            {formData.id ? 'Updating...' : 'Creating...'}
+                                        </div>
+                                    ) : (
+                                        formData.id ? 'Save Changes' : 'Create Product'
+                                    )}
+                                </button>
                             </div>
                         </form>
                     </div>

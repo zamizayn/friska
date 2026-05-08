@@ -3,8 +3,8 @@
     {
       "id": 1,
       "name": "Friska",
-      "phoneNumberId": "1147731695084966",
-      "whatsappToken": "EAAdaGexomw4BRagJ8LbFGUHVeBdbokUPIHjXfPVzzJFKMcf0Bd4ZAAZCcq7lCjyeQcrn7JYFoA4ZBVphZCCZBPZBCjWNaCUGxKbORKv6opgMxEe43CeWyrwSVZBYkfFS3ZC1AT1ayFZBwqMZBEL3m30pWDSd5TWjos1ZAy5j0SukBM0Jw6KKeopKQMjV1N0Pl0hkcXeBZCGtjmvSl32k3ZAPVoRd7q8420JEA6asZCJ5c9wY7WukAciXUoPCcxWFt0OXOPtVFkG5CkCKHP9qeuPBWzPO0IDnlJ",
+      "phoneNumberId": "1093398720529321",
+      "whatsappToken": "EAAdaGexomw4BRedPxI3mWnRtRspJPsZC3FZBv3zpIiYTbWCnVvzbGWFcGi7ZAlmJNCso2UHavU7CcmtaMv4bX342FJvZABz74BpEFmZAT29ZAAoISmE2hcJnmDvkZB5m1zRm66dbYpC4OwKpVZAQTZCix4qCxPmzQFsnWOhSRCGcAhdwxAFSUUh2EUeS1FGefyYSD1QZDZD",
       "wabaId": "1350036503631933",
       "verifyToken": null,
       "onboardingStep": 1,
@@ -12,13 +12,39 @@
       "username": "friska",
       "password": "friska",
       "webhooksEnabled": true,
-      "catalogId": "",
-      "displayMode": "catalog",
+      "catalogId": "971880259134658",
+      "displayMode": "carousel",
+      "razorpayKeyId": "rzp_test_SmU0QUw5WvNyNB",
+      "razorpayKeySecret": "9CGrc5MnTejp8OVBSLFtcaaG",
+      "razorpayWebhookSecret": "",
       "createdAt": "2026-05-07T11:26:15.207Z",
-      "updatedAt": "2026-05-07T11:52:42.498Z"
+      "updatedAt": "2026-05-08T10:06:19.686Z"
     }
   ],
-  "branches": [],
+  "branches": [
+    {
+      "id": 1,
+      "name": "Kozhikode",
+      "username": "kozhikode",
+      "password": "admin",
+      "tenantId": null,
+      "openingTime": "00:00",
+      "closingTime": "23:59",
+      "createdAt": "2026-05-08T04:35:45.166Z",
+      "updatedAt": "2026-05-08T04:35:45.166Z"
+    },
+    {
+      "id": 2,
+      "name": "Kozhikode Branch",
+      "username": "new",
+      "password": "new",
+      "tenantId": 1,
+      "openingTime": "00:00",
+      "closingTime": "23:59",
+      "createdAt": "2026-05-08T05:04:29.412Z",
+      "updatedAt": "2026-05-08T06:46:10.472Z"
+    }
+  ],
   "admins": [
     {
       "id": 1,
@@ -28,8 +54,150 @@
       "updatedAt": "2026-05-07T06:50:55.831Z"
     }
   ],
-  "categories": [],
-  "products": [],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Chicken",
+      "branchId": 1,
+      "createdAt": "2026-05-08T04:36:00.948Z",
+      "updatedAt": "2026-05-08T04:36:00.948Z"
+    },
+    {
+      "id": 3,
+      "name": "Chicken",
+      "branchId": 2,
+      "createdAt": "2026-05-08T06:29:44.190Z",
+      "updatedAt": "2026-05-08T06:29:44.190Z"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "test pdt",
+      "price": 150,
+      "description": "description",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1RL_j06PfBdxzQsXlnXRm3p70dSaaO8a8DvtwF9sm9r1SCHRp7QT8reE&s",
+      "categoryId": 1,
+      "stock": 50,
+      "branchId": 1,
+      "retailerId": "wstore_1778216557765_881",
+      "priority": 0,
+      "createdAt": "2026-05-08T05:02:37.765Z",
+      "updatedAt": "2026-05-08T05:02:37.765Z"
+    },
+    {
+      "id": 18,
+      "name": "Special Biriyani Chicken Pack",
+      "price": 340,
+      "description": "Special Biriyani Chicken Pack",
+      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778228835/friska_products/isnuhzuh6wva2dkckl7s.jpg",
+      "categoryId": 3,
+      "stock": 50,
+      "branchId": 2,
+      "retailerId": "wstore_1778228835634_669",
+      "priority": 4,
+      "createdAt": "2026-05-08T08:27:15.635Z",
+      "updatedAt": "2026-05-08T08:48:31.981Z"
+    },
+    {
+      "id": 16,
+      "name": "Premium Boneless Chicken Breast",
+      "price": 390,
+      "description": "Premium Boneless Chicken Breast",
+      "image": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?utm_source=chatgpt.com",
+      "categoryId": 3,
+      "stock": 50,
+      "branchId": 2,
+      "retailerId": "wstore_1778228202039_494",
+      "priority": 5,
+      "createdAt": "2026-05-08T08:16:42.040Z",
+      "updatedAt": "2026-05-08T08:47:21.070Z"
+    },
+    {
+      "id": 15,
+      "name": "Premium Chicken Drumsticks",
+      "price": 239,
+      "description": "chicken premium drumsticks",
+      "image": "https://images.unsplash.com/photo-1527477396000-e27163b481c2?utm_source=chatgpt.com",
+      "categoryId": 3,
+      "stock": 50,
+      "branchId": 2,
+      "retailerId": "wstore_1778228178155_986",
+      "priority": 6,
+      "createdAt": "2026-05-08T08:16:18.155Z",
+      "updatedAt": "2026-05-08T08:48:38.778Z"
+    },
+    {
+      "id": 14,
+      "name": "Premium Chicken Liver Pack",
+      "price": 300,
+      "description": "Chicken Liver ",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNHbdXC3-gc6n6ivJnXx9tqhSx4AulwGrFKg&s",
+      "categoryId": 3,
+      "stock": 50,
+      "branchId": 2,
+      "retailerId": "wstore_1778224208557_304",
+      "priority": 7,
+      "createdAt": "2026-05-08T07:10:08.557Z",
+      "updatedAt": "2026-05-08T08:48:45.421Z"
+    },
+    {
+      "id": 13,
+      "name": "Chicken Gizzard Special",
+      "price": 200,
+      "description": "Chicken Gizzard Special",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeI0oLV2kLH8bfYHP0rmicj1cboHBUpCibpg&s",
+      "categoryId": 3,
+      "stock": 49,
+      "branchId": 2,
+      "retailerId": "wstore_1778224184954_477",
+      "priority": 8,
+      "createdAt": "2026-05-08T07:09:44.954Z",
+      "updatedAt": "2026-05-08T08:48:51.228Z"
+    },
+    {
+      "id": 19,
+      "name": "Premium Chicken Curry Cut Pack (New)",
+      "price": 158,
+      "description": "Premium Chicken Curry Cut Pack",
+      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778228968/friska_products/whth9saoz0hejakfjfmq.jpg",
+      "categoryId": 3,
+      "stock": 50,
+      "branchId": 2,
+      "retailerId": "wstore_1778228968930_386",
+      "priority": 3,
+      "createdAt": "2026-05-08T08:29:28.931Z",
+      "updatedAt": "2026-05-08T09:25:18.309Z"
+    },
+    {
+      "id": 21,
+      "name": "Crispy Chicken Lollipop Pack",
+      "price": 244,
+      "description": "Crispy Chicken Lollipop Pack",
+      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778234147/friska_products/syuefbz91dubk5ahus12.jpg",
+      "categoryId": 3,
+      "stock": 44,
+      "branchId": 2,
+      "retailerId": "wstore_1778229198917_510",
+      "priority": 1,
+      "createdAt": "2026-05-08T08:33:18.917Z",
+      "updatedAt": "2026-05-08T09:55:47.832Z"
+    },
+    {
+      "id": 20,
+      "name": "Chicken Chilli Special Cut 1 Box (2kg)",
+      "price": 455,
+      "description": "Chicken Chilli Special Cut",
+      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778229016/friska_products/fug8a8rzwqptihsuzwvg.jpg",
+      "categoryId": 3,
+      "stock": 48,
+      "branchId": 2,
+      "retailerId": "wstore_1778229017551_610",
+      "priority": 2,
+      "createdAt": "2026-05-08T08:30:17.551Z",
+      "updatedAt": "2026-05-08T09:59:08.803Z"
+    }
+  ],
   "customers": [
     {
       "id": 1,
@@ -39,10 +207,408 @@
       "branchId": null,
       "createdAt": "2026-05-07T11:52:53.539Z",
       "updatedAt": "2026-05-07T11:52:53.539Z"
+    },
+    {
+      "id": 72,
+      "phone": "919539092205",
+      "name": "azlam NP",
+      "lastInteraction": "2026-05-08T09:03:43.170Z",
+      "branchId": 2,
+      "createdAt": "2026-05-08T09:03:43.170Z",
+      "updatedAt": "2026-05-08T09:03:43.170Z"
+    },
+    {
+      "id": 129,
+      "phone": "917510296447",
+      "name": "Manaf",
+      "lastInteraction": "2026-05-08T09:57:15.646Z",
+      "branchId": 2,
+      "createdAt": "2026-05-08T09:57:15.646Z",
+      "updatedAt": "2026-05-08T09:57:15.646Z"
+    },
+    {
+      "id": 26,
+      "phone": "918943685547",
+      "name": "Raoof Subi",
+      "lastInteraction": "2026-05-08T06:24:19.801Z",
+      "branchId": 2,
+      "createdAt": "2026-05-08T06:24:19.801Z",
+      "updatedAt": "2026-05-08T06:24:19.801Z"
     }
   ],
-  "orders": [],
-  "notifications": [],
+  "orders": [
+    {
+      "id": 1,
+      "customerPhone": "917012738756",
+      "address": "aventus informatics , koratty infopark , koratty , 682038",
+      "items": [
+        {
+          "id": 3,
+          "name": "second one",
+          "price": 199,
+          "quantity": 1
+        }
+      ],
+      "total": 199,
+      "status": "delivered",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "paid",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T05:33:47.235Z",
+      "updatedAt": "2026-05-08T05:35:35.771Z"
+    },
+    {
+      "id": 2,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26660527,76.35732828",
+      "items": [
+        {
+          "id": 13,
+          "name": "Chicken Gizzard Special",
+          "price": 200,
+          "quantity": 1
+        }
+      ],
+      "total": 200,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T07:51:15.623Z",
+      "updatedAt": "2026-05-08T07:51:15.623Z"
+    },
+    {
+      "id": 3,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26690108,76.35755044",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T08:57:26.036Z",
+      "updatedAt": "2026-05-08T08:57:26.036Z"
+    },
+    {
+      "id": 4,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Online Payment",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T09:39:36.368Z",
+      "updatedAt": "2026-05-08T09:39:36.368Z"
+    },
+    {
+      "id": 5,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.2667186,76.357456",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Online Payment",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T09:41:23.515Z",
+      "updatedAt": "2026-05-08T09:41:23.515Z"
+    },
+    {
+      "id": 6,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26664965,76.35746972",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Online Payment",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T09:43:16.608Z",
+      "updatedAt": "2026-05-08T09:43:16.608Z"
+    },
+    {
+      "id": 7,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Online Payment",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T09:46:15.647Z",
+      "updatedAt": "2026-05-08T09:46:15.647Z"
+    },
+    {
+      "id": 8,
+      "customerPhone": "918943685547",
+      "address": "https://maps.google.com/?q=10.266716003418,76.357208251953",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T09:49:02.375Z",
+      "updatedAt": "2026-05-08T09:49:02.375Z"
+    },
+    {
+      "id": 9,
+      "customerPhone": "917510296447",
+      "address": "kottayam",
+      "items": [
+        {
+          "id": 20,
+          "name": "Chicken Chilli Special Cut 1 Box (2kg)",
+          "price": 455,
+          "quantity": 2
+        }
+      ],
+      "total": 910,
+      "status": "delivered",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Online Payment",
+      "paymentStatus": "paid",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "createdAt": "2026-05-08T09:59:08.801Z",
+      "updatedAt": "2026-05-08T10:00:21.073Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "title": "🛒 New Order #1",
+      "body": "₹199 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 199,
+        "orderId": 1,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T05:33:47.240Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 9,
+      "title": "🛒 New Order #9",
+      "body": "₹910 from +917510296447 (Online Payment)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 910,
+        "orderId": 9,
+        "branchId": 2,
+        "customerPhone": "917510296447"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T09:59:08.804Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 2,
+      "title": "🛒 New Order #2",
+      "body": "₹200 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 200,
+        "orderId": 2,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T07:51:15.628Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 3,
+      "title": "🛒 New Order #3",
+      "body": "₹244 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 3,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T08:57:26.042Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 4,
+      "title": "🛒 New Order #4",
+      "body": "₹244 from +917012738756 (Online Payment)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 4,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T09:39:36.372Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 5,
+      "title": "🛒 New Order #5",
+      "body": "₹244 from +917012738756 (Online Payment)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 5,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T09:41:23.517Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 6,
+      "title": "🛒 New Order #6",
+      "body": "₹244 from +917012738756 (Online Payment)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 6,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T09:43:16.614Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 7,
+      "title": "🛒 New Order #7",
+      "body": "₹244 from +917012738756 (Online Payment)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 7,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T09:46:15.651Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    },
+    {
+      "id": 8,
+      "title": "🛒 New Order #8",
+      "body": "₹244 from +918943685547 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 8,
+        "branchId": 2,
+        "customerPhone": "918943685547"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-08T09:49:02.379Z",
+      "updatedAt": "2026-05-08T09:59:20.224Z"
+    }
+  ],
   "customerLogs": [
     {
       "id": 1,
@@ -63,7 +629,1221 @@
       "details": {},
       "createdAt": "2026-05-07T11:53:00.883Z",
       "updatedAt": "2026-05-07T11:53:00.883Z"
+    },
+    {
+      "id": 3,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:00:55.870Z",
+      "updatedAt": "2026-05-08T05:00:55.870Z"
+    },
+    {
+      "id": 4,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:03:36.835Z",
+      "updatedAt": "2026-05-08T05:03:36.835Z"
+    },
+    {
+      "id": 5,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": null,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:03:44.154Z",
+      "updatedAt": "2026-05-08T05:03:44.154Z"
+    },
+    {
+      "id": 6,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:05:10.205Z",
+      "updatedAt": "2026-05-08T05:05:10.205Z"
+    },
+    {
+      "id": 7,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:05:15.839Z",
+      "updatedAt": "2026-05-08T05:05:15.839Z"
+    },
+    {
+      "id": 8,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 2,
+        "categoryName": "sample"
+      },
+      "createdAt": "2026-05-08T05:05:22.959Z",
+      "updatedAt": "2026-05-08T05:05:22.959Z"
+    },
+    {
+      "id": 9,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:15:43.265Z",
+      "updatedAt": "2026-05-08T05:15:43.265Z"
+    },
+    {
+      "id": 10,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:15:49.217Z",
+      "updatedAt": "2026-05-08T05:15:49.217Z"
+    },
+    {
+      "id": 11,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 2,
+        "categoryName": "sample"
+      },
+      "createdAt": "2026-05-08T05:15:54.709Z",
+      "updatedAt": "2026-05-08T05:15:54.709Z"
+    },
+    {
+      "id": 12,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:16:56.718Z",
+      "updatedAt": "2026-05-08T05:16:56.718Z"
+    },
+    {
+      "id": 13,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:17:02.531Z",
+      "updatedAt": "2026-05-08T05:17:02.531Z"
+    },
+    {
+      "id": 14,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 2,
+        "categoryName": "sample"
+      },
+      "createdAt": "2026-05-08T05:17:07.846Z",
+      "updatedAt": "2026-05-08T05:17:07.846Z"
+    },
+    {
+      "id": 15,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:32:46.083Z",
+      "updatedAt": "2026-05-08T05:32:46.083Z"
+    },
+    {
+      "id": 16,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T05:32:52.761Z",
+      "updatedAt": "2026-05-08T05:32:52.761Z"
+    },
+    {
+      "id": 17,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 2,
+        "categoryName": "sample"
+      },
+      "createdAt": "2026-05-08T05:32:59.287Z",
+      "updatedAt": "2026-05-08T05:32:59.287Z"
+    },
+    {
+      "id": 18,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 3,
+        "productName": "second one"
+      },
+      "createdAt": "2026-05-08T05:33:04.542Z",
+      "updatedAt": "2026-05-08T05:33:04.542Z"
+    },
+    {
+      "id": 19,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:20:31.593Z",
+      "updatedAt": "2026-05-08T06:20:31.593Z"
+    },
+    {
+      "id": 20,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T06:20:40.657Z",
+      "updatedAt": "2026-05-08T06:20:40.657Z"
+    },
+    {
+      "id": 21,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:21:09.646Z",
+      "updatedAt": "2026-05-08T06:21:09.646Z"
+    },
+    {
+      "id": 22,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T06:21:16.856Z",
+      "updatedAt": "2026-05-08T06:21:16.856Z"
+    },
+    {
+      "id": 23,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:24:19.804Z",
+      "updatedAt": "2026-05-08T06:24:19.804Z"
+    },
+    {
+      "id": 24,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T06:24:27.887Z",
+      "updatedAt": "2026-05-08T06:24:27.887Z"
+    },
+    {
+      "id": 25,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:28:00.787Z",
+      "updatedAt": "2026-05-08T06:28:00.787Z"
+    },
+    {
+      "id": 26,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:28:07.420Z",
+      "updatedAt": "2026-05-08T06:28:07.420Z"
+    },
+    {
+      "id": 27,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 2,
+        "categoryName": "sample"
+      },
+      "createdAt": "2026-05-08T06:28:14.386Z",
+      "updatedAt": "2026-05-08T06:28:14.386Z"
+    },
+    {
+      "id": 28,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:38:54.323Z",
+      "updatedAt": "2026-05-08T06:38:54.323Z"
+    },
+    {
+      "id": 29,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T06:39:02.396Z",
+      "updatedAt": "2026-05-08T06:39:02.396Z"
+    },
+    {
+      "id": 30,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:44:22.383Z",
+      "updatedAt": "2026-05-08T06:44:22.383Z"
+    },
+    {
+      "id": 31,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:44:31.660Z",
+      "updatedAt": "2026-05-08T06:44:31.660Z"
+    },
+    {
+      "id": 32,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Chicken"
+      },
+      "createdAt": "2026-05-08T06:44:44.753Z",
+      "updatedAt": "2026-05-08T06:44:44.753Z"
+    },
+    {
+      "id": 33,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:45:49.829Z",
+      "updatedAt": "2026-05-08T06:45:49.829Z"
+    },
+    {
+      "id": 34,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:45:57.158Z",
+      "updatedAt": "2026-05-08T06:45:57.158Z"
+    },
+    {
+      "id": 35,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:46:21.657Z",
+      "updatedAt": "2026-05-08T06:46:21.657Z"
+    },
+    {
+      "id": 36,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:46:29.491Z",
+      "updatedAt": "2026-05-08T06:46:29.491Z"
+    },
+    {
+      "id": 37,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Chicken"
+      },
+      "createdAt": "2026-05-08T06:46:39.137Z",
+      "updatedAt": "2026-05-08T06:46:39.137Z"
+    },
+    {
+      "id": 38,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:49:43.734Z",
+      "updatedAt": "2026-05-08T06:49:43.734Z"
+    },
+    {
+      "id": 39,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T06:49:59.455Z",
+      "updatedAt": "2026-05-08T06:49:59.455Z"
+    },
+    {
+      "id": 40,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:56:13.929Z",
+      "updatedAt": "2026-05-08T06:56:13.929Z"
+    },
+    {
+      "id": 41,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T06:56:21.523Z",
+      "updatedAt": "2026-05-08T06:56:21.523Z"
+    },
+    {
+      "id": 42,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Chicken"
+      },
+      "createdAt": "2026-05-08T06:56:27.522Z",
+      "updatedAt": "2026-05-08T06:56:27.522Z"
+    },
+    {
+      "id": 43,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:29:57.022Z",
+      "updatedAt": "2026-05-08T07:29:57.022Z"
+    },
+    {
+      "id": 44,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:30:04.514Z",
+      "updatedAt": "2026-05-08T07:30:04.514Z"
+    },
+    {
+      "id": 45,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Chicken"
+      },
+      "createdAt": "2026-05-08T07:30:13.365Z",
+      "updatedAt": "2026-05-08T07:30:13.365Z"
+    },
+    {
+      "id": 46,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:30:53.131Z",
+      "updatedAt": "2026-05-08T07:30:53.131Z"
+    },
+    {
+      "id": 47,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T07:31:01.163Z",
+      "updatedAt": "2026-05-08T07:31:01.163Z"
+    },
+    {
+      "id": 48,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:32:50.164Z",
+      "updatedAt": "2026-05-08T07:32:50.164Z"
+    },
+    {
+      "id": 49,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T07:32:58.785Z",
+      "updatedAt": "2026-05-08T07:32:58.785Z"
+    },
+    {
+      "id": 50,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:36:03.498Z",
+      "updatedAt": "2026-05-08T07:36:03.498Z"
+    },
+    {
+      "id": 51,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T07:36:09.537Z",
+      "updatedAt": "2026-05-08T07:36:09.537Z"
+    },
+    {
+      "id": 52,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:36:48.732Z",
+      "updatedAt": "2026-05-08T07:36:48.732Z"
+    },
+    {
+      "id": 53,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T07:36:54.783Z",
+      "updatedAt": "2026-05-08T07:36:54.783Z"
+    },
+    {
+      "id": 54,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T07:39:18.535Z",
+      "updatedAt": "2026-05-08T07:39:18.535Z"
+    },
+    {
+      "id": 55,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T07:39:26.048Z",
+      "updatedAt": "2026-05-08T07:39:26.048Z"
+    },
+    {
+      "id": 56,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 13,
+        "productName": "Chicken Gizzard Special"
+      },
+      "createdAt": "2026-05-08T07:39:34.483Z",
+      "updatedAt": "2026-05-08T07:39:34.483Z"
+    },
+    {
+      "id": 57,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 13,
+        "productName": "Chicken Gizzard Special"
+      },
+      "createdAt": "2026-05-08T07:50:47.889Z",
+      "updatedAt": "2026-05-08T07:50:47.889Z"
+    },
+    {
+      "id": 58,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-08T07:51:02.152Z",
+      "updatedAt": "2026-05-08T07:51:02.152Z"
+    },
+    {
+      "id": 59,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T08:56:03.811Z",
+      "updatedAt": "2026-05-08T08:56:03.811Z"
+    },
+    {
+      "id": 60,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T08:56:10.312Z",
+      "updatedAt": "2026-05-08T08:56:10.312Z"
+    },
+    {
+      "id": 61,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T08:56:46.014Z",
+      "updatedAt": "2026-05-08T08:56:46.014Z"
+    },
+    {
+      "id": 62,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T08:57:04.500Z",
+      "updatedAt": "2026-05-08T08:57:04.500Z"
+    },
+    {
+      "id": 63,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:03:43.173Z",
+      "updatedAt": "2026-05-08T09:03:43.173Z"
+    },
+    {
+      "id": 64,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:04:00.949Z",
+      "updatedAt": "2026-05-08T09:04:00.949Z"
+    },
+    {
+      "id": 65,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 13,
+        "productName": "Chicken Gizzard Special"
+      },
+      "createdAt": "2026-05-08T09:04:27.162Z",
+      "updatedAt": "2026-05-08T09:04:27.162Z"
+    },
+    {
+      "id": 66,
+      "customerPhone": "919539092205",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:04:58.369Z",
+      "updatedAt": "2026-05-08T09:04:58.369Z"
+    },
+    {
+      "id": 67,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:09:14.355Z",
+      "updatedAt": "2026-05-08T09:09:14.355Z"
+    },
+    {
+      "id": 68,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:09:25.666Z",
+      "updatedAt": "2026-05-08T09:09:25.666Z"
+    },
+    {
+      "id": 69,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:09:46.351Z",
+      "updatedAt": "2026-05-08T09:09:46.351Z"
+    },
+    {
+      "id": 70,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:09:52.297Z",
+      "updatedAt": "2026-05-08T09:09:52.297Z"
+    },
+    {
+      "id": 71,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Chicken"
+      },
+      "createdAt": "2026-05-08T09:09:57.445Z",
+      "updatedAt": "2026-05-08T09:09:57.445Z"
+    },
+    {
+      "id": 72,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:10:55.820Z",
+      "updatedAt": "2026-05-08T09:10:55.820Z"
+    },
+    {
+      "id": 73,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:11:01.700Z",
+      "updatedAt": "2026-05-08T09:11:01.700Z"
+    },
+    {
+      "id": 74,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:11:35.213Z",
+      "updatedAt": "2026-05-08T09:11:35.213Z"
+    },
+    {
+      "id": 75,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:11:40.893Z",
+      "updatedAt": "2026-05-08T09:11:40.893Z"
+    },
+    {
+      "id": 76,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 20,
+        "productName": "Chicken Chilli Special Cut 1 Box (2kg)"
+      },
+      "createdAt": "2026-05-08T09:11:48.436Z",
+      "updatedAt": "2026-05-08T09:11:48.436Z"
+    },
+    {
+      "id": 77,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:23:35.304Z",
+      "updatedAt": "2026-05-08T09:23:35.304Z"
+    },
+    {
+      "id": 78,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:23:41.428Z",
+      "updatedAt": "2026-05-08T09:23:41.428Z"
+    },
+    {
+      "id": 79,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:25:05.259Z",
+      "updatedAt": "2026-05-08T09:25:05.259Z"
+    },
+    {
+      "id": 80,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:38:54.056Z",
+      "updatedAt": "2026-05-08T09:38:54.056Z"
+    },
+    {
+      "id": 81,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:39:00.022Z",
+      "updatedAt": "2026-05-08T09:39:00.022Z"
+    },
+    {
+      "id": 82,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:39:09.224Z",
+      "updatedAt": "2026-05-08T09:39:09.224Z"
+    },
+    {
+      "id": 83,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-08T09:39:20.980Z",
+      "updatedAt": "2026-05-08T09:39:20.980Z"
+    },
+    {
+      "id": 84,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:39:49.020Z",
+      "updatedAt": "2026-05-08T09:39:49.020Z"
+    },
+    {
+      "id": 85,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:39:54.597Z",
+      "updatedAt": "2026-05-08T09:39:54.597Z"
+    },
+    {
+      "id": 86,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:40:51.543Z",
+      "updatedAt": "2026-05-08T09:40:51.543Z"
+    },
+    {
+      "id": 87,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CATEGORY_VIEWED",
+      "details": {
+        "categoryId": 3,
+        "categoryName": "Chicken"
+      },
+      "createdAt": "2026-05-08T09:40:57.138Z",
+      "updatedAt": "2026-05-08T09:40:57.138Z"
+    },
+    {
+      "id": 88,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:41:02.882Z",
+      "updatedAt": "2026-05-08T09:41:02.882Z"
+    },
+    {
+      "id": 89,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-08T09:41:12.366Z",
+      "updatedAt": "2026-05-08T09:41:12.366Z"
+    },
+    {
+      "id": 90,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:42:38.249Z",
+      "updatedAt": "2026-05-08T09:42:38.249Z"
+    },
+    {
+      "id": 91,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:42:49.112Z",
+      "updatedAt": "2026-05-08T09:42:49.112Z"
+    },
+    {
+      "id": 92,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:42:56.439Z",
+      "updatedAt": "2026-05-08T09:42:56.439Z"
+    },
+    {
+      "id": 93,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-08T09:43:05.377Z",
+      "updatedAt": "2026-05-08T09:43:05.377Z"
+    },
+    {
+      "id": 94,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:45:41.102Z",
+      "updatedAt": "2026-05-08T09:45:41.102Z"
+    },
+    {
+      "id": 95,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:45:47.465Z",
+      "updatedAt": "2026-05-08T09:45:47.465Z"
+    },
+    {
+      "id": 96,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:45:55.817Z",
+      "updatedAt": "2026-05-08T09:45:55.817Z"
+    },
+    {
+      "id": 97,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-08T09:46:04.878Z",
+      "updatedAt": "2026-05-08T09:46:04.878Z"
+    },
+    {
+      "id": 98,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:47:45.124Z",
+      "updatedAt": "2026-05-08T09:47:45.124Z"
+    },
+    {
+      "id": 99,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:47:58.739Z",
+      "updatedAt": "2026-05-08T09:47:58.739Z"
+    },
+    {
+      "id": 100,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:48:10.907Z",
+      "updatedAt": "2026-05-08T09:48:10.907Z"
+    },
+    {
+      "id": 101,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:48:20.364Z",
+      "updatedAt": "2026-05-08T09:48:20.364Z"
+    },
+    {
+      "id": 102,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:57:15.649Z",
+      "updatedAt": "2026-05-08T09:57:15.649Z"
+    },
+    {
+      "id": 103,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-08T09:58:02.528Z",
+      "updatedAt": "2026-05-08T09:58:02.528Z"
+    },
+    {
+      "id": 104,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-08T09:58:16.308Z",
+      "updatedAt": "2026-05-08T09:58:16.308Z"
+    },
+    {
+      "id": 105,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 20,
+        "productName": "Chicken Chilli Special Cut 1 Box (2kg)"
+      },
+      "createdAt": "2026-05-08T09:58:19.219Z",
+      "updatedAt": "2026-05-08T09:58:19.219Z"
+    },
+    {
+      "id": 106,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CART_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:58:37.119Z",
+      "updatedAt": "2026-05-08T09:58:37.119Z"
+    },
+    {
+      "id": 107,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-08T09:58:53.050Z",
+      "updatedAt": "2026-05-08T09:58:53.050Z"
+    },
+    {
+      "id": 108,
+      "customerPhone": "917510296447",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-08T09:59:30.214Z",
+      "updatedAt": "2026-05-08T09:59:30.214Z"
     }
   ],
-  "fcmTokens": []
+  "fcmTokens": [
+    {
+      "id": 3,
+      "token": "eiwFO8Oyb8gh6BEFdlH_VB:APA91bHUsO4fEb5YKrHu8qybOtxQmdib3_jqK6Efn1nRDc2uXoY6hj4_xaMcpsQg2mHdo3f216-IH1FvFMsMq8wwq5KSG3BmjWxTqG1d2KZqvsK2hi-xuVk",
+      "adminId": 1,
+      "tenantId": 1,
+      "branchId": null,
+      "role": "tenant",
+      "createdAt": "2026-05-07T12:09:44.354Z",
+      "updatedAt": "2026-05-07T12:09:44.354Z"
+    },
+    {
+      "id": 45,
+      "token": "fw73lq7yKECK2dd35Ofb-3:APA91bF03zc182JdltOZat1DHCN_kAFdaKJCDpvC316EwhejXzsCRWbm7p6T_Wpi6lHTBNZMP7PcPkew1dZSZhhVY6ThU9_VXS_6uGctqWw5zlCyPdyG9U0",
+      "adminId": 1,
+      "tenantId": 1,
+      "branchId": null,
+      "role": "tenant",
+      "createdAt": "2026-05-08T10:06:03.764Z",
+      "updatedAt": "2026-05-08T10:06:03.764Z"
+    },
+    {
+      "id": 46,
+      "token": "fw73lq7yKECK2dd35Ofb-3:APA91bF03zc182JdltOZat1DHCN_kAFdaKJCDpvC316EwhejXzsCRWbm7p6T_Wpi6lHTBNZMP7PcPkew1dZSZhhVY6ThU9_VXS_6uGctqWw5zlCyPdyG9U0",
+      "adminId": 1,
+      "tenantId": 1,
+      "branchId": null,
+      "role": "tenant",
+      "createdAt": "2026-05-08T10:06:03.765Z",
+      "updatedAt": "2026-05-08T10:06:03.765Z"
+    }
+  ]
 }

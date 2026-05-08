@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'branchId',
         as: 'branch'
       });
+      Order.belongsTo(models.Customer, {
+        foreignKey: 'customerPhone',
+        targetKey: 'phone',
+        as: 'customer'
+      });
     }
   }
   Order.init({
@@ -30,7 +35,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       defaultValue: 0
     },
-    appliedOfferCode: DataTypes.STRING
+    appliedOfferCode: DataTypes.STRING,
+    paymentTransactionId: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Order',

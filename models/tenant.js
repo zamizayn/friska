@@ -40,6 +40,18 @@ module.exports = (sequelize, DataTypes) => {
     displayMode: {
       type: DataTypes.STRING,
       defaultValue: 'catalog'
+    },
+    razorpayKeyId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    razorpayKeySecret: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    razorpayWebhookSecret: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

@@ -105,11 +105,39 @@ const enableWebhooks = async (req, res) => {
     }
 };
 
+const getSettings = async (req, res) => {
+    try {
+        if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
+        const tenant = await Tenant.findByPk(req.user.tenantId, {
+            attributes: ['razorpayKeyId', 'razorpayKeySecret', 'razorpayWebhookSecret']
+        });
+        res.json(tenant);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+const updateSettings = async (req, res) => {
+    try {
+        if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
+        const tenant = await Tenant.findByPk(req.user.tenantId);
+        if (tenant) {
+            const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret } = req.body;
+            await tenant.update({ razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret });
+            res.json({ success: true });
+        } else res.status(404).send();
+    } catch (e) {
+        res.status(400).json({ error: e.message });
+    }
+};
+
 module.exports = {
     getMyTenant,
     getAllTenants,
     createTenant,
     updateTenant,
     deleteTenant,
-    enableWebhooks
+    enableWebhooks,
+    getSettings,
+    updateSettings
 };

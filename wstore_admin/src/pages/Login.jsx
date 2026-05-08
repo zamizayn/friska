@@ -27,6 +27,7 @@ export default function Login() {
                 localStorage.setItem('branchId', data.branchId || '');
                 localStorage.setItem('branchName', data.branchName || 'Superadmin');
                 localStorage.setItem('tenantName', data.tenantName || 'Friska');
+                localStorage.setItem('tenantId', data.tenantId || '');
                 navigate('/admin');
             } else {
                 setError(data.error || 'Login failed');

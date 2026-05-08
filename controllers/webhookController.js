@@ -22,6 +22,7 @@ const {
 const { Op, Sequelize } = require('sequelize');
 const moment = require('moment-timezone');
 const notificationService = require('../services/notificationService');
+const { createPaymentLink } = require('../services/paymentService');
 
 // sessions structure: { [phoneNumber]: { state: 'HOME', tenantId: 1, branchId: 1, config: { ... } } }
 const sessions = {};
@@ -307,17 +308,20 @@ const handleSearching = async (from, text, session) => {
 
     const page = session.page || 1;
     const limit = 10;
-    const safeText = text.replace(/'/g, "''");
-    const searchTerms = safeText.split(' ').map(term => `*${term}*`).join(' ');
 
     const { count, rows: searchResults } = await Product.findAndCountAll({
         where: {
             [Op.and]: [
-                Sequelize.literal(`MATCH(name, description) AGAINST('${searchTerms}' IN BOOLEAN MODE)`),
+                {
+                    [Op.or]: [
+                        { name: { [Op.iLike]: `%${text}%` } },
+                        { description: { [Op.iLike]: `%${text}%` } }
+                    ]
+                },
                 { branchId: session.branchId || { [Op.not]: null } }
             ]
         },
-        order: [['name', 'ASC']],
+        order: [['priority', 'ASC'], ['name', 'ASC']],
         limit,
         offset: (page - 1) * limit
     });
@@ -565,7 +569,7 @@ const handleAllProducts = async (from, session) => {
 
     const { count, rows: products } = await Product.findAndCountAll({
         where: { branchId: session.branchId },
-        order: [['name', 'ASC']],
+        order: [['priority', 'ASC'], ['name', 'ASC']],
         limit,
         offset: (page - 1) * limit
     });
@@ -701,7 +705,7 @@ const handleCategorySelection = async (from, text, session) => {
 
         const { count, rows: catProducts } = await Product.findAndCountAll({
             where: { categoryId: category.id, branchId: branchId },
-            order: orderAttr,
+            order: [['priority', 'ASC'], ...orderAttr],
             limit: limit,
             offset: (page - 1) * limit
         });
@@ -1000,12 +1004,23 @@ const handlePaymentSelection = async (from, text, session) => {
         ).catch(err => console.error('[FCM trigger error]', err.message));
     }
 
-    await sendButtonMessage(
-        from,
-        `🎉 Order #${savedOrder ? savedOrder.id : ''} placed successfully!\n\n📍 Address:\n${address}\n\n💳 Payment:\n${paymentMethod}\n\n💰 Total:\n₹${total}\n\n🚚 Delivery will start soon.`,
-        [{ id: 'shop', title: 'Shop Again' }],
-        session.config
-    );
+    if (paymentMethod === 'Online Payment' && savedOrder) {
+        try {
+            const tenant = await Tenant.findByPk(session.tenantId);
+            const paymentLink = await createPaymentLink(savedOrder, tenant);
+            await sendTextMessage(from, `🔗 *Payment Link Generated*\n\nPlease complete your payment of *₹${total}* using the link below:\n\n${paymentLink.short_url}\n\n*Note:* Your order will be processed once payment is confirmed.`, session.config);
+        } catch (payError) {
+            console.error('Payment Link Error:', payError);
+            await sendTextMessage(from, "⚠️ We encountered an issue generating your payment link. Please try again or contact support.", session.config);
+        }
+    } else {
+        await sendTextMessage(from, `✅ *Order Confirmed!* #${savedOrder?.id}\n\nYour order has been placed successfully via *${paymentMethod}*.\n\nThank you for shopping with us! 🛍️`, session.config);
+    }
+
+    await sendButtonMessage(from, "What would you like to do next?", [
+        { id: 'track', title: 'Track Order 🚚' },
+        { id: 'menu', title: 'Main Menu 🏠' }
+    ], session.config);
 };
 
 const handleNativeOrder = async (from, message, session) => {

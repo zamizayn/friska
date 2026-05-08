@@ -101,7 +101,7 @@ const updateOrderStatus = async (req, res) => {
         if (order.status === 'shipped') {
             msg = `🚚 *Update on your Order #${order.id}*\n\nGreat news! Your order has been shipped and is on its way to you!`;
         } else if (order.status === 'delivered') {
-            msg = `✅ *Update on your Order #${order.id}*\n\nYour order has been successfully delivered! Thank you for shopping with WStore!`;
+            msg = `✅ *Update on your Order #${order.id}*\n\nYour order has been successfully delivered! Thank you for shopping with Friska!`;
         } else if (order.status === 'cancelled') {
             msg = `❌ *Update on your Order #${order.id}*\n\nYour order has been cancelled.\n\n*Reason:* ${order.cancellationReason || 'Not specified'}`;
         } else {

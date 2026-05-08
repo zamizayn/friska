@@ -133,7 +133,7 @@ const sendProductCardMessage = async (to, product, config = {}) => {
                 body: {
                     text: `🔥 ${product.name}\n\n💰 ₹${product.price}\n\n📝 ${product.description}`
                 },
-                footer: { text: 'WStore 🛍️' },
+                footer: { text: 'Friska 🛍️' },
                 action: {
                     buttons: [
                         { type: 'reply', reply: { id: `add_${product.id}`, title: 'Add To Cart' } },
@@ -148,7 +148,7 @@ const sendProductCardMessage = async (to, product, config = {}) => {
     }
 };
 
-const sendSingleProductMessage = async (to, catalogId, productRetailerId, bodyText = 'Here is the product you requested', footerText = 'WStore 🛍️', config = {}) => {
+const sendSingleProductMessage = async (to, catalogId, productRetailerId, bodyText = 'Here is the product you requested', footerText = 'Friska 🛍️', config = {}) => {
     try {
         await axios.post(getUrl(config), {
             messaging_product: 'whatsapp',
@@ -182,7 +182,7 @@ const sendMultiProductMessage = async (to, catalogId, headerText = 'Our Products
                 type: 'product_list',
                 header: { type: 'text', text: headerText.slice(0, 60) },
                 body: { text: bodyText },
-                footer: { text: 'WStore 🛍️' },
+                footer: { text: 'Friska 🛍️' },
                 action: {
                     catalog_id: catalogId,
                     sections: sections.map(s => ({
@@ -203,7 +203,7 @@ const sendMultiProductMessage = async (to, catalogId, headerText = 'Our Products
                 type: 'product_list',
                 header: { type: 'text', text: headerText.slice(0, 60) },
                 body: { text: bodyText },
-                footer: { text: 'WStore 🛍️' },
+                footer: { text: 'Friska 🛍️' },
                 action: {
                     catalog_id: catalogId,
                     sections: sections.map(s => ({

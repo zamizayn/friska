@@ -917,12 +917,34 @@ const handleCart = async (from, session) => {
         );
     }
 };
-
+const checkCartStock = async (userCart) => {
+    for (const item of userCart) {
+        const product = await Product.findByPk(item.id);
+        if (!product) return `❌ Product *${item.name}* is no longer available.`;
+        if (product.stock !== null && product.stock < item.quantity) {
+            if (product.stock <= 0) {
+                return `❌ Sorry, *${product.name}* just went out of stock.`;
+            } else {
+                return `❌ Sorry, only *${product.stock}* units of *${product.name}* are available now.`;
+            }
+        }
+    }
+    return null;
+};
 const handleCheckout = async (from, session) => {
     const userCart = carts[from] || [];
     if (userCart.length === 0) {
         await sendButtonMessage(from, '🛒 Cart is empty', [{ id: 'shop', title: 'Shop' }], session.config);
     } else {
+        // Check stock before proceeding
+        const stockError = await checkCartStock(userCart);
+        if (stockError) {
+            return await sendButtonMessage(from, `${stockError}\n\nPlease update your cart before proceeding.`, [
+                { id: 'cart', title: '🛒 View Cart' },
+                { id: 'menu', title: '🏠 Back to Menu' }
+            ], session.config);
+        }
+
         session.state = 'CHECKOUT_ADDRESS';
         await sendTextMessage(from, '📍 Please enter your delivery address', session.config);
     }
@@ -947,6 +969,19 @@ const handlePaymentSelection = async (from, text, session) => {
     const paymentMethod = text === 'pay_cod' ? 'Cash on Delivery' : 'Online Payment';
     const address = session.address || 'N/A';
     const userCart = carts[from] || [];
+    if (userCart.length === 0) {
+        return await sendButtonMessage(from, '🛒 Your cart is empty.', [{ id: 'menu', title: 'Back to Menu' }], session.config);
+    }
+
+    // Final stock check
+    const stockError = await checkCartStock(userCart);
+    if (stockError) {
+        return await sendButtonMessage(from, `${stockError}\n\nSomeone else just grabbed the last items! Please update your cart.`, [
+            { id: 'cart', title: '🛒 View Cart' },
+            { id: 'menu', title: '🏠 Back to Menu' }
+        ], session.config);
+    }
+
     let subtotal = 0;
     userCart.forEach(item => { subtotal += item.price * item.quantity; });
 

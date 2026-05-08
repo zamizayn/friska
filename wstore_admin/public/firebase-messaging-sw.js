@@ -25,7 +25,7 @@ messaging.onBackgroundMessage((payload) => {
         data: payload.data
     };
 
-    self.registration.showNotification(title || 'WStore', notificationOptions);
+    self.registration.showNotification(title || 'Friska', notificationOptions);
 });
 
 // Handle notification click — navigate to admin dashboard

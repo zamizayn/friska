@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, ArrowRight, Hexagon, ShieldCheck, Sparkles, Layers } from 'lucide-react';
+import { User, Lock, ArrowRight, ShieldCheck, Sparkles, Layers, Eye, EyeOff } from 'lucide-react';
 import { API_ENDPOINTS } from '../apiConfig';
 import logo from '../assets/logo.png';
 
@@ -9,6 +9,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -72,9 +73,37 @@ export default function Login() {
                         </div>
                         <div className="input-group has-icon auth-input">
                             <label>Password</label>
-                            <div className="input-wrapper">
+                            <div className="input-wrapper" style={{ position: 'relative' }}>
                                 <Lock className="input-icon" size={18} />
-                                <input type="password" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required />
+                                <input 
+                                    type={showPassword ? "text" : "password"} 
+                                    placeholder="Enter your password" 
+                                    value={password} 
+                                    onChange={e => setPassword(e.target.value)} 
+                                    required 
+                                    style={{ paddingRight: '48px' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '12px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-muted)',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        zIndex: 10
+                                    }}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                         </div>
                         {error && <div className="error-msg">{error}</div>}

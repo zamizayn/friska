@@ -510,6 +510,11 @@ export default function Orders() {
                                     <div style={{ fontSize: '13px', fontWeight: 600 }}>
                                         Mode: <span style={{ color: 'var(--accent)' }}>{viewingOrder.paymentMethod || 'N/A'}</span>
                                     </div>
+                                    {viewingOrder.appliedOfferCode && (
+                                        <div style={{ fontSize: '12px', background: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, border: '1px dashed #10b981', display: 'inline-block', alignSelf: 'flex-start' }}>
+                                            OFFER: {viewingOrder.appliedOfferCode}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -541,7 +546,19 @@ export default function Orders() {
                                     ))}
                                 </tbody>
                                 <tfoot style={{ background: 'var(--bg-app)', fontWeight: 800 }}>
-                                    <tr>
+                                    {viewingOrder.discountAmount > 0 && (
+                                        <>
+                                            <tr style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                                                <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>Subtotal</td>
+                                                <td style={{ padding: '8px 20px', border: 'none' }}>₹{(viewingOrder.total + viewingOrder.discountAmount).toFixed(2)}</td>
+                                            </tr>
+                                            <tr style={{ fontSize: '13px', color: 'var(--success)' }}>
+                                                <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>Discount</td>
+                                                <td style={{ padding: '8px 20px', border: 'none' }}>-₹{viewingOrder.discountAmount}</td>
+                                            </tr>
+                                        </>
+                                    )}
+                                    <tr style={{ fontSize: '16px' }}>
                                         <td colSpan="2" style={{ padding: '12px 20px', border: 'none' }}>Total Amount</td>
                                         <td style={{ padding: '12px 20px', border: 'none' }}>₹{viewingOrder.total}</td>
                                     </tr>

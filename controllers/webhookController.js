@@ -116,6 +116,7 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
             title: "🛒 Shopping",
             rows: [
                 { id: 'shop', title: 'Browse Store', description: 'View categories & products' },
+                { id: 'all_products', title: 'All Products', description: 'View all items directly' },
                 { id: 'search_mode', title: 'Search Products', description: 'Find something specific 🔍' }
             ]
         },
@@ -549,13 +550,81 @@ const handleShop = async (from, text, session, tenant, customer) => {
     );
 };
 
+const handleAllProducts = async (from, session) => {
+    if (!await validateShopOpen(from, session)) return;
+
+    if (!session.branchId) {
+        return await handleChangeBranch(from, session);
+    }
+
+    session.state = 'VIEWING_ALL_PRODUCTS';
+    if (!session.page) session.page = 1;
+
+    const page = session.page;
+    const limit = 10;
+
+    const { count, rows: products } = await Product.findAndCountAll({
+        where: { branchId: session.branchId },
+        order: [['name', 'ASC']],
+        limit,
+        offset: (page - 1) * limit
+    });
+
+    if (count === 0) {
+        return await sendTextMessage(from, "🛍️ No products available in this branch yet.", session.config);
+    }
+
+    if (session.catalogId && session.config.displayMode !== 'carousel') {
+        const uniqueRetailerIds = new Set();
+        const productItems = [];
+        products.forEach(p => {
+            if (p.retailerId && !uniqueRetailerIds.has(p.retailerId)) {
+                uniqueRetailerIds.add(p.retailerId);
+                productItems.push({ product_retailer_id: p.retailerId });
+            }
+        });
+
+        const sections = [{
+            title: `All Products (Page ${page})`,
+            product_items: productItems
+        }];
+
+        await sendMultiProductMessage(from, session.catalogId, '🛍️ Our Collection', 'Browse all items below', sections, session.config);
+
+        const optionRows = [];
+        if (count > page * limit) {
+            optionRows.push({ id: `all_products_page_${page + 1}`, title: 'Next Page ➡️', description: 'See more products' });
+        }
+        if (page > 1) {
+            optionRows.push({ id: `all_products_page_${page - 1}`, title: '⬅️ Previous Page', description: 'Go back' });
+        }
+        optionRows.push({ id: 'change_category', title: '📂 Browse Categories', description: 'Switch to category view' });
+        optionRows.push({ id: 'menu', title: '🏠 Back to Home', description: 'Return to main menu' });
+
+        await sendListMessage(from, "⚙️ *Shopping Options*", "Options", [{ title: "Options", rows: optionRows }], session.config);
+    } else {
+        if (products.length === 1) {
+            await sendProductCardMessage(from, products[0], session.config);
+        } else {
+            const carouselCards = products.map(p => ({
+                image: p.image || 'https://via.placeholder.com/600x400?text=No+Image',
+                title: p.name,
+                buttons: [
+                    { id: `product_${p.id}`, title: 'View Details' },
+                    { id: `add_${p.id}`, title: `Add ₹${p.price}` }
+                ]
+            }));
+            await sendCarouselMessage(from, `🛍️ *All Products* (Page ${page})`, carouselCards, session.config);
+        }
+    }
+};
+
 const handleBranchSelection = async (from, text, session) => {
     console.log(`[Flow] Entering 'branch_' block for ${from}: ${text}`);
     const branchId = text.replace('branch_', '');
     const branch = await Branch.findByPk(branchId);
 
     if (branch) {
-        session.state = 'SELECTING_CATEGORY';
         session.branchId = branch.id;
         session.categoryId = null;
         session.page = 1;
@@ -568,6 +637,12 @@ const handleBranchSelection = async (from, text, session) => {
             console.error("Failed to update customer branch:", e.message);
         }
 
+        if (session.intent === 'view_all') {
+            session.intent = null;
+            return await handleAllProducts(from, session);
+        }
+
+        session.state = 'SELECTING_CATEGORY';
         const page = session.page || 1;
         const limit = 10;
         const { count, rows: categories } = await Category.findAndCountAll({
@@ -730,7 +805,7 @@ const handleProductSelection = async (from, text, session) => {
         session.productId = selectedProduct.id;
 
         if (session.catalogId && session.config.displayMode !== 'carousel') {
-            await sendSingleProductMessage(from, session.catalogId, selectedProduct.retailerId, `🔥 ${selectedProduct.name}`, 'WStore 🛍️', session.config);
+            await sendSingleProductMessage(from, session.catalogId, selectedProduct.retailerId, `🔥 ${selectedProduct.name}`, 'Friska 🛍️', session.config);
         } else {
             await sendProductCardMessage(from, selectedProduct, session.config);
         }
@@ -1094,14 +1169,14 @@ const receiveWebhook = async (req, res) => {
             await sendTextMessage(from, `Issue related to *Order #${orderId}*.\n\nPlease describe the problem:`, session.config);
         } else if (session.state === 'SUPPORT') {
             let logBranchId = session.branchId;
-            
+
             // If linked to an order, try to get that order's branchId
             if (session.supportOrderId) {
                 const order = await Order.findByPk(session.supportOrderId);
                 if (order) logBranchId = order.branchId;
             }
 
-            await logCustomerActivity(from, tenant.id, logBranchId, 'SUPPORT_REQUEST', { 
+            await logCustomerActivity(from, tenant.id, logBranchId, 'SUPPORT_REQUEST', {
                 message: text,
                 orderId: session.supportOrderId || null
             });
@@ -1123,6 +1198,14 @@ const receiveWebhook = async (req, res) => {
         } else if (text === 'shop' || text === 'change_category') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'SHOP_VIEWED');
             await handleShop(from, text, session, tenant, customer);
+        } else if (text === 'all_products') {
+            await logCustomerActivity(from, tenant.id, session.branchId, 'SHOP_VIEWED', { mode: 'all_products' });
+            session.intent = 'view_all';
+            session.page = 1;
+            await handleAllProducts(from, session);
+        } else if (text.startsWith('all_products_page_')) {
+            session.page = parseInt(text.replace('all_products_page_', ''));
+            await handleAllProducts(from, session);
         } else if (text.startsWith('cancel_order_')) {
             await logCustomerActivity(from, tenant.id, session.branchId, 'ORDER_CANCELLED');
             await handleCancelOrder(from, text, session);

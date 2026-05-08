@@ -6,18 +6,18 @@ import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 export default function Offers() {
     const [offers, setOffers] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ 
-        id: null, 
-        code: '', 
-        description: '', 
-        discountType: 'flat', 
-        discountValue: '', 
-        minOrderValue: 0, 
-        maxDiscount: '', 
+    const [formData, setFormData] = useState({
+        id: null,
+        code: '',
+        description: '',
+        discountType: 'flat',
+        discountValue: '',
+        minOrderValue: 0,
+        maxDiscount: '',
         usageType: 'unlimited',
-        startDate: '', 
-        endDate: '', 
-        isActive: true 
+        startDate: '',
+        endDate: '',
+        isActive: true
     });
     const navigate = useNavigate();
 
@@ -42,7 +42,7 @@ export default function Offers() {
 
         const body = { ...formData };
         const branchId = localStorage.getItem('selectedBranchId') || localStorage.getItem('branchId');
-        
+
         if (!formData.id) {
             if (!branchId) {
                 alert('Please select a branch first from the top menu.');
@@ -78,25 +78,25 @@ export default function Offers() {
 
     const openModal = (item = null) => {
         if (item) {
-            setFormData({ 
+            setFormData({
                 ...item,
                 startDate: item.startDate ? item.startDate.split('T')[0] : '',
                 endDate: item.endDate ? item.endDate.split('T')[0] : '',
                 maxDiscount: item.maxDiscount || ''
             });
         } else {
-            setFormData({ 
-                id: null, 
-                code: '', 
-                description: '', 
-                discountType: 'flat', 
-                discountValue: '', 
-                minOrderValue: 0, 
-                maxDiscount: '', 
+            setFormData({
+                id: null,
+                code: '',
+                description: '',
+                discountType: 'flat',
+                discountValue: '',
+                minOrderValue: 0,
+                maxDiscount: '',
                 usageType: 'unlimited',
-                startDate: '', 
-                endDate: '', 
-                isActive: true 
+                startDate: '',
+                endDate: '',
+                isActive: true
             });
         }
         setModalOpen(true);
@@ -110,7 +110,7 @@ export default function Offers() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Configure automatic discounts and promotional codes for this branch</p>
                 </div>
                 <button className="btn-primary" onClick={() => openModal()}>
-                    <Plus size={18} /> Add New Rule
+                    <Plus size={18} /> Add New Offer
                 </button>
             </header>
 
@@ -233,7 +233,7 @@ export default function Offers() {
                                     <input type="number" placeholder="0" value={formData.minOrderValue} onChange={e => setFormData({ ...formData, minOrderValue: e.target.value })} />
                                 </div>
                                 <div className="input-group">
-                                    <label>Max Discount (₹) {formData.discountType === 'flat' && <span style={{fontSize: '10px', opacity: 0.5}}>(Optional)</span>}</label>
+                                    <label>Max Discount (₹) {formData.discountType === 'flat' && <span style={{ fontSize: '10px', opacity: 0.5 }}>(Optional)</span>}</label>
                                     <input type="number" placeholder="Unlimited" value={formData.maxDiscount} onChange={e => setFormData({ ...formData, maxDiscount: e.target.value })} />
                                 </div>
                             </div>
@@ -259,10 +259,10 @@ export default function Offers() {
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-                                <input 
-                                    type="checkbox" 
-                                    id="isActive" 
-                                    checked={formData.isActive} 
+                                <input
+                                    type="checkbox"
+                                    id="isActive"
+                                    checked={formData.isActive}
                                     onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
                                     style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                                 />

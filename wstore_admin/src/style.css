@@ -93,6 +93,11 @@ body {
   position: fixed;
   height: 100vh;
   z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
 }
 
 .sidebar-header {
@@ -189,6 +194,11 @@ body {
   margin-left: 260px;
   display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-wrapper.expanded {
+  margin-left: 0;
 }
 
 /* Top Navigation */

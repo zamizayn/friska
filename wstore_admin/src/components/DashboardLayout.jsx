@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X, Menu } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -24,6 +24,7 @@ export default function DashboardLayout() {
     const [branches, setBranches] = useState([]);
     const [selectedBranchId, setSelectedBranchId] = useState(localStorage.getItem('selectedBranchId') || '');
     const [isHubOpen, setIsHubOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchFocused, setSearchFocused] = useState(false);
     const searchRef = useRef(null);
@@ -194,7 +195,7 @@ export default function DashboardLayout() {
 
     return (
         <div className="app-container">
-            <aside className="sidebar">
+            <aside className={`sidebar ${!isSidebarOpen ? 'hidden' : ''}`}>
                 <div className="sidebar-header">
                     <div className="brand-logo">
                         <img src={logo} alt="Logo" />
@@ -265,47 +266,55 @@ export default function DashboardLayout() {
                 </div>
             </aside>
 
-            <div className="content-wrapper">
+            <div className={`content-wrapper ${!isSidebarOpen ? 'expanded' : ''}`}>
                 <header className="top-nav">
-                    <div className="search-bar" ref={searchRef} style={{ position: 'relative' }}>
-                        <Search size={16} />
-                        <input
-                            type="text"
-                            placeholder="Go to page…"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => setSearchFocused(true)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && filteredPages.length > 0) handlePageSelect(filteredPages[0].path);
-                                if (e.key === 'Escape') { setSearchFocused(false); setSearchQuery(''); }
-                            }}
-                        />
-                        {searchFocused && (
-                            <div className="search-dropdown">
-                                <div style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', borderBottom: '1px solid var(--border-color)' }}>
-                                    {searchQuery ? `Results for "${searchQuery}"` : 'Quick Navigation'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <button
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-main)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                        >
+                            <Menu size={24} />
+                        </button>
+                        <div className="search-bar" ref={searchRef} style={{ position: 'relative' }}>
+                            <Search size={16} />
+                            <input
+                                type="text"
+                                placeholder="Go to page…"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setSearchFocused(true)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && filteredPages.length > 0) handlePageSelect(filteredPages[0].path);
+                                    if (e.key === 'Escape') { setSearchFocused(false); setSearchQuery(''); }
+                                }}
+                            />
+                            {searchFocused && (
+                                <div className="search-dropdown">
+                                    <div style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', borderBottom: '1px solid var(--border-color)' }}>
+                                        {searchQuery ? `Results for "${searchQuery}"` : 'Quick Navigation'}
+                                    </div>
+                                    {filteredPages.length === 0 ? (
+                                        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>No matching pages.</div>
+                                    ) : (
+                                        filteredPages.map(page => {
+                                            const Icon = page.icon;
+                                            return (
+                                                <div key={page.path} onClick={() => handlePageSelect(page.path)} className="search-dropdown-item">
+                                                    <div style={{ width: '36px', height: '36px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                        <Icon size={18} />
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div>{page.label}</div>
+                                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400 }}>{page.path}</div>
+                                                    </div>
+                                                    <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
-                                {filteredPages.length === 0 ? (
-                                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>No matching pages.</div>
-                                ) : (
-                                    filteredPages.map(page => {
-                                        const Icon = page.icon;
-                                        return (
-                                            <div key={page.path} onClick={() => handlePageSelect(page.path)} className="search-dropdown-item">
-                                                <div style={{ width: '36px', height: '36px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                    <Icon size={18} />
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div>{page.label}</div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400 }}>{page.path}</div>
-                                                </div>
-                                                <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     <div className="top-nav-actions">

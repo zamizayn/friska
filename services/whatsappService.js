@@ -275,7 +275,7 @@ const uploadMedia = async (filePath, type, config = {}) => {
         const phoneId = config.phoneNumberId || process.env.PHONE_NUMBER_ID;
         const token = config.whatsappToken || process.env.WHATSAPP_TOKEN;
         const version = config.version || process.env.GRAPH_API_VERSION || 'v17.0';
-        
+
         const FormData = require('form-data');
         const fs = require('fs');
         const form = new FormData();

@@ -312,7 +312,7 @@ export default function Orders() {
                             <th>Items</th>
                             <th>Total</th>
                             <th>Status</th>
-                            <th>Payment</th>
+                            <th>Delivery Status</th>
                             <th>Payment</th>
                             <th>Actions</th>
                         </tr>

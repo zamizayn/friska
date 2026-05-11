@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { 
-  ShoppingCart, 
-  Plus, 
-  Minus, 
-  Send, 
-  Search, 
-  Loader2, 
-  X, 
-  User, 
-  MapPin, 
-  MessageSquare, 
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  Send,
+  Search,
+  Loader2,
+  X,
+  User,
+  MapPin,
+  MessageSquare,
   ShoppingBag,
   ChevronRight
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:3000/api/app';
+const API_BASE = 'https://friska-api.farmora.in/api/app';
 
 function App() {
   const [data, setData] = useState(null);
@@ -40,7 +40,7 @@ function App() {
       }
     };
     fetchData();
-    
+
     const savedCart = localStorage.getItem(`cart_${username}`);
     if (savedCart) setCart(JSON.parse(savedCart));
   }, [username]);
@@ -128,9 +128,9 @@ function App() {
 
       <div className="search-container">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-        <input 
-          type="text" 
-          placeholder="Search items to order..." 
+        <input
+          type="text"
+          placeholder="Search items to order..."
           className="search-input"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -138,15 +138,15 @@ function App() {
       </div>
 
       <div className="category-scroll">
-        <div 
+        <div
           className={`category-chip ${selectedCategory === null ? 'active' : ''}`}
           onClick={() => setSelectedCategory(null)}
         >
           All Items
         </div>
         {data.categories.map(cat => (
-          <div 
-            key={cat.id} 
+          <div
+            key={cat.id}
             className={`category-chip ${selectedCategory === cat.id ? 'active' : ''}`}
             onClick={() => setSelectedCategory(cat.id)}
           >
@@ -209,9 +209,9 @@ function App() {
                     <div className="cart-item-price">₹{item.price} per unit</div>
                   </div>
                   <div className="qty-control">
-                    <button onClick={() => updateQuantity(item.id, -1)} className="qty-btn"><Minus size={14}/></button>
+                    <button onClick={() => updateQuantity(item.id, -1)} className="qty-btn"><Minus size={14} /></button>
                     <span className="font-bold min-w-[20px] text-center">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} className="qty-btn"><Plus size={14}/></button>
+                    <button onClick={() => updateQuantity(item.id, 1)} className="qty-btn"><Plus size={14} /></button>
                   </div>
                 </div>
               ))}
@@ -222,11 +222,11 @@ function App() {
                 <span className="total-label">Grand Total</span>
                 <span className="total-value">₹{totalAmount}</span>
               </div>
-              <button 
-                className="whatsapp-btn" 
+              <button
+                className="whatsapp-btn"
                 onClick={handleCheckout}
               >
-                <Send size={22} /> 
+                <Send size={22} />
                 Place Order on WhatsApp
               </button>
             </div>

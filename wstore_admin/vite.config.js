@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/admin': {
-        target: 'http://localhost:3000',
+        target: 'https://friska-api.farmora.in',
         changeOrigin: true
       }
     }

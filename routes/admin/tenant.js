@@ -14,6 +14,8 @@ router.delete('/:id', tenantController.deleteTenant);
 // Operations
 router.get('/me/settings', tenantController.getSettings);
 router.put('/me/settings', tenantController.updateSettings);
+router.get('/me/whatsapp-settings', tenantController.getWhatsAppSettings);
+router.put('/me/whatsapp-settings', tenantController.updateWhatsAppSettings);
 router.post('/:id/enable-webhooks', tenantController.enableWebhooks);
 
 module.exports = router;

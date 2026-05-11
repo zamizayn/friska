@@ -52,6 +52,10 @@ module.exports = (sequelize, DataTypes) => {
     razorpayWebhookSecret: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    whatsappSettings: {
+      type: DataTypes.JSON,
+      allowNull: true
     }
   }, {
     sequelize,

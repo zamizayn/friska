@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
     NOTIFICATIONS_READ: `${BASE_URL}/notifications/read`,
     PRODUCT_SALES: `${BASE_URL}/product-sales`,
     OFFERS: `${BASE_URL}/offers`,
+    WHATSAPP_SETTINGS: `${BASE_URL}/tenants/me/whatsapp-settings`,
 };
 
 export const getHeaders = () => {

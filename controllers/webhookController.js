@@ -69,6 +69,14 @@ const logCustomerActivity = async (phone, tenantId, branchId, actionType, detail
     }
 };
 
+const getTenantMessage = (tenant, key, defaultMsg, placeholders = {}) => {
+    let msg = tenant.whatsappSettings?.[key] || defaultMsg;
+    for (const [pKey, pValue] of Object.entries(placeholders)) {
+        msg = msg.replace(new RegExp(`{{${pKey}}}`, 'g'), pValue || '');
+    }
+    return msg;
+};
+
 const extractTextFromMessage = (message) => {
     if (message.type === 'text') {
         return message.text?.body?.toLowerCase().trim() || '';
@@ -109,8 +117,8 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
     session.page = 1;
 
     const welcomeMsg = customer?.name
-        ? `Welcome back to *${tenant.name}*, ${customer.name}! 😊 We're so happy to see you again. Explore our latest collection and let us know if you need any help! 🛍️`
-        : `Welcome to *${tenant.name}*! 🛍️ We're excited to help you find precisely what you're looking for today. Feel free to browse our catalogs and reach out if you have any questions! ✨`;
+        ? getTenantMessage(tenant, 'welcomeReturning', `Welcome back to *{{tenant_name}}*, {{customer_name}}! 😊 We're so happy to see you again. Explore our latest collection and let us know if you need any help! 🛍️`, { tenant_name: tenant.name, customer_name: customer.name })
+        : getTenantMessage(tenant, 'welcomeNew', `Welcome to *{{tenant_name}}*! 🛍️ We're excited to help you find precisely what you're looking for today. Feel free to browse our catalogs and reach out if you have any questions! ✨`, { tenant_name: tenant.name });
 
     await sendListMessage(from, welcomeMsg, "Main Menu", [
         {
@@ -137,8 +145,9 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
     ], session.config);
 };
 
-const handleSupport = async (from, session) => {
-    await sendButtonMessage(from, "🆘 *Help & Support*\n\nIs your issue related to a specific order?", [
+const handleSupport = async (from, session, tenant) => {
+    const msg = getTenantMessage(tenant, 'supportMessage', "🆘 *Help & Support*\n\nIs your issue related to a specific order?");
+    await sendButtonMessage(from, msg, [
         { id: 'support_order_yes', title: 'Yes, Select Order' },
         { id: 'support_order_no', title: 'No, Other Issue' }
     ], session.config);
@@ -292,9 +301,10 @@ const handleCancelOrder = async (from, text, session) => {
     );
 };
 
-const handleSearchMode = async (from, session) => {
+const handleSearchMode = async (from, session, tenant) => {
     session.state = 'SEARCHING';
-    await sendTextMessage(from, "🔍 *Product Search*\n\nType the name of the product you are looking for:", session.config);
+    const msg = getTenantMessage(tenant, 'searchProductsMessage', "🔍 *Product Search*\n\nType the name of the product you are looking for:");
+    await sendTextMessage(from, msg, session.config);
 };
 
 const handleSearching = async (from, text, session) => {
@@ -397,7 +407,7 @@ const handleCollectingFeedback = async (from, text, session) => {
     session.state = 'START';
 };
 
-const handleChangeBranch = async (from, session) => {
+const handleChangeBranch = async (from, session, tenant) => {
     session.state = 'SELECTING_BRANCH';
     const branches = await Branch.findAll({
         where: { tenantId: session.tenantId },
@@ -405,7 +415,7 @@ const handleChangeBranch = async (from, session) => {
     });
     await sendListMessage(
         from,
-        '📍 Choose your nearest branch',
+        getTenantMessage(tenant, 'chooseBranchMessage', '📍 Choose your nearest branch'),
         'View Branches',
         [{
             title: 'Branches',
@@ -540,7 +550,7 @@ const handleShop = async (from, text, session, tenant, customer) => {
     session.state = 'SELECTING_BRANCH';
     await sendListMessage(
         from,
-        '📍 Choose your nearest branch',
+        getTenantMessage(tenant, 'chooseBranchMessage', '📍 Choose your nearest branch'),
         'View Branches',
         [{
             title: 'Branches',
@@ -554,11 +564,11 @@ const handleShop = async (from, text, session, tenant, customer) => {
     );
 };
 
-const handleAllProducts = async (from, session) => {
+const handleAllProducts = async (from, session, tenant) => {
     if (!await validateShopOpen(from, session)) return;
 
     if (!session.branchId) {
-        return await handleChangeBranch(from, session);
+        return await handleChangeBranch(from, session, tenant);
     }
 
     session.state = 'VIEWING_ALL_PRODUCTS';
@@ -643,7 +653,8 @@ const handleBranchSelection = async (from, text, session) => {
 
         if (session.intent === 'view_all') {
             session.intent = null;
-            return await handleAllProducts(from, session);
+            const tenant = await Tenant.findByPk(session.tenantId);
+            return await handleAllProducts(from, session, tenant);
         }
 
         session.state = 'SELECTING_CATEGORY';
@@ -884,12 +895,13 @@ const handleQuantitySelection = async (from, text, session) => {
     }
 };
 
-const handleCart = async (from, session) => {
+const handleCart = async (from, session, tenant) => {
     console.log(`[Flow] Entering 'cart' block for ${from}`);
     const userCart = carts[from] || [];
 
     if (userCart.length === 0) {
-        await sendButtonMessage(from, '🛒 Your cart is empty', [{ id: 'shop', title: 'Shop' }], session.config);
+        const msg = getTenantMessage(tenant, 'cartEmptyMessage', '🛒 Your cart is empty');
+        await sendButtonMessage(from, msg, [{ id: 'shop', title: 'Shop' }], session.config);
     } else {
         let subtotal = 0;
         const cartItemsText = userCart.map(item => {
@@ -931,10 +943,11 @@ const checkCartStock = async (userCart) => {
     }
     return null;
 };
-const handleCheckout = async (from, session) => {
+const handleCheckout = async (from, session, tenant) => {
     const userCart = carts[from] || [];
     if (userCart.length === 0) {
-        await sendButtonMessage(from, '🛒 Cart is empty', [{ id: 'shop', title: 'Shop' }], session.config);
+        const msg = getTenantMessage(tenant, 'cartEmptyMessage', '🛒 Cart is empty');
+        await sendButtonMessage(from, msg, [{ id: 'shop', title: 'Shop' }], session.config);
     } else {
         // Check stock before proceeding
         const stockError = await checkCartStock(userCart);
@@ -946,17 +959,19 @@ const handleCheckout = async (from, session) => {
         }
 
         session.state = 'CHECKOUT_ADDRESS';
-        await sendTextMessage(from, '📍 Please enter your delivery address', session.config);
+        const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please enter your delivery address');
+        await sendTextMessage(from, msg, session.config);
     }
 };
 
-const handleAddressCollection = async (from, text, session) => {
+const handleAddressCollection = async (from, text, session, tenant) => {
     session.address = text;
     session.state = 'CHECKOUT_PAYMENT';
 
+    const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
     await sendButtonMessage(
         from,
-        '💳 How would you like to pay?',
+        msg,
         [
             { id: 'pay_cod', title: 'Cash on Delivery' },
             { id: 'pay_online', title: 'Online Payment' }
@@ -965,7 +980,7 @@ const handleAddressCollection = async (from, text, session) => {
     );
 };
 
-const handlePaymentSelection = async (from, text, session) => {
+const handlePaymentSelection = async (from, text, session, tenant) => {
     const paymentMethod = text === 'pay_cod' ? 'Cash on Delivery' : 'Online Payment';
     const address = session.address || 'N/A';
     const userCart = carts[from] || [];
@@ -1041,15 +1056,16 @@ const handlePaymentSelection = async (from, text, session) => {
 
     if (paymentMethod === 'Online Payment' && savedOrder) {
         try {
-            const tenant = await Tenant.findByPk(session.tenantId);
-            const paymentLink = await createPaymentLink(savedOrder, tenant);
+            const tenantObj = await Tenant.findByPk(session.tenantId);
+            const paymentLink = await createPaymentLink(savedOrder, tenantObj);
             await sendTextMessage(from, `🔗 *Payment Link Generated*\n\nPlease complete your payment of *₹${total}* using the link below:\n\n${paymentLink.short_url}\n\n*Note:* Your order will be processed once payment is confirmed.`, session.config);
         } catch (payError) {
             console.error('Payment Link Error:', payError);
             await sendTextMessage(from, "⚠️ We encountered an issue generating your payment link. Please try again or contact support.", session.config);
         }
     } else {
-        await sendTextMessage(from, `✅ *Order Confirmed!* #${savedOrder?.id}\n\nYour order has been placed successfully via *${paymentMethod}*.\n\nThank you for shopping with us! 🛍️`, session.config);
+        const msg = getTenantMessage(tenant, 'orderConfirmedMessage', `✅ *Order Confirmed!* #${savedOrder?.id}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️`, { payment_method: paymentMethod });
+        await sendTextMessage(from, msg, session.config);
     }
 
     await sendButtonMessage(from, "What would you like to do next?", [
@@ -1058,7 +1074,7 @@ const handlePaymentSelection = async (from, text, session) => {
     ], session.config);
 };
 
-const handleNativeOrder = async (from, message, session) => {
+const handleNativeOrder = async (from, message, session, tenant) => {
     const orderData = message.order;
     const productItems = orderData.product_items;
 
@@ -1087,7 +1103,7 @@ const handleNativeOrder = async (from, message, session) => {
     }
 };
 
-const handleDefault = async (from, session) => {
+const handleDefault = async (from, session, tenant) => {
     await sendButtonMessage(
         from,
         'Choose an option 👇',
@@ -1194,7 +1210,7 @@ const receiveWebhook = async (req, res) => {
 
         if (text === 'native_order') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT', { type: 'native_order' });
-            await handleNativeOrder(from, message, session);
+            await handleNativeOrder(from, message, session, tenant);
         } else if (text === 'hi' || text === 'hello' || text === 'start' || text === 'menu') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'MENU_VIEWED');
             await handleHomeMenu(from, session, tenant, customer);
@@ -1203,9 +1219,9 @@ const receiveWebhook = async (req, res) => {
         } else if (text.startsWith('view_order_')) {
             await handleViewOrder(from, text, session);
         } else if (text === 'search_mode') {
-            await handleSearchMode(from, session);
+            await handleSearchMode(from, session, tenant);
         } else if (text === 'support') {
-            await handleSupport(from, session);
+            await handleSupport(from, session, tenant);
         } else if (text === 'support_order_yes') {
             await handleSupportOrderList(from, session);
         } else if (text === 'support_order_no') {
@@ -1252,15 +1268,15 @@ const receiveWebhook = async (req, res) => {
             await logCustomerActivity(from, tenant.id, session.branchId, 'SHOP_VIEWED', { mode: 'all_products' });
             session.intent = 'view_all';
             session.page = 1;
-            await handleAllProducts(from, session);
+            await handleAllProducts(from, session, tenant);
         } else if (text.startsWith('all_products_page_')) {
             session.page = parseInt(text.replace('all_products_page_', ''));
-            await handleAllProducts(from, session);
+            await handleAllProducts(from, session, tenant);
         } else if (text.startsWith('cancel_order_')) {
             await logCustomerActivity(from, tenant.id, session.branchId, 'ORDER_CANCELLED');
             await handleCancelOrder(from, text, session);
         } else if (text === 'change_branch') {
-            await handleChangeBranch(from, session);
+            await handleChangeBranch(from, session, tenant);
         } else if (text.startsWith('branch_')) {
             await handleBranchSelection(from, text, session);
         } else if (text.startsWith('next_page_') || text.startsWith('prev_page_') || text.startsWith('sort_toggle_') || text.startsWith('sort_low_') || text.startsWith('sort_high_') || text.startsWith('sort_name_')) {
@@ -1287,16 +1303,16 @@ const receiveWebhook = async (req, res) => {
             await handleQuantitySelection(from, text, session);
         } else if (text === 'cart') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'CART_VIEWED');
-            await handleCart(from, session);
+            await handleCart(from, session, tenant);
         } else if (text === 'checkout') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT_STARTED');
-            await handleCheckout(from, session);
+            await handleCheckout(from, session, tenant);
         } else if (session.state === 'CHECKOUT_ADDRESS') {
-            await handleAddressCollection(from, text, session);
+            await handleAddressCollection(from, text, session, tenant);
         } else if (session.state === 'CHECKOUT_PAYMENT') {
-            await handlePaymentSelection(from, text, session);
+            await handlePaymentSelection(from, text, session, tenant);
         } else {
-            await handleDefault(from, session);
+            await handleDefault(from, session, tenant);
         }
 
     } catch (error) {
@@ -1379,10 +1395,14 @@ const checkAbandonedCarts = async () => {
 
             if (idleTime > threshold && !session.abandonedNotified) {
                 try {
+                    const tenant = await Tenant.findByPk(session.tenantId);
+                    if (!tenant) continue;
+
                     console.log(`[Monitor] Sending abandoned cart reminder to ${phoneNumber}`);
+                    const msg = getTenantMessage(tenant, 'abandonedCartMessage', "👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒");
                     await sendTextMessage(
                         phoneNumber,
-                        "👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒",
+                        msg,
                         session.config
                     );
                     session.abandonedNotified = true;

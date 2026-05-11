@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X, Menu } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X, Menu, MessageSquare } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -18,6 +18,7 @@ const ALL_PAGES = [
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub'], roles: ['superadmin', 'tenant'] },
     { label: 'Settings', path: '/admin/settings', icon: Settings, keywords: ['settings', 'config', 'preferences', 'razorpay', 'keys'], roles: ['tenant'] },
+    { label: 'WhatsApp Flows', path: '/admin/whatsapp-settings', icon: MessageSquare, keywords: ['whatsapp', 'message', 'bot', 'conversation', 'auto-reply'], roles: ['tenant'] },
 ];
 
 export default function DashboardLayout() {
@@ -252,6 +253,11 @@ export default function DashboardLayout() {
                     {role === 'tenant' && (
                         <NavLink to="/admin/settings" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                             <Settings size={18} /> <span>Settings</span>
+                        </NavLink>
+                    )}
+                    {role === 'tenant' && (
+                        <NavLink to="/admin/whatsapp-settings" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                            <MessageSquare size={18} /> <span>WhatsApp Flows</span>
                         </NavLink>
                     )}
                 </div>

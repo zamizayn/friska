@@ -181,9 +181,9 @@ export default function Dashboard() {
                             </div>
                             <div style={{ width: '100%', height: 250 }}>
                                 <ResponsiveContainer>
-                                    <BarChart data={analytics.topProducts} layout="vertical" margin={{ left: -20, right: 20 }}>
+                                    <BarChart data={analytics.topProducts} layout="vertical" margin={{ left: 20, right: 40, top: 0, bottom: 0 }}>
                                         <XAxis type="number" hide />
-                                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} style={{ fontSize: '11px', fontWeight: 600 }} />
+                                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={150} style={{ fontSize: '11px', fontWeight: 600 }} />
                                         <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-lg)' }} />
                                         <Bar dataKey="count" fill="var(--accent)" radius={[0, 4, 4, 0]} barSize={20} />
                                     </BarChart>

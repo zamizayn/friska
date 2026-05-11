@@ -15,7 +15,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const API_BASE = 'https://friska-api.farmora.in/api/app';
+const API_BASE = '/api/app';
 
 function App() {
   const [data, setData] = useState(null);

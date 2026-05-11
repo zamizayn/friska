@@ -1064,7 +1064,11 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
             await sendTextMessage(from, "⚠️ We encountered an issue generating your payment link. Please try again or contact support.", session.config);
         }
     } else {
-        const msg = getTenantMessage(tenant, 'orderConfirmedMessage', `✅ *Order Confirmed!* #${savedOrder?.id}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️`, { payment_method: paymentMethod });
+        const msg = getTenantMessage(tenant, 'orderConfirmedMessage', `✅ *Order Confirmed!* #${savedOrder?.id}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️`, {
+            payment_method: paymentMethod,
+            order_id: savedOrder?.id,
+            total: savedOrder?.total
+        });
         await sendTextMessage(from, msg, session.config);
     }
 
@@ -1207,6 +1211,49 @@ const receiveWebhook = async (req, res) => {
 
         let text = extractTextFromMessage(message);
         console.log('FROM:', from, 'TEXT:', text);
+
+        // Visual Catalog Order Detection
+        if (text.includes('new order from visual catalog')) {
+            await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT', { type: 'visual_catalog' });
+
+            // Set state to wait for address
+            session.state = 'CATALOG_ORDER_ADDRESS';
+            session.lastCatalogOrder = text; // Optional: store the order text if needed
+
+            // 1. Notify Admin/Merchant
+            notificationService.sendToTenant(
+                tenant.id,
+                '🛍️ New Catalog Order',
+                `From +${from}: A customer just placed an order via the Visual Catalog. Waiting for their address...`,
+                'new_order',
+                { customerPhone: from, type: 'visual_catalog', branchId: session.branchId }
+            ).catch(err => console.error('[FCM error]', err.message));
+
+            // 2. Respond to Customer
+            const responseMsg = getTenantMessage(tenant, 'catalogOrderReceived', "✅ *Order Received!*\n\nWe've received your order items. Please share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵");
+            await sendTextMessage(from, responseMsg, session.config);
+            return;
+        }
+
+        // Handle Address after Catalog Order
+        if (session.state === 'CATALOG_ORDER_ADDRESS') {
+            await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
+
+            // Notify Merchant with the address
+            notificationService.sendToTenant(
+                tenant.id,
+                '📍 Address Received',
+                `Customer (+${from}) provided address: ${text}`,
+                'address_update',
+                { customerPhone: from, address: text, branchId: session.branchId }
+            ).catch(err => console.error('[FCM error]', err.message));
+
+            const confirmMsg = getTenantMessage(tenant, 'catalogAddressConfirmed', "🙌 *Perfect!*\n\nWe've noted your delivery address. Our team is reviewing your order and will contact you shortly to confirm. Thank you for shopping with us! ✨");
+            await sendButtonMessage(from, confirmMsg, [{ id: 'menu', title: 'Back to Menu' }], session.config);
+
+            session.state = 'START';
+            return;
+        }
 
         if (text === 'native_order') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT', { type: 'native_order' });

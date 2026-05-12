@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Save, ShieldCheck, Globe, Key, AlertCircle } from 'lucide-react';
+import { CreditCard, Save, ShieldCheck, Globe, Key, AlertCircle, Sparkles, Phone } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 export default function Settings() {
@@ -8,7 +8,8 @@ export default function Settings() {
         razorpayKeySecret: '',
         razorpayWebhookSecret: '',
         googleMapsApiKey: '',
-        geminiApiKey: ''
+        geminiApiKey: '',
+        storePhone: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -29,7 +30,8 @@ export default function Settings() {
                         razorpayKeySecret: data.razorpayKeySecret || '',
                         razorpayWebhookSecret: data.razorpayWebhookSecret || '',
                         googleMapsApiKey: data.googleMapsApiKey || '',
-                        geminiApiKey: data.geminiApiKey || ''
+                        geminiApiKey: data.geminiApiKey || '',
+                        storePhone: data.storePhone || ''
                     });
                 }
             } catch (e) {
@@ -84,10 +86,10 @@ export default function Settings() {
 
             <div style={{ maxWidth: '800px' }}>
                 {message && (
-                    <div style={{ 
-                        padding: '16px 20px', 
-                        borderRadius: '12px', 
-                        marginBottom: '24px', 
+                    <div style={{
+                        padding: '16px 20px',
+                        borderRadius: '12px',
+                        marginBottom: '24px',
                         background: message.type === 'success' ? '#ecfdf5' : '#fef2f2',
                         color: message.type === 'success' ? '#059669' : '#dc2626',
                         border: `1px solid ${message.type === 'success' ? '#10b981' : '#f87171'}`,
@@ -118,11 +120,11 @@ export default function Settings() {
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Key size={14} /> Razorpay Key ID
                             </label>
-                            <input 
-                                type="text" 
-                                placeholder="rzp_live_..." 
-                                value={formData.razorpayKeyId} 
-                                onChange={e => setFormData({ ...formData, razorpayKeyId: e.target.value })} 
+                            <input
+                                type="text"
+                                placeholder="rzp_live_..."
+                                value={formData.razorpayKeyId}
+                                onChange={e => setFormData({ ...formData, razorpayKeyId: e.target.value })}
                                 style={{ background: 'var(--bg-app)' }}
                             />
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Get this from your Razorpay Dashboard &gt; Settings &gt; API Keys</p>
@@ -132,11 +134,11 @@ export default function Settings() {
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <ShieldCheck size={14} /> Razorpay Key Secret
                             </label>
-                            <input 
-                                type="password" 
-                                placeholder="••••••••••••••••" 
-                                value={formData.razorpayKeySecret} 
-                                onChange={e => setFormData({ ...formData, razorpayKeySecret: e.target.value })} 
+                            <input
+                                type="password"
+                                placeholder="••••••••••••••••"
+                                value={formData.razorpayKeySecret}
+                                onChange={e => setFormData({ ...formData, razorpayKeySecret: e.target.value })}
                                 style={{ background: 'var(--bg-app)' }}
                             />
                         </div>
@@ -145,17 +147,17 @@ export default function Settings() {
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Globe size={14} /> Webhook Secret
                             </label>
-                            <input 
-                                type="password" 
-                                placeholder="••••••••••••••••" 
-                                value={formData.razorpayWebhookSecret} 
-                                onChange={e => setFormData({ ...formData, razorpayWebhookSecret: e.target.value })} 
+                            <input
+                                type="password"
+                                placeholder="••••••••••••••••"
+                                value={formData.razorpayWebhookSecret}
+                                onChange={e => setFormData({ ...formData, razorpayWebhookSecret: e.target.value })}
                                 style={{ background: 'var(--bg-app)' }}
                             />
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Set this secret in your Razorpay Webhook settings to verify payment notifications.</p>
                         </div>
                     </div>
-                    
+
                     <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                             <div style={{ width: '40px', height: '40px', background: '#eff6ff', color: '#3b82f6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -171,11 +173,11 @@ export default function Settings() {
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Key size={14} /> Google Maps API Key
                             </label>
-                            <input 
-                                type="text" 
-                                placeholder="AIzaSy..." 
-                                value={formData.googleMapsApiKey} 
-                                onChange={e => setFormData({ ...formData, googleMapsApiKey: e.target.value })} 
+                            <input
+                                type="text"
+                                placeholder="AIzaSy..."
+                                value={formData.googleMapsApiKey}
+                                onChange={e => setFormData({ ...formData, googleMapsApiKey: e.target.value })}
                                 style={{ background: 'var(--bg-app)' }}
                             />
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>This key is used for customer address selection and delivery distance calculations.</p>
@@ -185,22 +187,37 @@ export default function Settings() {
                     <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                             <div style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#8b5cf6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Sparkles size={20} />
                             </div>
                             <div>
-                                <h3 style={{ margin: 0 }}>Gemini AI Integration</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Power your intelligent support assistant</p>
+                                <h3 style={{ margin: 0 }}>WhatsApp & AI Integration</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Configure your public WhatsApp number and AI assistant</p>
                             </div>
+                        </div>
+
+                        <div className="input-group" style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Phone size={14} /> Store WhatsApp Number
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="e.g., 917012738756"
+                                value={formData.storePhone}
+                                onChange={e => setFormData({ ...formData, storePhone: e.target.value })}
+                                style={{ background: 'var(--bg-app)' }}
+                            />
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>This is the number customers will use to place orders via the catalog. Include country code without +.</p>
                         </div>
 
                         <div className="input-group" style={{ marginBottom: 0 }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Key size={14} /> Gemini API Key
                             </label>
-                            <input 
-                                type="text" 
-                                placeholder="Enter your Gemini API key" 
-                                value={formData.geminiApiKey} 
-                                onChange={e => setFormData({ ...formData, geminiApiKey: e.target.value })} 
+                            <input
+                                type="text"
+                                placeholder="Enter your Gemini API key"
+                                value={formData.geminiApiKey}
+                                onChange={e => setFormData({ ...formData, geminiApiKey: e.target.value })}
                                 style={{ background: 'var(--bg-app)' }}
                             />
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Get your API key from <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Google AI Studio</a>. This enables the AI support bot on WhatsApp.</p>

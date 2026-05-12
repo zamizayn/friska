@@ -1111,22 +1111,51 @@ const handleAddressCollection = async (from, text, session, tenant) => {
 const handlePaymentSelection = async (from, text, session, tenant) => {
     const paymentMethod = text === 'pay_cod' ? 'Cash on Delivery' : 'Online Payment';
     const address = session.address || 'N/A';
-    const userCart = carts[from] || [];
+
+    let userCart = carts[from] || [];
+    let isCatalogOrder = false;
+
+    // Detect and handle catalog orders
+    if (userCart.length === 0 && session.lastCatalogOrder) {
+        isCatalogOrder = true;
+        // We treat the catalog order text as the items description for now
+        userCart = [{
+            name: 'Catalog Order',
+            price: 0,
+            quantity: 1,
+            isCatalog: true,
+            description: session.lastCatalogOrder
+        }];
+    }
+
     if (userCart.length === 0) {
         return await sendButtonMessage(from, '🛒 Your cart is empty.', [{ id: 'menu', title: 'Back to Menu' }], session.config);
     }
 
-    // Final stock check
-    const stockError = await checkCartStock(userCart);
-    if (stockError) {
-        return await sendButtonMessage(from, `${stockError}\n\nSomeone else just grabbed the last items! Please update your cart.`, [
-            { id: 'cart', title: '🛒 View Cart' },
-            { id: 'menu', title: '🏠 Back to Menu' }
-        ], session.config);
+    // Final stock check (skip for catalog orders as we don't have product IDs)
+    if (!isCatalogOrder) {
+        const stockError = await checkCartStock(userCart);
+        if (stockError) {
+            return await sendButtonMessage(from, `${stockError}\n\nSomeone else just grabbed the last items! Please update your cart.`, [
+                { id: 'cart', title: '🛒 View Cart' },
+                { id: 'menu', title: '🏠 Back to Menu' }
+            ], session.config);
+        }
     }
 
     let subtotal = 0;
-    userCart.forEach(item => { subtotal += item.price * item.quantity; });
+    if (isCatalogOrder) {
+        // Robust regex to capture amount even if there are formatting characters or extra spaces
+        const match = session.lastCatalogOrder.match(/total amount:?\s*₹?\s*(\d+)/i);
+        subtotal = match ? parseInt(match[1]) : 0;
+
+        console.log(`[Catalog Order] Extracted Amount: ${subtotal} from text: "${session.lastCatalogOrder.substring(0, 50)}..."`);
+
+        // Update the pseudo-item price for record keeping
+        userCart[0].price = subtotal;
+    } else {
+        userCart.forEach(item => { subtotal += item.price * item.quantity; });
+    }
 
     const bestOffer = await calculateBestOffer(from, session.branchId, subtotal);
     let total = subtotal;
@@ -1158,7 +1187,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
         console.error('Order save error:', e);
     }
 
-    if (savedOrder) {
+    if (savedOrder && !isCatalogOrder) {
         for (const item of userCart) {
             try {
                 await Product.decrement('stock', { by: item.quantity, where: { id: item.id } });
@@ -1170,7 +1199,8 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 
     carts[from] = [];
     session.state = 'ORDER_CONFIRMED';
-    delete session.address; // Clean up session
+    delete session.address;
+    delete session.lastCatalogOrder; // Clear catalog order after success
 
     // Send push notification to tenant admins
     if (savedOrder && session.tenantId) {
@@ -1441,10 +1471,18 @@ const receiveWebhook = async (req, res) => {
                 { customerPhone: from, address: text, branchId: session.branchId }
             ).catch(err => console.error('[FCM error]', err.message));
 
-            const confirmMsg = getTenantMessage(tenant, 'catalogAddressConfirmed', "🙌 *Perfect!*\n\nWe've noted your delivery address. Our team is reviewing your order and will contact you shortly to confirm. Thank you for shopping with us! ✨");
-            await sendButtonMessage(from, confirmMsg, [{ id: 'menu', title: 'Back to Menu' }], session.config);
-
-            session.state = 'START';
+            session.address = text;
+            session.state = 'CHECKOUT_PAYMENT';
+            const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
+            await sendButtonMessage(
+                from,
+                msg,
+                [
+                    { id: 'pay_cod', title: 'Cash on Delivery' },
+                    { id: 'pay_online', title: 'Online Payment' }
+                ],
+                session.config
+            );
             return;
         }
 
@@ -1599,10 +1637,18 @@ const receiveWebhook = async (req, res) => {
                         { customerPhone: from, address: finalAddress, branchId: session.branchId }
                     ).catch(err => console.error('[FCM error]', err.message));
 
-                    const confirmMsg = getTenantMessage(tenant, 'catalogAddressConfirmed', "🙌 *Perfect!*\n\nWe've noted your delivery address. Our team is reviewing your order and will contact you shortly to confirm. Thank you for shopping with us! ✨");
-                    await sendButtonMessage(from, confirmMsg, [{ id: 'menu', title: 'Back to Menu' }], session.config);
-
-                    session.state = 'START';
+                    session.address = finalAddress;
+                    session.state = 'CHECKOUT_PAYMENT';
+                    const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
+                    await sendButtonMessage(
+                        from,
+                        msg,
+                        [
+                            { id: 'pay_cod', title: 'Cash on Delivery' },
+                            { id: 'pay_online', title: 'Online Payment' }
+                        ],
+                        session.config
+                    );
                 } else {
                     await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
                 }
@@ -1629,10 +1675,18 @@ const receiveWebhook = async (req, res) => {
                     { customerPhone: from, address: text, branchId: session.branchId }
                 ).catch(err => console.error('[FCM error]', err.message));
 
-                const confirmMsg = getTenantMessage(tenant, 'catalogAddressConfirmed', "🙌 *Perfect!*\n\nWe've noted your delivery address. Our team is reviewing your order and will contact you shortly to confirm. Thank you for shopping with us! ✨");
-                await sendButtonMessage(from, confirmMsg, [{ id: 'menu', title: 'Back to Menu' }], session.config);
-
-                session.state = 'START';
+                session.address = text;
+                session.state = 'CHECKOUT_PAYMENT';
+                const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
+                await sendButtonMessage(
+                    from,
+                    msg,
+                    [
+                        { id: 'pay_cod', title: 'Cash on Delivery' },
+                        { id: 'pay_online', title: 'Online Payment' }
+                    ],
+                    session.config
+                );
             }
         } else if (session.state === 'CHECKOUT_ADDRESS') {
             await handleAddressCollection(from, text, session, tenant);

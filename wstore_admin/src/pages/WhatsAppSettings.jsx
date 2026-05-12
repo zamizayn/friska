@@ -96,7 +96,6 @@ export default function WhatsAppSettings() {
                 { id: 'selectAddressMessage', label: 'Select Saved Address Prompt', placeholder: 'Where should we deliver? Select a saved address or add a new one.' },
                 { id: 'paymentMethodMessage', label: 'Payment Method Selection', placeholder: '💳 How would you like to pay?' },
                 { id: 'orderConfirmedMessage', label: 'Order Confirmation', placeholder: '✅ *Order Confirmed!* #{{order_id}}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️', hint: 'Placeholders: {{order_id}}, {{payment_method}}' },
-                { id: 'phone', label: 'WhatsApp Order Number', placeholder: '917012738756', hint: 'The number where catalog orders will be sent' },
             ]
         },
         {

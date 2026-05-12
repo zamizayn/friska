@@ -109,9 +109,13 @@ const getSettings = async (req, res) => {
     try {
         if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
         const tenant = await Tenant.findByPk(req.user.tenantId, {
-            attributes: ['razorpayKeyId', 'razorpayKeySecret', 'razorpayWebhookSecret', 'googleMapsApiKey', 'geminiApiKey']
+            attributes: ['razorpayKeyId', 'razorpayKeySecret', 'razorpayWebhookSecret', 'googleMapsApiKey', 'geminiApiKey', 'whatsappSettings']
         });
-        res.json(tenant);
+        
+        const settings = tenant.toJSON();
+        settings.storePhone = tenant.whatsappSettings?.phone || '';
+        
+        res.json(settings);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -122,8 +126,21 @@ const updateSettings = async (req, res) => {
         if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
         const tenant = await Tenant.findByPk(req.user.tenantId);
         if (tenant) {
-            const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey, geminiApiKey } = req.body;
-            await tenant.update({ razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey, geminiApiKey });
+            const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey, geminiApiKey, storePhone } = req.body;
+            
+            const updatedWhatsappSettings = {
+                ...(tenant.whatsappSettings || {}),
+                phone: storePhone
+            };
+
+            await tenant.update({ 
+                razorpayKeyId, 
+                razorpayKeySecret, 
+                razorpayWebhookSecret, 
+                googleMapsApiKey, 
+                geminiApiKey,
+                whatsappSettings: updatedWhatsappSettings
+            });
             res.json({ success: true });
         } else res.status(404).send();
     } catch (e) {

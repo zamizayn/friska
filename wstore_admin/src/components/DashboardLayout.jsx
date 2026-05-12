@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X, Menu, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -19,6 +19,7 @@ const ALL_PAGES = [
     { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub'], roles: ['superadmin', 'tenant'] },
     { label: 'Settings', path: '/admin/settings', icon: Settings, keywords: ['settings', 'config', 'preferences', 'razorpay', 'keys'], roles: ['tenant'] },
     { label: 'WhatsApp Flows', path: '/admin/whatsapp-settings', icon: MessageSquare, keywords: ['whatsapp', 'message', 'bot', 'conversation', 'auto-reply'], roles: ['tenant'] },
+    { label: 'Change Password', path: '/admin/change-password', icon: Lock, keywords: ['password', 'security', 'account'], roles: ['superadmin', 'tenant', 'branch'] },
 ];
 
 export default function DashboardLayout() {
@@ -260,6 +261,9 @@ export default function DashboardLayout() {
                             <MessageSquare size={18} /> <span>WhatsApp Flows</span>
                         </NavLink>
                     )}
+                    <NavLink to="/admin/change-password" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                        <Lock size={18} /> <span>Change Password</span>
+                    </NavLink>
                 </div>
 
                 <div className="sidebar-footer">

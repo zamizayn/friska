@@ -53,4 +53,31 @@ const login = async (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
 };
 
-module.exports = { login };
+const changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const { username, role, tenantId, branchId } = req.user;
+
+    try {
+        let user;
+        if (role === 'superadmin') {
+            user = await Admin.findOne({ where: { username, password: currentPassword } });
+        } else if (role === 'tenant') {
+            user = await Tenant.findOne({ where: { id: tenantId, password: currentPassword } });
+        } else if (role === 'branch') {
+            user = await Branch.findOne({ where: { id: branchId, password: currentPassword } });
+        }
+
+        if (!user) {
+            return res.status(400).json({ error: 'Incorrect current password' });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        return res.json({ message: 'Password updated successfully' });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+};
+
+module.exports = { login, changePassword };

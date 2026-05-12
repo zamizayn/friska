@@ -20,6 +20,7 @@ import Notifications from './pages/Notifications';
 import Offers from './pages/Offers';
 import Settings from './pages/Settings';
 import WhatsAppSettings from './pages/WhatsAppSettings';
+import ChangePassword from './pages/ChangePassword';
 
 const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem('adminToken');
@@ -57,6 +58,7 @@ export default function App() {
                     <Route path="offers" element={<Offers />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="whatsapp-settings" element={<WhatsAppSettings />} />
+                    <Route path="change-password" element={<ChangePassword />} />
                 </Route>
             </Routes>
         </Router>

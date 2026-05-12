@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   PRODUCT_SALES: `${BASE_URL}/product-sales`,
   OFFERS: `${BASE_URL}/offers`,
   WHATSAPP_SETTINGS: `${BASE_URL}/tenants/me/whatsapp-settings`,
+  CHANGE_PASSWORD: `${BASE_URL}/change-password`,
 };
 
 export const getHeaders = () => {

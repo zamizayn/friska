@@ -29,8 +29,9 @@
         "orderConfirmedMessage": "✅ *Order Confirmed!* #{{order_id}}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️",
         "abandonedCartMessage": "👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒"
       },
+      "googleMapsApiKey": "AIzaSyCTD8hXq1zyz0sSb81hWsr3PcCX5foTkTw",
       "createdAt": "2026-05-07T11:26:15.207Z",
-      "updatedAt": "2026-05-11T06:56:43.011Z"
+      "updatedAt": "2026-05-12T05:30:15.304Z"
     }
   ],
   "branches": [
@@ -98,32 +99,18 @@
       "updatedAt": "2026-05-08T05:02:37.765Z"
     },
     {
-      "id": 20,
-      "name": "Chicken Chilli Special Cut 1 Box (2kg)",
-      "price": 455,
-      "description": "Chicken Chilli Special Cut",
-      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778229016/friska_products/fug8a8rzwqptihsuzwvg.jpg",
-      "categoryId": 3,
-      "stock": 47,
-      "branchId": 2,
-      "retailerId": "wstore_1778229017551_610",
-      "priority": 2,
-      "createdAt": "2026-05-08T08:30:17.551Z",
-      "updatedAt": "2026-05-08T11:02:35.752Z"
-    },
-    {
       "id": 18,
       "name": "Special Biriyani Chicken Pack",
       "price": 340,
       "description": "Special Biriyani Chicken Pack",
       "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778228835/friska_products/isnuhzuh6wva2dkckl7s.jpg",
       "categoryId": 3,
-      "stock": 50,
+      "stock": 44,
       "branchId": 2,
       "retailerId": "wstore_1778228835634_669",
       "priority": 4,
       "createdAt": "2026-05-08T08:27:15.635Z",
-      "updatedAt": "2026-05-08T08:48:31.981Z"
+      "updatedAt": "2026-05-12T05:33:01.405Z"
     },
     {
       "id": 16,
@@ -138,6 +125,20 @@
       "priority": 5,
       "createdAt": "2026-05-08T08:16:42.040Z",
       "updatedAt": "2026-05-08T11:02:35.754Z"
+    },
+    {
+      "id": 19,
+      "name": "Premium Chicken Curry Cut Pack (New)",
+      "price": 158,
+      "description": "Premium Chicken Curry Cut Pack",
+      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778228968/friska_products/whth9saoz0hejakfjfmq.jpg",
+      "categoryId": 3,
+      "stock": 34,
+      "branchId": 2,
+      "retailerId": "wstore_1778228968930_386",
+      "priority": 3,
+      "createdAt": "2026-05-08T08:29:28.931Z",
+      "updatedAt": "2026-05-12T05:54:46.503Z"
     },
     {
       "id": 15,
@@ -182,32 +183,32 @@
       "updatedAt": "2026-05-08T08:48:51.228Z"
     },
     {
-      "id": 19,
-      "name": "Premium Chicken Curry Cut Pack (New)",
-      "price": 158,
-      "description": "Premium Chicken Curry Cut Pack",
-      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778228968/friska_products/whth9saoz0hejakfjfmq.jpg",
-      "categoryId": 3,
-      "stock": 50,
-      "branchId": 2,
-      "retailerId": "wstore_1778228968930_386",
-      "priority": 3,
-      "createdAt": "2026-05-08T08:29:28.931Z",
-      "updatedAt": "2026-05-08T09:25:18.309Z"
-    },
-    {
       "id": 21,
       "name": "Crispy Chicken Lollipop Pack",
       "price": 244,
       "description": "Crispy Chicken Lollipop Pack",
       "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778234147/friska_products/syuefbz91dubk5ahus12.jpg",
       "categoryId": 3,
-      "stock": 11,
+      "stock": 9,
       "branchId": 2,
       "retailerId": "wstore_1778229198917_510",
       "priority": 1,
       "createdAt": "2026-05-08T08:33:18.917Z",
-      "updatedAt": "2026-05-11T07:00:19.188Z"
+      "updatedAt": "2026-05-12T05:26:45.746Z"
+    },
+    {
+      "id": 20,
+      "name": "Chicken Chilli Special Cut 1 Box (2kg)",
+      "price": 455,
+      "description": "Chicken Chilli Special Cut",
+      "image": "https://res.cloudinary.com/djud472s4/image/upload/v1778229016/friska_products/fug8a8rzwqptihsuzwvg.jpg",
+      "categoryId": 3,
+      "stock": 45,
+      "branchId": 2,
+      "retailerId": "wstore_1778229017551_610",
+      "priority": 2,
+      "createdAt": "2026-05-08T08:30:17.551Z",
+      "updatedAt": "2026-05-12T05:29:50.462Z"
     }
   ],
   "customers": [
@@ -279,6 +280,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T11:36:35.087Z",
       "updatedAt": "2026-05-08T11:36:35.087Z"
     },
@@ -303,6 +305,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-11T05:33:09.921Z",
       "updatedAt": "2026-05-11T05:33:09.921Z"
     },
@@ -327,6 +330,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T05:33:47.235Z",
       "updatedAt": "2026-05-08T05:35:35.771Z"
     },
@@ -351,6 +355,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-11T06:58:13.324Z",
       "updatedAt": "2026-05-11T06:58:13.324Z"
     },
@@ -375,6 +380,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-11T07:00:19.184Z",
       "updatedAt": "2026-05-11T07:00:19.184Z"
     },
@@ -399,8 +405,34 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T09:59:08.801Z",
       "updatedAt": "2026-05-08T10:00:21.073Z"
+    },
+    {
+      "id": 15,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667023,76.35751386",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": null,
+      "createdAt": "2026-05-12T05:19:50.929Z",
+      "updatedAt": "2026-05-12T05:19:50.929Z"
     },
     {
       "id": 7,
@@ -423,6 +455,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T09:46:15.647Z",
       "updatedAt": "2026-05-08T10:27:50.314Z"
     },
@@ -447,6 +480,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T09:43:16.608Z",
       "updatedAt": "2026-05-08T10:27:51.868Z"
     },
@@ -471,6 +505,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T09:41:23.515Z",
       "updatedAt": "2026-05-08T10:27:52.873Z"
     },
@@ -495,8 +530,34 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T09:39:36.368Z",
       "updatedAt": "2026-05-08T10:27:54.296Z"
+    },
+    {
+      "id": 16,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.2666999,76.3574271",
+      "items": [
+        {
+          "id": 21,
+          "name": "Crispy Chicken Lollipop Pack",
+          "price": 244,
+          "quantity": 1
+        }
+      ],
+      "total": 244,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": null,
+      "createdAt": "2026-05-12T05:26:45.742Z",
+      "updatedAt": "2026-05-12T05:26:45.742Z"
     },
     {
       "id": 2,
@@ -519,6 +580,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T07:51:15.623Z",
       "updatedAt": "2026-05-08T10:27:56.592Z"
     },
@@ -543,6 +605,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T08:57:26.036Z",
       "updatedAt": "2026-05-08T10:28:02.448Z"
     },
@@ -567,6 +630,7 @@
       "discountAmount": 0,
       "appliedOfferCode": null,
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T09:49:02.375Z",
       "updatedAt": "2026-05-08T10:30:42.079Z"
     },
@@ -597,8 +661,134 @@
       "discountAmount": 223,
       "appliedOfferCode": "SAVE223",
       "paymentTransactionId": null,
+      "formattedAddress": null,
       "createdAt": "2026-05-08T11:02:35.749Z",
       "updatedAt": "2026-05-08T11:02:35.749Z"
+    },
+    {
+      "id": 17,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26664965,76.35746972",
+      "items": [
+        {
+          "id": 20,
+          "name": "Chicken Chilli Special Cut 1 Box (2kg)",
+          "price": 455,
+          "quantity": 2
+        }
+      ],
+      "total": 910,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": null,
+      "createdAt": "2026-05-12T05:29:50.457Z",
+      "updatedAt": "2026-05-12T05:29:50.457Z"
+    },
+    {
+      "id": 18,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26667068,76.35753691",
+      "items": [
+        {
+          "id": 19,
+          "name": "Premium Chicken Curry Cut Pack (New)",
+          "price": 158,
+          "quantity": 5
+        }
+      ],
+      "total": 790,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": null,
+      "createdAt": "2026-05-12T05:31:00.968Z",
+      "updatedAt": "2026-05-12T05:31:00.968Z"
+    },
+    {
+      "id": 19,
+      "customerPhone": "917012738756",
+      "address": "Indeevaram, Infopark Thrissur, 7985+M2P, Koratty, Kerala 680308, India",
+      "items": [
+        {
+          "id": 18,
+          "name": "Special Biriyani Chicken Pack",
+          "price": 340,
+          "quantity": 6
+        }
+      ],
+      "total": 2040,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": "Indeevaram, Infopark Thrissur, 7985+M2P, Koratty, Kerala 680308, India",
+      "createdAt": "2026-05-12T05:33:01.402Z",
+      "updatedAt": "2026-05-12T05:33:01.402Z"
+    },
+    {
+      "id": 20,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26669727,76.35753941",
+      "items": [
+        {
+          "id": 19,
+          "name": "Premium Chicken Curry Cut Pack (New)",
+          "price": 158,
+          "quantity": 5
+        }
+      ],
+      "total": 790,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": "Office No 3A-4, Third Floor, Indeevaram (SEZ), Infopark Thrissur Campus Koratty P.O, Koratty, Kerala 680308, India",
+      "createdAt": "2026-05-12T05:52:58.211Z",
+      "updatedAt": "2026-05-12T05:52:58.211Z"
+    },
+    {
+      "id": 21,
+      "customerPhone": "917012738756",
+      "address": "https://maps.google.com/?q=10.26671645,76.35741131",
+      "items": [
+        {
+          "id": 19,
+          "name": "Premium Chicken Curry Cut Pack (New)",
+          "price": 158,
+          "quantity": 6
+        }
+      ],
+      "total": 948,
+      "status": "pending",
+      "branchId": 2,
+      "cancellationReason": null,
+      "paymentMethod": "Cash on Delivery",
+      "paymentStatus": "pending",
+      "discountAmount": 0,
+      "appliedOfferCode": null,
+      "paymentTransactionId": null,
+      "formattedAddress": "7984+MWM, Koratty - Nalukettu Rd, Koratty, Kerala 680308, India",
+      "createdAt": "2026-05-12T05:54:46.501Z",
+      "updatedAt": "2026-05-12T05:54:46.501Z"
     }
   ],
   "notifications": [
@@ -617,7 +807,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T05:33:47.240Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 9,
@@ -634,7 +824,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T09:59:08.804Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 2,
@@ -651,7 +841,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T07:51:15.628Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 3,
@@ -668,7 +858,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T08:57:26.042Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 10,
@@ -685,7 +875,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T11:02:35.755Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 4,
@@ -702,7 +892,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T09:39:36.372Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 5,
@@ -719,7 +909,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T09:41:23.517Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 6,
@@ -736,7 +926,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T09:43:16.614Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 7,
@@ -753,7 +943,58 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T09:46:15.651Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
+    },
+    {
+      "id": 20,
+      "title": "🛒 New Order #17",
+      "body": "₹910 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 910,
+        "orderId": 17,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-12T05:29:50.464Z",
+      "updatedAt": "2026-05-12T05:33:06.792Z"
+    },
+    {
+      "id": 21,
+      "title": "🛒 New Order #18",
+      "body": "₹790 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 790,
+        "orderId": 18,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-12T05:31:00.972Z",
+      "updatedAt": "2026-05-12T05:33:06.792Z"
+    },
+    {
+      "id": 22,
+      "title": "🛒 New Order #19",
+      "body": "₹2040 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 2040,
+        "orderId": 19,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-12T05:33:01.407Z",
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 8,
@@ -770,7 +1011,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T09:49:02.379Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 11,
@@ -787,7 +1028,7 @@
       },
       "isRead": true,
       "createdAt": "2026-05-08T11:36:35.093Z",
-      "updatedAt": "2026-05-11T05:24:37.519Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 12,
@@ -802,9 +1043,9 @@
         "branchId": 2,
         "customerPhone": "919747961825"
       },
-      "isRead": false,
+      "isRead": true,
       "createdAt": "2026-05-11T05:33:09.929Z",
-      "updatedAt": "2026-05-11T05:33:09.929Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 13,
@@ -818,9 +1059,9 @@
         "branchId": 2,
         "customerPhone": "917012738756"
       },
-      "isRead": false,
+      "isRead": true,
       "createdAt": "2026-05-11T06:53:15.417Z",
-      "updatedAt": "2026-05-11T06:53:15.417Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 14,
@@ -834,9 +1075,9 @@
         "branchId": 2,
         "customerPhone": "917012738756"
       },
-      "isRead": false,
+      "isRead": true,
       "createdAt": "2026-05-11T06:55:20.963Z",
-      "updatedAt": "2026-05-11T06:55:20.963Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 15,
@@ -850,9 +1091,9 @@
         "branchId": 2,
         "customerPhone": "917012738756"
       },
-      "isRead": false,
+      "isRead": true,
       "createdAt": "2026-05-11T06:55:31.442Z",
-      "updatedAt": "2026-05-11T06:55:31.442Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 16,
@@ -867,9 +1108,9 @@
         "branchId": 2,
         "customerPhone": "917012738756"
       },
-      "isRead": false,
+      "isRead": true,
       "createdAt": "2026-05-11T06:58:13.330Z",
-      "updatedAt": "2026-05-11T06:58:13.330Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
     },
     {
       "id": 17,
@@ -884,9 +1125,77 @@
         "branchId": 2,
         "customerPhone": "917012738756"
       },
-      "isRead": false,
+      "isRead": true,
       "createdAt": "2026-05-11T07:00:19.190Z",
-      "updatedAt": "2026-05-11T07:00:19.190Z"
+      "updatedAt": "2026-05-12T05:33:06.792Z"
+    },
+    {
+      "id": 18,
+      "title": "🛒 New Order #15",
+      "body": "₹244 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 15,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-12T05:19:50.936Z",
+      "updatedAt": "2026-05-12T05:33:06.792Z"
+    },
+    {
+      "id": 19,
+      "title": "🛒 New Order #16",
+      "body": "₹244 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 244,
+        "orderId": 16,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": true,
+      "createdAt": "2026-05-12T05:26:45.748Z",
+      "updatedAt": "2026-05-12T05:33:06.792Z"
+    },
+    {
+      "id": 23,
+      "title": "🛒 New Order #20",
+      "body": "₹790 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 790,
+        "orderId": 20,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": false,
+      "createdAt": "2026-05-12T05:52:58.217Z",
+      "updatedAt": "2026-05-12T05:52:58.217Z"
+    },
+    {
+      "id": 24,
+      "title": "🛒 New Order #21",
+      "body": "₹948 from +917012738756 (Cash on Delivery)",
+      "type": "new_order",
+      "tenantId": 1,
+      "branchId": 2,
+      "data": {
+        "total": 948,
+        "orderId": 21,
+        "branchId": 2,
+        "customerPhone": "917012738756"
+      },
+      "isRead": false,
+      "createdAt": "2026-05-12T05:54:46.505Z",
+      "updatedAt": "2026-05-12T05:54:46.505Z"
     }
   ],
   "customerLogs": [
@@ -2817,6 +3126,441 @@
       },
       "createdAt": "2026-05-11T07:02:16.846Z",
       "updatedAt": "2026-05-11T07:02:16.846Z"
+    },
+    {
+      "id": 205,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:32:33.400Z",
+      "updatedAt": "2026-05-12T04:32:33.400Z"
+    },
+    {
+      "id": 206,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:33:21.017Z",
+      "updatedAt": "2026-05-12T04:33:21.017Z"
+    },
+    {
+      "id": 207,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:33:54.333Z",
+      "updatedAt": "2026-05-12T04:33:54.333Z"
+    },
+    {
+      "id": 208,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:34:53.623Z",
+      "updatedAt": "2026-05-12T04:34:53.623Z"
+    },
+    {
+      "id": 209,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:37:15.342Z",
+      "updatedAt": "2026-05-12T04:37:15.342Z"
+    },
+    {
+      "id": 210,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:37:25.808Z",
+      "updatedAt": "2026-05-12T04:37:25.808Z"
+    },
+    {
+      "id": 211,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:38:42.320Z",
+      "updatedAt": "2026-05-12T04:38:42.320Z"
+    },
+    {
+      "id": 212,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:40:34.847Z",
+      "updatedAt": "2026-05-12T04:40:34.847Z"
+    },
+    {
+      "id": 213,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "SHOP_VIEWED",
+      "details": {
+        "mode": "all_products"
+      },
+      "createdAt": "2026-05-12T04:42:24.371Z",
+      "updatedAt": "2026-05-12T04:42:24.371Z"
+    },
+    {
+      "id": 214,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:42:50.093Z",
+      "updatedAt": "2026-05-12T04:42:50.093Z"
+    },
+    {
+      "id": 215,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:46:30.259Z",
+      "updatedAt": "2026-05-12T04:46:30.259Z"
+    },
+    {
+      "id": 216,
+      "customerPhone": "918943685547",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T04:47:31.497Z",
+      "updatedAt": "2026-05-12T04:47:31.497Z"
+    },
+    {
+      "id": 217,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:19:22.122Z",
+      "updatedAt": "2026-05-12T05:19:22.122Z"
+    },
+    {
+      "id": 218,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-12T05:19:27.269Z",
+      "updatedAt": "2026-05-12T05:19:27.269Z"
+    },
+    {
+      "id": 219,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:19:38.183Z",
+      "updatedAt": "2026-05-12T05:19:38.183Z"
+    },
+    {
+      "id": 220,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:26:21.435Z",
+      "updatedAt": "2026-05-12T05:26:21.435Z"
+    },
+    {
+      "id": 221,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-12T05:26:26.497Z",
+      "updatedAt": "2026-05-12T05:26:26.497Z"
+    },
+    {
+      "id": 222,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 21,
+        "productName": "Crispy Chicken Lollipop Pack"
+      },
+      "createdAt": "2026-05-12T05:26:30.003Z",
+      "updatedAt": "2026-05-12T05:26:30.003Z"
+    },
+    {
+      "id": 223,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:29:28.002Z",
+      "updatedAt": "2026-05-12T05:29:28.002Z"
+    },
+    {
+      "id": 224,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 20,
+        "productName": "Chicken Chilli Special Cut 1 Box (2kg)"
+      },
+      "createdAt": "2026-05-12T05:29:33.183Z",
+      "updatedAt": "2026-05-12T05:29:33.183Z"
+    },
+    {
+      "id": 225,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:29:40.462Z",
+      "updatedAt": "2026-05-12T05:29:40.462Z"
+    },
+    {
+      "id": 226,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:30:36.852Z",
+      "updatedAt": "2026-05-12T05:30:36.852Z"
+    },
+    {
+      "id": 227,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "PRODUCT_VIEWED",
+      "details": {
+        "productId": 19,
+        "productName": "Premium Chicken Curry Cut Pack (New)"
+      },
+      "createdAt": "2026-05-12T05:30:43.385Z",
+      "updatedAt": "2026-05-12T05:30:43.385Z"
+    },
+    {
+      "id": 228,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 19,
+        "productName": "Premium Chicken Curry Cut Pack (New)"
+      },
+      "createdAt": "2026-05-12T05:30:46.983Z",
+      "updatedAt": "2026-05-12T05:30:46.983Z"
+    },
+    {
+      "id": 229,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:32:15.435Z",
+      "updatedAt": "2026-05-12T05:32:15.435Z"
+    },
+    {
+      "id": 230,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:32:32.538Z",
+      "updatedAt": "2026-05-12T05:32:32.538Z"
+    },
+    {
+      "id": 231,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 18,
+        "productName": "Special Biriyani Chicken Pack"
+      },
+      "createdAt": "2026-05-12T05:32:40.949Z",
+      "updatedAt": "2026-05-12T05:32:40.949Z"
+    },
+    {
+      "id": 232,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:32:51.438Z",
+      "updatedAt": "2026-05-12T05:32:51.438Z"
+    },
+    {
+      "id": 233,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:52:29.579Z",
+      "updatedAt": "2026-05-12T05:52:29.579Z"
+    },
+    {
+      "id": 234,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 19,
+        "productName": "Premium Chicken Curry Cut Pack (New)"
+      },
+      "createdAt": "2026-05-12T05:52:36.686Z",
+      "updatedAt": "2026-05-12T05:52:36.686Z"
+    },
+    {
+      "id": 235,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:52:45.361Z",
+      "updatedAt": "2026-05-12T05:52:45.361Z"
+    },
+    {
+      "id": 236,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:53:02.975Z",
+      "updatedAt": "2026-05-12T05:53:02.975Z"
+    },
+    {
+      "id": 237,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 16,
+        "productName": "Premium Boneless Chicken Breast"
+      },
+      "createdAt": "2026-05-12T05:53:09.935Z",
+      "updatedAt": "2026-05-12T05:53:09.935Z"
+    },
+    {
+      "id": 238,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:53:18.896Z",
+      "updatedAt": "2026-05-12T05:53:18.896Z"
+    },
+    {
+      "id": 239,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:54:06.580Z",
+      "updatedAt": "2026-05-12T05:54:06.580Z"
+    },
+    {
+      "id": 240,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 19,
+        "productName": "Premium Chicken Curry Cut Pack (New)"
+      },
+      "createdAt": "2026-05-12T05:54:15.237Z",
+      "updatedAt": "2026-05-12T05:54:15.237Z"
+    },
+    {
+      "id": 241,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:54:22.573Z",
+      "updatedAt": "2026-05-12T05:54:22.573Z"
+    },
+    {
+      "id": 242,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "MENU_VIEWED",
+      "details": {},
+      "createdAt": "2026-05-12T05:55:11.335Z",
+      "updatedAt": "2026-05-12T05:55:11.335Z"
+    },
+    {
+      "id": 243,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "ADDED_TO_CART",
+      "details": {
+        "productId": 19,
+        "productName": "Premium Chicken Curry Cut Pack (New)"
+      },
+      "createdAt": "2026-05-12T05:55:17.349Z",
+      "updatedAt": "2026-05-12T05:55:17.349Z"
+    },
+    {
+      "id": 244,
+      "customerPhone": "917012738756",
+      "tenantId": 1,
+      "branchId": 2,
+      "actionType": "CHECKOUT_STARTED",
+      "details": {},
+      "createdAt": "2026-05-12T05:55:25.636Z",
+      "updatedAt": "2026-05-12T05:55:25.636Z"
     }
   ],
   "fcmTokens": [
@@ -2899,6 +3643,16 @@
       "role": "tenant",
       "createdAt": "2026-05-11T05:41:58.697Z",
       "updatedAt": "2026-05-11T05:41:58.697Z"
+    },
+    {
+      "id": 94,
+      "token": "eml2-1axAwkknxDh9ky-m4:APA91bGh8KD7qYmMAbMn4ZcOght_S0KyQe6sZjyhp_874C4BU8aXIa8w2E1wIOTDnlmeG0efXv-0REjAabENl1YWRl-DddUut4M10U6EkZ722C-IDNNhEBs",
+      "adminId": 1,
+      "tenantId": 1,
+      "branchId": null,
+      "role": "tenant",
+      "createdAt": "2026-05-12T05:30:06.180Z",
+      "updatedAt": "2026-05-12T05:30:06.180Z"
     }
   ]
 }

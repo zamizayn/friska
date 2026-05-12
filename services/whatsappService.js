@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const getUrl = (config) => {
-    const version = config.version || process.env.GRAPH_API_VERSION || 'v19.0';
+    const version = config.version || process.env.GRAPH_API_VERSION || 'v21.0';
     const phoneId = config.phoneNumberId || process.env.PHONE_NUMBER_ID;
     return `https://graph.facebook.com/${version}/${phoneId}/messages`;
 };
@@ -248,7 +248,7 @@ const sendCarouselMessage = async (to, bodyText, cards, config = {}) => {
             }
         }, { headers: getHeaders(config) });
     } catch (error) {
-        console.error('WhatsApp Carousel Error:', JSON.stringify(error.response?.data || error.message, null, 2));
+        console.error('WhatsApp Carousel Error Payload:', JSON.stringify(error.response?.data || error.message, null, 2));
         throw error;
     }
 };

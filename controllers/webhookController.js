@@ -1,3 +1,4 @@
+const axios = require('axios');
 const {
     sendTextMessage,
     sendButtonMessage,
@@ -16,7 +17,8 @@ const {
     Branch,
     Tenant,
     CustomerLog,
-    Offer
+    Offer,
+    CustomerAddress
 } = require('../models');
 
 const { Op, Sequelize } = require('sequelize');
@@ -106,6 +108,24 @@ const extractTextFromMessage = (message) => {
     }
     return '';
 };
+const getAddressFromCoords = async (lat, lng, apiKey) => {
+    try {
+        if (!apiKey) return null;
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+        const res = await axios.get(url);
+        console.log(`[Geocoding API] Status: ${res.data.status}, Results count: ${res.data.results?.length}`);
+        if (res.data.status === 'OK' && res.data.results.length > 0) {
+            return res.data.results[0].formatted_address;
+        }
+        if (res.data.status !== 'OK') {
+            console.error(`[Geocoding API] Error Message: ${res.data.error_message || 'Unknown error'}`);
+        }
+        return null;
+    } catch (e) {
+        console.error('Reverse Geocoding Error:', e.message);
+        return null;
+    }
+};
 
 // =========================
 // Handler Functions
@@ -120,7 +140,75 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
         ? getTenantMessage(tenant, 'welcomeReturning', `Welcome back to *{{tenant_name}}*, {{customer_name}}! 😊 We're so happy to see you again. Explore our latest collection and let us know if you need any help! 🛍️`, { tenant_name: tenant.name, customer_name: customer.name })
         : getTenantMessage(tenant, 'welcomeNew', `Welcome to *{{tenant_name}}*! 🛍️ We're excited to help you find precisely what you're looking for today. Feel free to browse our catalogs and reach out if you have any questions! ✨`, { tenant_name: tenant.name });
 
-    await sendListMessage(from, welcomeMsg, "Main Menu", [
+    // Try to show products if branch is assigned
+    let productsShown = false;
+
+    // If no branchId yet, try to pick the first one from the tenant just for the home menu products
+    let queryBranchId = session.branchId;
+    if (!queryBranchId) {
+        const firstBranch = await Branch.findOne({ where: { tenantId: tenant.id } });
+        if (firstBranch) queryBranchId = firstBranch.id;
+    }
+
+    if (queryBranchId) {
+        try {
+            const products = await Product.findAll({
+                where: { branchId: queryBranchId },
+                limit: 5,
+                order: [['priority', 'ASC'], ['name', 'ASC']]
+            });
+
+            if (products.length > 0) {
+                if (session.catalogId && session.config.displayMode !== 'carousel') {
+                    // Native Catalog UI
+                    const uniqueRetailerIds = new Set();
+                    const productItems = [];
+                    products.forEach(p => {
+                        if (p.retailerId && !uniqueRetailerIds.has(p.retailerId)) {
+                            uniqueRetailerIds.add(p.retailerId);
+                            productItems.push({ product_retailer_id: p.retailerId });
+                        }
+                    });
+
+                    if (productItems.length > 0) {
+                        const sections = [{
+                            title: 'Our Featured Collection',
+                            product_items: productItems
+                        }];
+                        await sendMultiProductMessage(from, session.catalogId, `🛍️ ${tenant.name}`, welcomeMsg, sections, session.config);
+                        productsShown = true;
+                    }
+                } else {
+                    // Carousel Mode
+                    if (products.length === 1) {
+                        await sendProductCardMessage(from, products[0], session.config);
+                        productsShown = true;
+                    } else {
+                        const carouselCards = products.map(p => ({
+                            image: p.image || 'https://via.placeholder.com/600x400?text=No+Image',
+                            title: p.name.slice(0, 32),
+                            buttons: [
+                                { id: `product_${p.id}`, title: 'View Details' },
+                                { id: `add_${p.id}`, title: `Add ₹${p.price}`.slice(0, 20) }
+                            ]
+                        }));
+
+                        // Use welcomeMsg as the carousel body
+                        await sendCarouselMessage(from, welcomeMsg.slice(0, 1024), carouselCards, session.config);
+                        productsShown = true;
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[HomeMenu] Error showing products:', e.response?.data || e.message);
+        }
+    }
+
+    const menuBody = productsShown
+        ? "Explore more options from our menu below: 🏠"
+        : welcomeMsg;
+
+    await sendListMessage(from, menuBody, "Main Menu", [
         {
             title: "🛒 Shopping",
             rows: [
@@ -377,10 +465,10 @@ const handleSearching = async (from, text, session) => {
         } else {
             const carouselCards = searchResults.map(p => ({
                 image: p.image || 'https://via.placeholder.com/600x400?text=No+Image',
-                title: p.name,
+                title: p.name.slice(0, 32),
                 buttons: [
                     { id: `product_${p.id}`, title: 'View Details' },
-                    { id: `add_${p.id}`, title: `Add ₹${p.price}` }
+                    { id: `add_${p.id}`, title: `Add ₹${p.price}`.slice(0, 20) }
                 ]
             }));
             await sendCarouselMessage(from, `🔍 Search results for "*${text}*"`, carouselCards, session.config);
@@ -477,10 +565,10 @@ const handleShop = async (from, text, session, tenant, customer) => {
                 } else {
                     const carouselCards = catProducts.map(p => ({
                         image: p.image || 'https://via.placeholder.com/600x400?text=No+Image',
-                        title: p.name,
+                        title: p.name.slice(0, 32),
                         buttons: [
                             { id: `product_${p.id}`, title: 'View Details' },
-                            { id: `add_${p.id}`, title: `Add ₹${p.price}` }
+                            { id: `add_${p.id}`, title: `Add ₹${p.price}`.slice(0, 20) }
                         ]
                     }));
 
@@ -622,10 +710,10 @@ const handleAllProducts = async (from, session, tenant) => {
         } else {
             const carouselCards = products.map(p => ({
                 image: p.image || 'https://via.placeholder.com/600x400?text=No+Image',
-                title: p.name,
+                title: p.name.slice(0, 32),
                 buttons: [
                     { id: `product_${p.id}`, title: 'View Details' },
-                    { id: `add_${p.id}`, title: `Add ₹${p.price}` }
+                    { id: `add_${p.id}`, title: `Add ₹${p.price}`.slice(0, 20) }
                 ]
             }));
             await sendCarouselMessage(from, `🛍️ *All Products* (Page ${page})`, carouselCards, session.config);
@@ -771,10 +859,10 @@ const handleCategorySelection = async (from, text, session) => {
             } else {
                 const carouselCards = catProducts.map(p => ({
                     image: p.image || 'https://via.placeholder.com/600x400?text=No+Image',
-                    title: p.name,
+                    title: p.name.slice(0, 32),
                     buttons: [
                         { id: `product_${p.id}`, title: 'View Details' },
-                        { id: `add_${p.id}`, title: `Add ₹${p.price}` }
+                        { id: `add_${p.id}`, title: `Add ₹${p.price}`.slice(0, 20) }
                     ]
                 }));
 
@@ -958,14 +1046,53 @@ const handleCheckout = async (from, session, tenant) => {
             ], session.config);
         }
 
-        session.state = 'CHECKOUT_ADDRESS';
-        const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please enter your delivery address');
-        await sendTextMessage(from, msg, session.config);
+        const addresses = await CustomerAddress.findAll({ where: { customerPhone: from } });
+
+        if (addresses.length > 0) {
+            session.state = 'CHECKOUT_SELECT_ADDRESS';
+
+            const rows = addresses.map(addr => ({
+                id: `address_${addr.id}`,
+                title: addr.label || 'Saved Address',
+                description: addr.formattedAddress ? addr.formattedAddress.substring(0, 72) : addr.address.substring(0, 72)
+            }));
+
+            rows.push({
+                id: 'address_new',
+                title: '➕ Add New Address',
+                description: 'Send a new location or type a new address'
+            });
+
+            const msgText = getTenantMessage(tenant, 'selectAddressMessage', 'Where should we deliver? Select a saved address or add a new one.');
+            await sendListMessage(
+                from,
+                msgText,
+                'View Addresses',
+                [{ title: 'Saved Addresses', rows }],
+                session.config
+            );
+        } else {
+            session.state = 'CHECKOUT_ADDRESS';
+            const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please enter your delivery address');
+            await sendTextMessage(from, msg, session.config);
+        }
     }
 };
 
 const handleAddressCollection = async (from, text, session, tenant) => {
     session.address = text;
+
+    try {
+        await CustomerAddress.create({
+            customerPhone: from,
+            address: text,
+            formattedAddress: session.formattedAddress || null,
+            label: 'Saved Address'
+        });
+    } catch (e) {
+        console.error('Failed to save customer address:', e);
+    }
+
     session.state = 'CHECKOUT_PAYMENT';
 
     const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
@@ -973,8 +1100,7 @@ const handleAddressCollection = async (from, text, session, tenant) => {
         from,
         msg,
         [
-            { id: 'pay_cod', title: 'Cash on Delivery' },
-            { id: 'pay_online', title: 'Online Payment' }
+            { id: 'pay_cod', title: 'Cash on Delivery' }
         ],
         session.config
     );
@@ -1016,6 +1142,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
         savedOrder = await Order.create({
             customerPhone: from,
             address,
+            formattedAddress: session.formattedAddress || null,
             items: userCart,
             total,
             discountAmount,
@@ -1210,34 +1337,88 @@ const receiveWebhook = async (req, res) => {
         }
 
         let text = extractTextFromMessage(message);
+
+        // Handle Reverse Geocoding if location is sent and API key exists
+        if (message.type === 'location') {
+            console.log(`[Geocoding] Location message received. API Key exists: ${!!tenant.googleMapsApiKey}`);
+            if (tenant.googleMapsApiKey) {
+                const resolvedAddress = await getAddressFromCoords(message.location.latitude, message.location.longitude, tenant.googleMapsApiKey);
+                if (resolvedAddress) {
+                    console.log(`[Geocoding] Success: ${message.location.latitude},${message.location.longitude} -> ${resolvedAddress}`);
+                    session.formattedAddress = resolvedAddress;
+                } else {
+                    console.log(`[Geocoding] Failed: No address resolved for ${message.location.latitude},${message.location.longitude}`);
+                }
+            }
+        } else if (message.type === 'text') {
+            session.formattedAddress = null;
+        }
+
         console.log('FROM:', from, 'TEXT:', text);
 
         // Visual Catalog Order Detection
         if (text.includes('new order from visual catalog')) {
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT', { type: 'visual_catalog' });
+            session.lastCatalogOrder = text;
 
-            // Set state to wait for address
-            session.state = 'CATALOG_ORDER_ADDRESS';
-            session.lastCatalogOrder = text; // Optional: store the order text if needed
+            const addresses = await CustomerAddress.findAll({ where: { customerPhone: from } });
 
-            // 1. Notify Admin/Merchant
-            notificationService.sendToTenant(
-                tenant.id,
-                '🛍️ New Catalog Order',
-                `From +${from}: A customer just placed an order via the Visual Catalog. Waiting for their address...`,
-                'new_order',
-                { customerPhone: from, type: 'visual_catalog', branchId: session.branchId }
-            ).catch(err => console.error('[FCM error]', err.message));
+            if (addresses.length > 0) {
+                session.state = 'CATALOG_SELECT_ADDRESS';
 
-            // 2. Respond to Customer
-            const responseMsg = getTenantMessage(tenant, 'catalogOrderReceived', "✅ *Order Received!*\n\nWe've received your order items. Please share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵");
-            await sendTextMessage(from, responseMsg, session.config);
+                const rows = addresses.map(addr => ({
+                    id: `cataddress_${addr.id}`,
+                    title: addr.label || 'Saved Address',
+                    description: addr.formattedAddress ? addr.formattedAddress.substring(0, 72) : addr.address.substring(0, 72)
+                }));
+
+                rows.push({
+                    id: 'cataddress_new',
+                    title: '➕ Add New Address',
+                    description: 'Send a new location or type a new address'
+                });
+
+                const msgText = getTenantMessage(tenant, 'selectAddressMessage', 'Where should we deliver? Select a saved address or add a new one.');
+                await sendListMessage(
+                    from,
+                    msgText,
+                    'View Addresses',
+                    [{ title: 'Saved Addresses', rows }],
+                    session.config
+                );
+            } else {
+                session.state = 'CATALOG_ORDER_ADDRESS';
+
+                // 1. Notify Admin/Merchant
+                notificationService.sendToTenant(
+                    tenant.id,
+                    '🛍️ New Catalog Order',
+                    `From +${from}: A customer just placed an order via the Visual Catalog. Waiting for their address...`,
+                    'new_order',
+                    { customerPhone: from, type: 'visual_catalog', branchId: session.branchId }
+                ).catch(err => console.error('[FCM error]', err.message));
+
+                // 2. Respond to Customer
+                const responseMsg = getTenantMessage(tenant, 'catalogOrderReceived', "✅ *Order Received!*\n\nWe've received your order items. Please share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵");
+                await sendTextMessage(from, responseMsg, session.config);
+            }
             return;
         }
 
-        // Handle Address after Catalog Order
+        // Handle Address after Catalog Order (Manual Entry)
         if (session.state === 'CATALOG_ORDER_ADDRESS') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
+
+            try {
+                await CustomerAddress.create({
+                    customerPhone: from,
+                    address: text,
+                    formattedAddress: session.formattedAddress || null,
+                    label: 'Saved Address'
+                });
+            } catch (e) {
+                console.error('Failed to save customer address:', e);
+            }
 
             // Notify Merchant with the address
             notificationService.sendToTenant(
@@ -1354,6 +1535,93 @@ const receiveWebhook = async (req, res) => {
         } else if (text === 'checkout') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT_STARTED');
             await handleCheckout(from, session, tenant);
+        } else if (session.state === 'CHECKOUT_SELECT_ADDRESS') {
+            if (text === 'address_new') {
+                session.state = 'CHECKOUT_ADDRESS';
+                const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please send your current location or type your new delivery address');
+                await sendTextMessage(from, msg, session.config);
+            } else if (text.startsWith('address_')) {
+                const addressId = text.split('_')[1];
+                const selectedAddress = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
+
+                if (selectedAddress) {
+                    session.address = selectedAddress.address;
+                    session.formattedAddress = selectedAddress.formattedAddress;
+
+                    session.state = 'CHECKOUT_PAYMENT';
+                    const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
+                    await sendButtonMessage(
+                        from,
+                        msg,
+                        [
+                            { id: 'pay_cod', title: 'Cash on Delivery' }
+                        ],
+                        session.config
+                    );
+                } else {
+                    await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
+                }
+            } else {
+                await handleAddressCollection(from, text, session, tenant);
+            }
+        } else if (session.state === 'CATALOG_SELECT_ADDRESS') {
+            if (text === 'cataddress_new') {
+                session.state = 'CATALOG_ORDER_ADDRESS';
+                const responseMsg = getTenantMessage(tenant, 'catalogOrderReceived', "✅ *Order Received!*\n\nWe've received your order items. Please share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵");
+                await sendTextMessage(from, responseMsg, session.config);
+            } else if (text.startsWith('cataddress_')) {
+                const addressId = text.split('_')[1];
+                const selectedAddress = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
+
+                if (selectedAddress) {
+                    const finalAddress = selectedAddress.formattedAddress || selectedAddress.address;
+                    session.formattedAddress = selectedAddress.formattedAddress;
+
+                    await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: finalAddress });
+
+                    notificationService.sendToTenant(
+                        tenant.id,
+                        '📍 Address Received',
+                        `Customer (+${from}) selected saved address: ${finalAddress}`,
+                        'address_update',
+                        { customerPhone: from, address: finalAddress, branchId: session.branchId }
+                    ).catch(err => console.error('[FCM error]', err.message));
+
+                    const confirmMsg = getTenantMessage(tenant, 'catalogAddressConfirmed', "🙌 *Perfect!*\n\nWe've noted your delivery address. Our team is reviewing your order and will contact you shortly to confirm. Thank you for shopping with us! ✨");
+                    await sendButtonMessage(from, confirmMsg, [{ id: 'menu', title: 'Back to Menu' }], session.config);
+
+                    session.state = 'START';
+                } else {
+                    await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
+                }
+            } else {
+                session.formattedAddress = null;
+                await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
+
+                try {
+                    await CustomerAddress.create({
+                        customerPhone: from,
+                        address: text,
+                        formattedAddress: null,
+                        label: 'Saved Address'
+                    });
+                } catch (e) {
+                    console.error('Failed to save customer address:', e);
+                }
+
+                notificationService.sendToTenant(
+                    tenant.id,
+                    '📍 Address Received',
+                    `Customer (+${from}) provided address: ${text}`,
+                    'address_update',
+                    { customerPhone: from, address: text, branchId: session.branchId }
+                ).catch(err => console.error('[FCM error]', err.message));
+
+                const confirmMsg = getTenantMessage(tenant, 'catalogAddressConfirmed', "🙌 *Perfect!*\n\nWe've noted your delivery address. Our team is reviewing your order and will contact you shortly to confirm. Thank you for shopping with us! ✨");
+                await sendButtonMessage(from, confirmMsg, [{ id: 'menu', title: 'Back to Menu' }], session.config);
+
+                session.state = 'START';
+            }
         } else if (session.state === 'CHECKOUT_ADDRESS') {
             await handleAddressCollection(from, text, session, tenant);
         } else if (session.state === 'CHECKOUT_PAYMENT') {

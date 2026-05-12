@@ -16,6 +16,7 @@ export default function Orders() {
     const [addressModalOpen, setAddressModalOpen] = useState(false);
     const [viewModalOpen, setViewModalOpen] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState('');
+    const [selectedRawAddress, setSelectedRawAddress] = useState('');
     const [viewingOrder, setViewingOrder] = useState(null);
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
@@ -324,6 +325,11 @@ export default function Orders() {
                                 <td>
                                     <div style={{ fontWeight: 700, fontSize: '15px' }}>{order.customer?.name || 'Guest Customer'}</div>
                                     <div style={{ fontSize: '13px', color: 'var(--text-main)', marginTop: '2px' }}>{order.customerPhone}</div>
+                                    {(order.formattedAddress || order.address) && (
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.formattedAddress || order.address}>
+                                            📍 {order.formattedAddress || order.address}
+                                        </div>
+                                    )}
                                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
                                 </td>
                                 <td>{order.items?.length || 0} items</td>
@@ -368,7 +374,11 @@ export default function Orders() {
                                         <button className="btn-outline" style={{ padding: '6px' }} onClick={() => { setViewingOrder(order); setViewModalOpen(true); }}>
                                             <Eye size={16} />
                                         </button>
-                                        <button className="btn-outline" style={{ padding: '6px' }} onClick={() => { setSelectedAddress(order.address); setAddressModalOpen(true); }}>
+                                        <button className="btn-outline" style={{ padding: '6px' }} onClick={() => {
+                                            setSelectedAddress(order.formattedAddress || order.address);
+                                            setSelectedRawAddress(order.address);
+                                            setAddressModalOpen(true);
+                                        }}>
                                             <MapPin size={16} />
                                         </button>
                                     </div>
@@ -474,11 +484,31 @@ export default function Orders() {
                             <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setAddressModalOpen(false)}>✕</button>
                         </div>
                         <div style={{ background: 'var(--bg-app)', padding: '20px', borderRadius: '16px', fontSize: '14px', lineHeight: 1.6, color: 'var(--text-main)', marginBottom: '24px' }}>
-                            {selectedAddress}
+                            {selectedRawAddress?.startsWith('http') ? (
+                                <>
+                                    <div style={{ fontWeight: 700, marginBottom: '8px' }}>📍 {selectedAddress}</div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{selectedRawAddress}</div>
+                                </>
+                            ) : (
+                                selectedAddress
+                            )}
                         </div>
-                        <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => copyToClipboard(selectedAddress, 'addr')}>
-                            {copiedId === 'addr' ? <Check size={18} /> : <Copy size={18} />} {copiedId === 'addr' ? 'Copied!' : 'Copy Address'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button className="btn-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => copyToClipboard(selectedAddress, 'addr')}>
+                                {copiedId === 'addr' ? <Check size={18} /> : <Copy size={18} />} {copiedId === 'addr' ? 'Copied!' : 'Copy'}
+                            </button>
+                            {selectedRawAddress?.startsWith('http') && (
+                                <a
+                                    href={selectedRawAddress}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn-primary"
+                                    style={{ flex: 1, justifyContent: 'center', textDecoration: 'none' }}
+                                >
+                                    <MapPin size={18} /> Open in Maps
+                                </a>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -522,7 +552,20 @@ export default function Orders() {
                         <div style={{ marginBottom: '32px' }}>
                             <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Location Details</h4>
                             <div style={{ background: 'var(--bg-app)', padding: '16px', borderRadius: '12px', fontSize: '13px', lineHeight: 1.5, border: '1px solid var(--border-color)' }}>
-                                {viewingOrder.address}
+                                {viewingOrder.formattedAddress && (
+                                    <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--text-main)' }}>
+                                        📍 {viewingOrder.formattedAddress}
+                                    </div>
+                                )}
+                                <div style={{ wordBreak: 'break-all' }}>
+                                    {viewingOrder.address?.startsWith('http') ? (
+                                        <a href={viewingOrder.address} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <MapPin size={14} /> Open in Google Maps
+                                        </a>
+                                    ) : (
+                                        viewingOrder.address
+                                    )}
+                                </div>
                             </div>
                         </div>
 

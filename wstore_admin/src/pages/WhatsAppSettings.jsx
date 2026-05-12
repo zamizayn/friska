@@ -11,6 +11,7 @@ export default function WhatsAppSettings() {
         chooseBranchMessage: '📍 Choose your nearest branch',
         cartEmptyMessage: '🛒 Your cart is empty',
         enterAddressMessage: '📍 Please enter your delivery address',
+        selectAddressMessage: 'Where should we deliver? Select a saved address or add a new one.',
         paymentMethodMessage: '💳 How would you like to pay?',
         orderConfirmedMessage: '✅ *Order Confirmed!* #{{order_id}}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️',
         abandonedCartMessage: '👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒'
@@ -92,6 +93,7 @@ export default function WhatsAppSettings() {
             icon: <Package size={20} color="#f59e0b" />,
             fields: [
                 { id: 'enterAddressMessage', label: 'Address Collection', placeholder: '📍 Please enter your delivery address' },
+                { id: 'selectAddressMessage', label: 'Select Saved Address Prompt', placeholder: 'Where should we deliver? Select a saved address or add a new one.' },
                 { id: 'paymentMethodMessage', label: 'Payment Method Selection', placeholder: '💳 How would you like to pay?' },
                 { id: 'orderConfirmedMessage', label: 'Order Confirmation', placeholder: '✅ *Order Confirmed!* #{{order_id}}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️', hint: 'Placeholders: {{order_id}}, {{payment_method}}' },
             ]

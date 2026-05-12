@@ -36,7 +36,8 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0
     },
     appliedOfferCode: DataTypes.STRING,
-    paymentTransactionId: DataTypes.STRING
+    paymentTransactionId: DataTypes.STRING,
+    formattedAddress: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'Order',

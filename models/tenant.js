@@ -56,6 +56,10 @@ module.exports = (sequelize, DataTypes) => {
     whatsappSettings: {
       type: DataTypes.JSON,
       allowNull: true
+    },
+    googleMapsApiKey: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

@@ -6,7 +6,8 @@ export default function Settings() {
     const [formData, setFormData] = useState({
         razorpayKeyId: '',
         razorpayKeySecret: '',
-        razorpayWebhookSecret: ''
+        razorpayWebhookSecret: '',
+        googleMapsApiKey: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -25,7 +26,8 @@ export default function Settings() {
                     setFormData({
                         razorpayKeyId: data.razorpayKeyId || '',
                         razorpayKeySecret: data.razorpayKeySecret || '',
-                        razorpayWebhookSecret: data.razorpayWebhookSecret || ''
+                        razorpayWebhookSecret: data.razorpayWebhookSecret || '',
+                        googleMapsApiKey: data.googleMapsApiKey || ''
                     });
                 }
             } catch (e) {
@@ -149,6 +151,32 @@ export default function Settings() {
                                 style={{ background: 'var(--bg-app)' }}
                             />
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Set this secret in your Razorpay Webhook settings to verify payment notifications.</p>
+                        </div>
+                    </div>
+                    
+                    <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                            <div style={{ width: '40px', height: '40px', background: '#eff6ff', color: '#3b82f6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Globe size={20} />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0 }}>Google Maps Integration</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Configure your maps API key for location services</p>
+                            </div>
+                        </div>
+
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Key size={14} /> Google Maps API Key
+                            </label>
+                            <input 
+                                type="text" 
+                                placeholder="AIzaSy..." 
+                                value={formData.googleMapsApiKey} 
+                                onChange={e => setFormData({ ...formData, googleMapsApiKey: e.target.value })} 
+                                style={{ background: 'var(--bg-app)' }}
+                            />
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>This key is used for customer address selection and delivery distance calculations.</p>
                         </div>
                     </div>
 

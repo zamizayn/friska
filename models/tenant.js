@@ -60,6 +60,10 @@ module.exports = (sequelize, DataTypes) => {
     googleMapsApiKey: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    geminiApiKey: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

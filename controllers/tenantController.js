@@ -135,9 +135,12 @@ const getWhatsAppSettings = async (req, res) => {
     try {
         if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
         const tenant = await Tenant.findByPk(req.user.tenantId, {
-            attributes: ['whatsappSettings']
+            attributes: ['whatsappSettings', 'geminiApiKey']
         });
-        res.json(tenant.whatsappSettings || {});
+        res.json({
+            ...(tenant.whatsappSettings || {}),
+            geminiApiKey: tenant.geminiApiKey
+        });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -148,7 +151,11 @@ const updateWhatsAppSettings = async (req, res) => {
         if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
         const tenant = await Tenant.findByPk(req.user.tenantId);
         if (tenant) {
-            await tenant.update({ whatsappSettings: req.body });
+            const { geminiApiKey, ...whatsappSettings } = req.body;
+            await tenant.update({
+                whatsappSettings,
+                geminiApiKey: geminiApiKey || null
+            });
             res.json({ success: true });
         } else res.status(404).send();
     } catch (e) {

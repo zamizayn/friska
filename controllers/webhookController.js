@@ -25,6 +25,7 @@ const { Op, Sequelize } = require('sequelize');
 const moment = require('moment-timezone');
 const notificationService = require('../services/notificationService');
 const { createPaymentLink } = require('../services/paymentService');
+const aiService = require('../services/aiService');
 
 // sessions structure: { [phoneNumber]: { state: 'HOME', tenantId: 1, branchId: 1, config: { ... } } }
 const sessions = {};
@@ -1234,7 +1235,17 @@ const handleNativeOrder = async (from, message, session, tenant) => {
     }
 };
 
-const handleDefault = async (from, session, tenant) => {
+const handleDefault = async (from, text, session, tenant) => {
+    // Attempt to get an AI response if it's a regular text message (not a button payload)
+    if (text && text.length > 2 && !text.includes('_')) {
+        const aiReply = await aiService.generateSupportResponse(tenant, session, text);
+        if (aiReply) {
+            await sendTextMessage(from, aiReply, session.config);
+            return;
+        }
+    }
+
+    // Fallback to default menu
     await sendButtonMessage(
         from,
         'Choose an option 👇',
@@ -1627,7 +1638,7 @@ const receiveWebhook = async (req, res) => {
         } else if (session.state === 'CHECKOUT_PAYMENT') {
             await handlePaymentSelection(from, text, session, tenant);
         } else {
-            await handleDefault(from, session, tenant);
+            await handleDefault(from, text, session, tenant);
         }
 
     } catch (error) {

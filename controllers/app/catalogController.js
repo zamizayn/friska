@@ -51,6 +51,9 @@ const getPublicCatalog = async (req, res) => {
                 branding: {
                     logo: tenant.whatsappSettings?.logo || null,
                     primaryColor: tenant.whatsappSettings?.primaryColor || '#000000'
+                },
+                whatsappSettings: {
+                    phone: tenant.whatsappSettings?.phone || null
                 }
             },
             branches,

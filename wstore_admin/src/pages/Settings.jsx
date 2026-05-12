@@ -185,7 +185,6 @@ export default function Settings() {
                     <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                             <div style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#8b5cf6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Sparkles size={20} />
                             </div>
                             <div>
                                 <h3 style={{ margin: 0 }}>Gemini AI Integration</h3>

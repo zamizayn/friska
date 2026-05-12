@@ -6,7 +6,8 @@ const {
     sendProductCardMessage,
     sendSingleProductMessage,
     sendMultiProductMessage,
-    sendCarouselMessage
+    sendCarouselMessage,
+    sendLocationRequest
 } = require('../services/whatsappService');
 
 const {
@@ -1075,7 +1076,7 @@ const handleCheckout = async (from, session, tenant) => {
         } else {
             session.state = 'CHECKOUT_ADDRESS';
             const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please enter your delivery address');
-            await sendTextMessage(from, msg, session.config);
+            await sendLocationRequest(from, msg, session.config);
         }
     }
 };
@@ -1229,7 +1230,7 @@ const handleNativeOrder = async (from, message, session, tenant) => {
     if (newCart.length > 0) {
         carts[from] = newCart;
         session.state = 'CHECKOUT_ADDRESS';
-        await sendTextMessage(from, '📍 We received your cart! Please enter your delivery address to confirm the order:', session.config);
+        await sendLocationRequest(from, '📍 We received your cart! Please enter your delivery address to confirm the order:', session.config);
     } else {
         await sendTextMessage(from, '❌ There was an error processing your cart. Products may be out of stock or unavailable.', session.config);
     }
@@ -1411,7 +1412,7 @@ const receiveWebhook = async (req, res) => {
 
                 // 2. Respond to Customer
                 const responseMsg = getTenantMessage(tenant, 'catalogOrderReceived', "✅ *Order Received!*\n\nWe've received your order items. Please share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵");
-                await sendTextMessage(from, responseMsg, session.config);
+                await sendLocationRequest(from, responseMsg, session.config);
             }
             return;
         }
@@ -1550,7 +1551,7 @@ const receiveWebhook = async (req, res) => {
             if (text === 'address_new') {
                 session.state = 'CHECKOUT_ADDRESS';
                 const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please send your current location or type your new delivery address');
-                await sendTextMessage(from, msg, session.config);
+                await sendLocationRequest(from, msg, session.config);
             } else if (text.startsWith('address_')) {
                 const addressId = text.split('_')[1];
                 const selectedAddress = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
@@ -1579,7 +1580,7 @@ const receiveWebhook = async (req, res) => {
             if (text === 'cataddress_new') {
                 session.state = 'CATALOG_ORDER_ADDRESS';
                 const responseMsg = getTenantMessage(tenant, 'catalogOrderReceived', "✅ *Order Received!*\n\nWe've received your order items. Please share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵");
-                await sendTextMessage(from, responseMsg, session.config);
+                await sendLocationRequest(from, responseMsg, session.config);
             } else if (text.startsWith('cataddress_')) {
                 const addressId = text.split('_')[1];
                 const selectedAddress = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });

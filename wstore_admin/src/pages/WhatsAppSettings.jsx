@@ -14,8 +14,7 @@ export default function WhatsAppSettings() {
         selectAddressMessage: 'Where should we deliver? Select a saved address or add a new one.',
         paymentMethodMessage: '💳 How would you like to pay?',
         orderConfirmedMessage: '✅ *Order Confirmed!* #{{order_id}}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️',
-        abandonedCartMessage: '👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒',
-        geminiApiKey: ''
+        abandonedCartMessage: '👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒'
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -105,13 +104,6 @@ export default function WhatsAppSettings() {
             fields: [
                 { id: 'supportMessage', label: 'Help & Support Intro', placeholder: '🆘 *Help & Support*\n\nIs your issue related to a specific order?' },
                 { id: 'abandonedCartMessage', label: 'Abandoned Cart Reminder', placeholder: '👋 Hey! We noticed you have items in your cart. Would you like to complete your order? 🛒' },
-            ]
-        },
-        {
-            title: "AI Assistant Configuration",
-            icon: <Sparkles size={20} color="#8b5cf6" />,
-            fields: [
-                { id: 'geminiApiKey', label: 'Gemini AI API Key', placeholder: 'Enter your Google Gemini API Key', hint: 'Get it from aistudio.google.com' },
             ]
         }
     ];

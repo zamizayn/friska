@@ -109,7 +109,7 @@ const getSettings = async (req, res) => {
     try {
         if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
         const tenant = await Tenant.findByPk(req.user.tenantId, {
-            attributes: ['razorpayKeyId', 'razorpayKeySecret', 'razorpayWebhookSecret', 'googleMapsApiKey']
+            attributes: ['razorpayKeyId', 'razorpayKeySecret', 'razorpayWebhookSecret', 'googleMapsApiKey', 'geminiApiKey']
         });
         res.json(tenant);
     } catch (e) {
@@ -122,8 +122,8 @@ const updateSettings = async (req, res) => {
         if (!req.user.tenantId) return res.status(403).json({ error: 'Access denied' });
         const tenant = await Tenant.findByPk(req.user.tenantId);
         if (tenant) {
-            const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey } = req.body;
-            await tenant.update({ razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey });
+            const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey, geminiApiKey } = req.body;
+            await tenant.update({ razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret, googleMapsApiKey, geminiApiKey });
             res.json({ success: true });
         } else res.status(404).send();
     } catch (e) {

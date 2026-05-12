@@ -7,7 +7,8 @@ export default function Settings() {
         razorpayKeyId: '',
         razorpayKeySecret: '',
         razorpayWebhookSecret: '',
-        googleMapsApiKey: ''
+        googleMapsApiKey: '',
+        geminiApiKey: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -27,7 +28,8 @@ export default function Settings() {
                         razorpayKeyId: data.razorpayKeyId || '',
                         razorpayKeySecret: data.razorpayKeySecret || '',
                         razorpayWebhookSecret: data.razorpayWebhookSecret || '',
-                        googleMapsApiKey: data.googleMapsApiKey || ''
+                        googleMapsApiKey: data.googleMapsApiKey || '',
+                        geminiApiKey: data.geminiApiKey || ''
                     });
                 }
             } catch (e) {
@@ -177,6 +179,32 @@ export default function Settings() {
                                 style={{ background: 'var(--bg-app)' }}
                             />
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>This key is used for customer address selection and delivery distance calculations.</p>
+                        </div>
+                    </div>
+
+                    <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                            <div style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#8b5cf6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Sparkles size={20} />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0 }}>Gemini AI Integration</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Power your intelligent support assistant</p>
+                            </div>
+                        </div>
+
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Key size={14} /> Gemini API Key
+                            </label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter your Gemini API key" 
+                                value={formData.geminiApiKey} 
+                                onChange={e => setFormData({ ...formData, geminiApiKey: e.target.value })} 
+                                style={{ background: 'var(--bg-app)' }}
+                            />
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Get your API key from <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Google AI Studio</a>. This enables the AI support bot on WhatsApp.</p>
                         </div>
                     </div>
 

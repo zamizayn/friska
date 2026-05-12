@@ -15,6 +15,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+import logo from './assets/logo.png';
+
 const API_BASE = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL}/api/app` 
   : '/api/app';
@@ -117,7 +119,9 @@ function App() {
   return (
     <div className="container">
       <header>
-        <div className="store-name">{data.tenant.name}</div>
+        <div className="store-logo-container">
+          <img src={logo} alt={data.tenant.name} className="store-logo" />
+        </div>
         <button onClick={() => setIsCartOpen(true)} className="cart-icon-btn">
           <ShoppingCart size={22} />
           {totalItems > 0 && (

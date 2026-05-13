@@ -1001,7 +1001,7 @@ const handleCart = async (from, session, tenant) => {
             return `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}`;
         }).join('\n');
 
-        const bestOffer = await calculateBestOffer(from, session.branchId, subtotal);
+        const bestOffer = await calculateBestOffer(from, session.branchId, subtotal, session.tenantId);
         let total = subtotal;
         let offerText = '';
 
@@ -1148,8 +1148,10 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
     let subtotal = 0;
     if (isCatalogOrder) {
         // Robust regex to capture amount even if there are formatting characters or extra spaces
-        const match = session.lastCatalogOrder.match(/total amount:?\s*₹?\s*(\d+)/i);
-        subtotal = match ? parseInt(match[1]) : 0;
+        // Robust regex to capture amount even if there are formatting characters or extra spaces
+        const match = session.lastCatalogOrder.match(/total amount:?\s*₹?\s*([\d,]+(\.\d+)?)/i);
+        const amountStr = match ? match[1].replace(/,/g, '') : '0';
+        subtotal = parseInt(amountStr);
 
         console.log(`[Catalog Order] Extracted Amount: ${subtotal} from text: "${session.lastCatalogOrder.substring(0, 50)}..."`);
 
@@ -1159,7 +1161,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
         userCart.forEach(item => { subtotal += item.price * item.quantity; });
     }
 
-    const bestOffer = await calculateBestOffer(from, session.branchId, subtotal);
+    const bestOffer = await calculateBestOffer(from, session.branchId, subtotal, session.tenantId);
     let total = subtotal;
     let discountAmount = 0;
     let appliedOfferCode = null;
@@ -1234,11 +1236,17 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
             await sendTextMessage(from, "⚠️ We encountered an issue generating your payment link. Please try again or contact support.", session.config);
         }
     } else {
-        const msg = getTenantMessage(tenant, 'orderConfirmedMessage', `✅ *Order Confirmed!* #${savedOrder?.id}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️`, {
+        let msg = getTenantMessage(tenant, 'orderConfirmedMessage', `✅ *Order Confirmed!* #{{order_id}}\n\nYour order has been placed successfully via *{{payment_method}}*.\n\nThank you for shopping with us! 🛍️`, {
             payment_method: paymentMethod,
-            order_id: savedOrder?.id,
-            total: savedOrder?.total
+            order_id: savedOrder?.id
         });
+
+        // Always ensure summary is shown if not already in the custom message
+        if (!msg.includes('₹')) {
+            const summaryText = `\n\n💰 *Order Summary:*\nSubtotal: ₹${(savedOrder.total + savedOrder.discountAmount).toFixed(2)}\n${savedOrder.appliedOfferCode ? `Offer: ${savedOrder.appliedOfferCode} (-₹${savedOrder.discountAmount.toFixed(2)})\n` : ''}*Final Total: ₹${savedOrder.total.toFixed(2)}*`;
+            msg += summaryText;
+        }
+
         await sendTextMessage(from, msg, session.config);
     }
 
@@ -1734,8 +1742,15 @@ const receiveWebhook = async (req, res) => {
 // OFFER CALCULATION HELPERS
 // =========================
 
-const calculateBestOffer = async (from, branchId, cartTotal) => {
+const calculateBestOffer = async (from, branchId, cartTotal, tenantId) => {
     try {
+        // If branchId is missing (e.g. fresh catalog session), try to find a default branch for the tenant
+        if (!branchId && tenantId) {
+            const firstBranch = await Branch.findOne({ where: { tenantId } });
+            if (firstBranch) branchId = firstBranch.id;
+        }
+
+        const now = moment().tz('Asia/Kolkata').toDate();
         const offers = await Offer.findAll({
             where: {
                 branchId,
@@ -1743,11 +1758,11 @@ const calculateBestOffer = async (from, branchId, cartTotal) => {
                 minOrderValue: { [Op.lte]: cartTotal },
                 [Op.or]: [
                     { startDate: null },
-                    { startDate: { [Op.lte]: new Date() } }
+                    { startDate: { [Op.lte]: now } }
                 ],
                 [Op.or]: [
                     { endDate: null },
-                    { endDate: { [Op.gte]: new Date() } }
+                    { endDate: { [Op.gte]: moment().tz('Asia/Kolkata').startOf('day').toDate() } }
                 ]
             }
         });

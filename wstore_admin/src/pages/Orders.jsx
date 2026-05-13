@@ -31,11 +31,12 @@ export default function Orders() {
         paymentMethod: 'Cash on Delivery'
     });
 
+    const today = format(new Date(), 'yyyy-MM-dd');
     const initialFilters = {
         status: '',
         search: '',
-        startDate: '',
-        endDate: ''
+        startDate: today,
+        endDate: today
     };
     const [filters, setFilters] = useState(initialFilters);
     const navigate = useNavigate();
@@ -343,7 +344,12 @@ export default function Orders() {
                                             📍 {order.formattedAddress || order.address}
                                         </div>
                                     )}
-                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                        <Calendar size={10} style={{ marginRight: '4px' }} />
+                                        {format(new Date(order.createdAt), 'dd MMM yyyy')}
+                                        <Clock size={10} style={{ marginLeft: '8px', marginRight: '4px' }} />
+                                        {format(new Date(order.createdAt), 'hh:mm a')}
+                                    </div>
                                 </td>
                                 <td>{order.items?.length || 0} items</td>
                                 <td style={{ fontWeight: 700 }}>₹{order.total}</td>
@@ -537,6 +543,17 @@ export default function Orders() {
                                 <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Order ID: #{viewingOrder.id}</p>
                             </div>
                             <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setViewModalOpen(false)}>✕</button>
+                        </div>
+
+                        <div style={{ background: 'var(--bg-app)', padding: '16px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Calendar size={16} color="var(--text-muted)" />
+                                <span style={{ fontWeight: 600 }}>{format(new Date(viewingOrder.createdAt), 'dd MMMM yyyy')}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Clock size={16} color="var(--text-muted)" />
+                                <span style={{ fontWeight: 600 }}>{format(new Date(viewingOrder.createdAt), 'hh:mm a')}</span>
+                            </div>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>

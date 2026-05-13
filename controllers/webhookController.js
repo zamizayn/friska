@@ -25,6 +25,7 @@ const {
 const { Op, Sequelize } = require('sequelize');
 const moment = require('moment-timezone');
 const notificationService = require('../services/notificationService');
+const orderService = require('../services/orderService');
 const { createPaymentLink } = require('../services/paymentService');
 const aiService = require('../services/aiService');
 
@@ -1191,23 +1192,9 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
         console.error('Order save error:', e);
     }
 
-    // Decrement offer usage limit
-    if (savedOrder && appliedOfferCode) {
-        try {
-            await Offer.decrement('usageLimit', { where: { code: appliedOfferCode, branchId: session.branchId, usageLimit: { [Op.gt]: 0 } } });
-        } catch (offerErr) {
-            console.error('Failed to decrement offer usage limit:', offerErr.message);
-        }
-    }
-
-    if (savedOrder && !isCatalogOrder) {
-        for (const item of userCart) {
-            try {
-                await Product.decrement('stock', { by: item.quantity, where: { id: item.id } });
-            } catch (e) {
-                console.error(`Stock deduction error for ${item.name}:`, e.message);
-            }
-        }
+    // Centralized post-order logic (Stock deduction, Offer tracking)
+    if (savedOrder) {
+        await orderService.handleOrderSuccess(savedOrder);
     }
 
     carts[from] = [];

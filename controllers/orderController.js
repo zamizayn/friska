@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
 const { generateInvoice } = require('../services/invoiceService');
+const orderService = require('../services/orderService');
 const fs = require('fs');
 
 const createOrder = async (req, res) => {
@@ -15,10 +16,8 @@ const createOrder = async (req, res) => {
 
         const order = await Order.create(req.body);
 
-        const items = Array.isArray(req.body.items) ? req.body.items : JSON.parse(req.body.items || '[]');
-        for (const item of items) {
-            await Product.decrement('stock', { by: item.quantity, where: { id: item.id } });
-        }
+        // Centralized post-order logic (Stock deduction, Offer tracking)
+        await orderService.handleOrderSuccess(order);
 
         res.status(201).json(order);
     } catch (e) {

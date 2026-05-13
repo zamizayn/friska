@@ -7,7 +7,8 @@ const {
     sendSingleProductMessage,
     sendMultiProductMessage,
     sendCarouselMessage,
-    sendLocationRequest
+    sendLocationRequest,
+    sendTypingIndicator
 } = require('../services/whatsappService');
 
 const {
@@ -1367,6 +1368,9 @@ const receiveWebhook = async (req, res) => {
             whatsappToken: tenant.whatsappToken,
             displayMode: tenant.displayMode || 'catalog'
         };
+
+        // Send typing indicator to make the bot feel responsive
+        await sendTypingIndicator(from, tenantConfig);
 
         const tenantBranchIds = (await Branch.findAll({ where: { tenantId: tenant.id }, attributes: ['id'] })).map(b => b.id);
         const customer = await Customer.findOne({

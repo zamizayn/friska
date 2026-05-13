@@ -270,6 +270,20 @@ const sendDocumentMessage = async (to, mediaId, filename, config = {}) => {
     }
 };
 
+const sendTypingIndicator = async (to, config = {}) => {
+    try {
+        await axios.post(getUrl(config), {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to,
+            sender_action: 'typing_on'
+        }, { headers: getHeaders(config) });
+    } catch (error) {
+        // WhatsApp Cloud API might not support this officially yet, so we just log and ignore
+        // console.error('WhatsApp Typing Indicator Error:', error.response?.data || error.message);
+    }
+};
+
 const uploadMedia = async (filePath, type, config = {}) => {
     try {
         const phoneId = config.phoneNumberId || process.env.PHONE_NUMBER_ID;
@@ -372,6 +386,7 @@ module.exports = {
     sendMultiProductMessage,
     sendCarouselMessage,
     sendDocumentMessage,
+    sendTypingIndicator,
     uploadMedia,
     getMediaUrl,
     syncProductToMeta

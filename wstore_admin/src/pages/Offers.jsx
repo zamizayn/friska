@@ -17,6 +17,7 @@ export default function Offers() {
         usageType: 'unlimited',
         startDate: '',
         endDate: '',
+        usageLimit: '',
         isActive: true
     });
     const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function Offers() {
         const res = await fetch(`${API_ENDPOINTS.OFFERS}?branchId=${branchId}`, { headers: getHeaders() });
         if (res.status === 401) return navigate('/login');
         const data = await res.json();
-        setOffers(data || []);
+        setOffers(Array.isArray(data) ? data : []);
     };
 
     useEffect(() => {
@@ -55,6 +56,7 @@ export default function Offers() {
         if (body.maxDiscount === '') delete body.maxDiscount;
         if (body.startDate === '') delete body.startDate;
         if (body.endDate === '') delete body.endDate;
+        if (body.usageLimit === '') body.usageLimit = null;
 
         await fetch(url, {
             method,
@@ -82,7 +84,8 @@ export default function Offers() {
                 ...item,
                 startDate: item.startDate ? item.startDate.split('T')[0] : '',
                 endDate: item.endDate ? item.endDate.split('T')[0] : '',
-                maxDiscount: item.maxDiscount || ''
+                maxDiscount: item.maxDiscount || '',
+                usageLimit: item.usageLimit || ''
             });
         } else {
             setFormData({
@@ -96,6 +99,7 @@ export default function Offers() {
                 usageType: 'unlimited',
                 startDate: '',
                 endDate: '',
+                usageLimit: '',
                 isActive: true
             });
         }
@@ -121,7 +125,7 @@ export default function Offers() {
                             <th>Offer Details</th>
                             <th>Threshold</th>
                             <th>Benefit</th>
-                            <th>Usage</th>
+                            <th>Usage Count</th>
                             <th>Status</th>
                             <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
@@ -152,9 +156,21 @@ export default function Offers() {
                                     </div>
                                 </td>
                                 <td>
-                                    <span className={`status-pill ${offer.usageType === 'unlimited' ? 'success' : 'warning'}`} style={{ textTransform: 'capitalize' }}>
+                                    {offer.usageLimit !== null ? (
+                                        <div style={{ 
+                                            fontWeight: 800, 
+                                            color: offer.usageLimit <= 5 ? 'var(--danger)' : 'var(--success)',
+                                            fontSize: '15px'
+                                        }}>
+                                            {Math.max(0, offer.usageLimit)} 
+                                            <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text-muted)', marginLeft: '4px' }}>Left</span>
+                                        </div>
+                                    ) : (
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Unlimited</div>
+                                    )}
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                                         {offer.usageType.replace(/_/g, ' ')}
-                                    </span>
+                                    </div>
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
@@ -256,6 +272,20 @@ export default function Offers() {
                                     <label>End Date (Optional)</label>
                                     <input type="date" value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
                                 </div>
+                            </div>
+
+                            <div className="input-group">
+                                <label>Global Order Limit (Max total redemptions)</label>
+                                <div className="input-with-icon">
+                                    <Plus size={16} className="field-icon" />
+                                    <input
+                                        type="number"
+                                        placeholder="No limit (unlimited)"
+                                        value={formData.usageLimit}
+                                        onChange={e => setFormData({ ...formData, usageLimit: e.target.value })}
+                                    />
+                                </div>
+                                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>The offer will automatically stop working after this many orders have been placed.</p>
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>

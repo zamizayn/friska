@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LifeBuoy, MessageSquare, History, ShoppingBag, X, User, Phone, Calendar, ShoppingCart, Send, CheckCircle, Filter } from 'lucide-react';
+import { LifeBuoy, MessageSquare, History, ShoppingBag, X, User, Phone, Calendar, ShoppingCart, Send, CheckCircle, Filter, Play, Pause, Volume2, Music } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
@@ -8,6 +8,7 @@ export default function Support() {
     const [requests, setRequests] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
     const [unreadOnly, setUnreadOnly] = useState(false);
+    const [selectedDate, setSelectedDate] = useState('');
     const [activeRequest, setActiveRequest] = useState(null);
     const [historyOpen, setHistoryOpen] = useState(false);
     const [historyOrders, setHistoryOrders] = useState([]);
@@ -17,11 +18,12 @@ export default function Support() {
     const [isSendingReply, setIsSendingReply] = useState(false);
     const navigate = useNavigate();
 
-    const fetchSupportRequests = async (page = 1, filterUnread = unreadOnly) => {
+    const fetchSupportRequests = async (page = 1, filterUnread = unreadOnly, date = selectedDate) => {
         setLoading(true);
         const branchId = localStorage.getItem('selectedBranchId') || '';
         try {
-            const res = await fetch(`${API_ENDPOINTS.SUPPORT_REQUESTS}?page=${page}&limit=10&branchId=${branchId}&unreadOnly=${filterUnread}`, {
+            const url = `${API_ENDPOINTS.SUPPORT_REQUESTS}?page=${page}&limit=10&branchId=${branchId}&unreadOnly=${filterUnread}&date=${date}`;
+            const res = await fetch(url, {
                 headers: getHeaders()
             });
             if (res.status === 401) return navigate('/login');
@@ -38,7 +40,12 @@ export default function Support() {
     const toggleFilter = () => {
         const newVal = !unreadOnly;
         setUnreadOnly(newVal);
-        fetchSupportRequests(1, newVal);
+        fetchSupportRequests(1, newVal, selectedDate);
+    };
+
+    const handleDateChange = (val) => {
+        setSelectedDate(val);
+        fetchSupportRequests(1, unreadOnly, val);
     };
 
     useEffect(() => {
@@ -102,7 +109,16 @@ export default function Support() {
                     <h1>Support Desk</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Resolve customer queries and support requests</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '4px 12px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <Calendar size={16} color="var(--text-muted)" />
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => handleDateChange(e.target.value)}
+                            style={{ border: 'none', outline: 'none', fontSize: '13px', color: 'var(--text-main)', padding: '6px 0' }}
+                        />
+                    </div>
                     <button
                         onClick={toggleFilter}
                         className={`btn-outline ${unreadOnly ? 'active' : ''}`}
@@ -114,7 +130,7 @@ export default function Support() {
                         }}
                     >
                         <Filter size={18} />
-                        {unreadOnly ? 'Showing Unread Only' : 'Filter Unread'}
+                        {unreadOnly ? 'Unread Only' : 'All Messages'}
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--success)', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600 }}>
                         <CheckCircle size={18} />
@@ -217,6 +233,11 @@ export default function Support() {
                         <div style={{ background: 'var(--bg-app)', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
                             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>Customer's Message</p>
                             <p style={{ fontSize: '14px', color: 'var(--text-main)' }}>"{activeRequest?.details?.message}"</p>
+                            {activeRequest?.details?.message?.includes('[Audio Message]') && (
+                                <AudioPlayer
+                                    mediaId={activeRequest.details.message.split('(ID: ')[1]?.split(')')[0]}
+                                />
+                            )}
                         </div>
                         <div className="input-group">
                             <label>Your Response</label>
@@ -277,6 +298,71 @@ export default function Support() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+function AudioPlayer({ mediaId }) {
+    const [audioUrl, setAudioUrl] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const loadAudio = async () => {
+        if (audioUrl) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_ENDPOINTS.SUPPORT_REQUESTS}/media/${mediaId}`, {
+                headers: getHeaders()
+            });
+            if (!res.ok) throw new Error('Could not fetch audio');
+            const blob = await res.blob();
+            // Force OGG type as WhatsApp voice notes are OGG/Opus
+            const audioBlob = new Blob([blob], { type: 'audio/ogg' });
+            setAudioUrl(URL.createObjectURL(audioBlob));
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (error) return <div style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '8px' }}>⚠️ {error}</div>;
+
+    if (!audioUrl) {
+        return (
+            <button
+                className="btn-outline"
+                style={{ marginTop: '12px', padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}
+                onClick={loadAudio}
+                disabled={loading}
+            >
+                {loading ? 'Initializing...' : '🔊 Listen to Voice Note'}
+            </button>
+        );
+    }
+
+    return (
+        <div style={{
+            marginTop: '16px',
+            background: 'white',
+            padding: '12px',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            maxWidth: '100%'
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)' }}>VOICE NOTE</span>
+            </div>
+            <audio
+                controls
+                src={audioUrl}
+                style={{ width: '100%', height: '36px' }}
+                autoPlay
+            >
+                Your browser does not support audio.
+            </audio>
         </div>
     );
 }

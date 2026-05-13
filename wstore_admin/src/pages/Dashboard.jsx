@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, Users, TrendingUp, IndianRupee, Star, Clock, CheckCircle, Truck, AlertCircle, PieChart as PieIcon, BarChart as BarIcon, Save, Key, Phone, Settings2, Search, Heart, MousePointer2 } from 'lucide-react';
+import { ShoppingBag, ShoppingCart, Users, TrendingUp, IndianRupee, Star, Clock, CheckCircle, Truck, AlertCircle, PieChart as PieIcon, BarChart as BarIcon, Save, Key, Phone, Settings2, Search, Heart, MousePointer2, Calendar, Filter } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, ComposedChart, Line } from 'recharts';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#8b5cf6'];
@@ -12,49 +14,132 @@ export default function Dashboard() {
     const [stats, setStats] = useState({ categories: 0, products: 0 });
     const [configForm, setConfigForm] = useState({ wabaId: '', phoneNumberId: '', whatsappToken: '', displayMode: 'catalog' });
     const [isUpdatingConfig, setIsUpdatingConfig] = useState(false);
+
+    // Independent filter states
+    const [cardFilters, setCardFilters] = useState({
+        stats: 'today',
+        trend: 'today',
+        products: 'today',
+        categories: 'today',
+        recent_orders: 'today',
+        status_counts: 'today'
+    });
+    const [customRangePicker, setCustomRangePicker] = useState({ section: null, start: null, end: null });
+
     const navigate = useNavigate();
 
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = async (section = 'all', start = '', end = '') => {
         const branchId = localStorage.getItem('selectedBranchId') || '';
-        const branchParam = branchId ? `&branchId=${branchId}` : '';
+        const params = new URLSearchParams();
+        if (branchId) params.append('branchId', branchId);
+        if (start) params.append('startDate', start);
+        if (end) params.append('endDate', end);
+        params.append('section', section);
+
         try {
-            const [counts, anaRes] = await Promise.all([
-                fetch(`${API_ENDPOINTS.ANALYTICS}?${branchParam.replace('&', '')}`, { headers: getHeaders() }),
-                fetch(`${API_ENDPOINTS.CATEGORIES}?${branchParam.replace('&', '')}`, { headers: getHeaders() })
-            ]);
+            const countsPromise = fetch(`${API_ENDPOINTS.ANALYTICS}?${params.toString()}`, { headers: getHeaders() });
 
-            if (counts.status === 401) return navigate('/login');
+            if (section === 'all') {
+                const [counts, anaRes] = await Promise.all([
+                    countsPromise,
+                    fetch(`${API_ENDPOINTS.CATEGORIES}?${params.toString()}`, { headers: getHeaders() })
+                ]);
+                if (counts.status === 401) return navigate('/login');
+                const anaData = await counts.json();
+                const catData = await anaRes.json();
+                setAnalytics(anaData);
+                setStats({
+                    categories: catData.total || catData.length,
+                    products: anaData.totalProducts || 0
+                });
 
-            const anaData = await counts.json();
-            const catData = await anaRes.json();
-
-            setAnalytics(anaData);
-            setStats({
-                categories: catData.total || catData.length,
-                products: anaData.totalProducts || 0
-            });
-
-            const prodRes = await fetch(`${API_ENDPOINTS.PRODUCTS}?limit=1${branchParam}`, { headers: getHeaders() });
-            const prodData = await prodRes.json();
-            setStats(prev => ({ ...prev, products: prodData.total }));
-
-            if (localStorage.getItem('adminRole') !== 'superadmin') {
-                const tRes = await fetch(`${API_ENDPOINTS.TENANTS}/me`, { headers: getHeaders() });
-                if (tRes.ok) {
-                    const tData = await tRes.json();
-                    setTenant(tData);
-                    setConfigForm({
-                        wabaId: tData.wabaId || '',
-                        phoneNumberId: tData.phoneNumberId || '',
-                        whatsappToken: tData.whatsappToken || '',
-                        displayMode: tData.displayMode || 'catalog'
-                    });
+                if (localStorage.getItem('adminRole') === 'tenant') {
+                    const tRes = await fetch(`${API_ENDPOINTS.TENANTS}/me`, { headers: getHeaders() });
+                    if (tRes.ok) {
+                        const tData = await tRes.json();
+                        setTenant(tData);
+                        setConfigForm({
+                            wabaId: tData.wabaId || '',
+                            phoneNumberId: tData.phoneNumberId || '',
+                            whatsappToken: tData.whatsappToken || '',
+                            displayMode: tData.displayMode || 'catalog'
+                        });
+                    }
                 }
+            } else {
+                const res = await countsPromise;
+                const data = await res.json();
+                setAnalytics(prev => ({ ...prev, ...data }));
             }
         } catch (e) {
             console.error(e);
         }
     };
+
+    const formatDate = (date) => {
+        if (!date) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const handleRangeChange = (section, range) => {
+        setCardFilters(prev => ({ ...prev, [section]: range }));
+        if (range === 'custom') {
+            setCustomRangePicker({ section, start: null, end: null });
+            return;
+        }
+
+        let start = new Date();
+        let end = new Date();
+        if (range === 'today') {
+            // Default start/end is already today
+        } else if (range === 'yesterday') {
+            start.setDate(end.getDate() - 1);
+            end.setDate(end.getDate() - 1);
+        } else if (range === '7d') start.setDate(end.getDate() - 7);
+        else if (range === 'month') start.setMonth(end.getMonth() - 1);
+        else if (range === '6months') start.setMonth(end.getMonth() - 6);
+        else if (range === 'year') start.setFullYear(end.getFullYear() - 1);
+
+        fetchDashboardData(section, formatDate(start), formatDate(end));
+    };
+
+    const handleCustomDateChange = (dates) => {
+        const [start, end] = dates;
+        const section = customRangePicker.section;
+        setCustomRangePicker(prev => ({ ...prev, start, end }));
+        if (start && end) {
+            fetchDashboardData(section, formatDate(start), formatDate(end));
+            // Close picker after small delay or just keep it
+        }
+    };
+
+    const CardFilter = ({ section }) => (
+        <div className="mini-filter-dropdown">
+            <select
+                value={cardFilters[section]}
+                onChange={(e) => handleRangeChange(section, e.target.value)}
+            >
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="7d">7 Days</option>
+                <option value="month">1 Month</option>
+                <option value="6months">6 Months</option>
+                <option value="year">1 Year</option>
+                <option value="custom">Custom</option>
+            </select>
+            {cardFilters[section] === 'custom' && (
+                <button
+                    className="btn-custom-trigger"
+                    onClick={() => setCustomRangePicker({ section, start: null, end: null })}
+                >
+                    <Calendar size={12} />
+                </button>
+            )}
+        </div>
+    );
 
     const handleUpdateConfig = async (e) => {
         e.preventDefault();
@@ -81,7 +166,10 @@ export default function Dashboard() {
         }
     };
 
-    useEffect(() => { fetchDashboardData(); }, []);
+    useEffect(() => {
+        const today = formatDate(new Date());
+        fetchDashboardData('all', today, today);
+    }, []);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -115,33 +203,47 @@ export default function Dashboard() {
     return (
         <div className="dashboard-content">
             <section className="hero-banner">
-                <div style={{ position: 'relative', zIndex: 10 }}>
-                    <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-                    <h1>{getGreeting()}, {localStorage.getItem('adminName')?.split(' ')[0] || 'Admin'}</h1>
-                    <p>Here's what's happening with your store today.</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 10, marginBottom: '32px' }}>
+                    <div>
+                        <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                        <h1>{getGreeting()}, {localStorage.getItem('adminName')?.split(' ')[0] || 'Admin'}</h1>
+                        <p>Track your business growth item by item.</p>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        <CardFilter section="stats" />
+                        {customRangePicker.section && (
+                            <div className="glass-datepicker floating">
+                                <DatePicker
+                                    selectsRange={true}
+                                    startDate={customRangePicker.start}
+                                    endDate={customRangePicker.end}
+                                    onChange={handleCustomDateChange}
+                                    isClearable={true}
+                                    inline
+                                />
+                                <button className="btn-close-datepicker" onClick={() => setCustomRangePicker({ section: null, start: null, end: null })}>Close</button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="hero-stats-grid">
-                    <div className="glass-stat-card">
-                        <label><IndianRupee size={14} /> REVENUE</label>
-                        <div className="value">₹{analytics.revenue.toLocaleString()}</div>
-                        <div className="trend" style={{ color: '#4ade80' }}><TrendingUp size={12} /> Live sales</div>
-                    </div>
-                    <div className="glass-stat-card">
-                        <label><ShoppingCart size={14} /> TOTAL ORDERS</label>
-                        <div className="value">{analytics.totalOrders}</div>
-                        <div className="trend" style={{ color: '#4ade80' }}><TrendingUp size={12} /> Processed</div>
-                    </div>
-                    <div className="glass-stat-card">
-                        <label><Users size={14} /> ACTIVE CUSTOMERS</label>
-                        <div className="value">{analytics.totalCustomers}</div>
-                        <div className="trend" style={{ color: '#fbbf24' }}><TrendingUp size={12} /> Interaction</div>
-                    </div>
-                    <div className="glass-stat-card">
-                        <label><Star size={14} /> AVG. ORDER VALUE</label>
-                        <div className="value">₹{Math.round(analytics.aov)}</div>
-                        <div className="trend" style={{ color: '#4ade80' }}><TrendingUp size={12} /> Ticket size</div>
-                    </div>
+                    {[
+                        { label: 'REVENUE', value: `₹${analytics.revenue.toLocaleString()}`, icon: IndianRupee, trend: 'Live sales' },
+                        { label: 'TOTAL ORDERS', value: analytics.totalOrders, icon: ShoppingCart, trend: 'Processed' },
+                        { label: 'ACTIVE CUSTOMERS', value: analytics.totalCustomers, icon: Users, trend: 'Interaction' },
+                        { label: 'AVG. ORDER VALUE', value: `₹${Math.round(analytics.aov)}`, icon: Star, trend: 'Ticket size' }
+                    ].map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                            <div key={idx} className="glass-stat-card">
+                                <label><Icon size={14} /> {item.label}</label>
+                                <div className="value">{item.value}</div>
+                                <div className="trend" style={{ color: '#4ade80' }}><TrendingUp size={12} /> {item.trend}</div>
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -152,8 +254,9 @@ export default function Dashboard() {
                         <div className="card-header">
                             <div>
                                 <h3>Revenue Performance</h3>
-                                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Daily revenue for the last 7 days</p>
+                                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Analytics by range</p>
                             </div>
+                            <CardFilter section="trend" />
                         </div>
                         <div style={{ width: '100%', height: 300 }}>
                             <ResponsiveContainer>
@@ -177,7 +280,7 @@ export default function Dashboard() {
                         <div className="white-card">
                             <div className="card-header">
                                 <h3>Top Products</h3>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>By sales volume</p>
+                                <CardFilter section="products" />
                             </div>
                             <div style={{ width: '100%', height: 250 }}>
                                 <ResponsiveContainer>
@@ -195,7 +298,7 @@ export default function Dashboard() {
                         <div className="white-card">
                             <div className="card-header">
                                 <h3>Category Share</h3>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>By revenue</p>
+                                <CardFilter section="categories" />
                             </div>
                             <div style={{ width: '100%', height: 250 }}>
                                 <ResponsiveContainer>
@@ -230,7 +333,7 @@ export default function Dashboard() {
                     <div className="white-card" style={{ marginTop: '32px' }}>
                         <div className="card-header">
                             <h3>Recent Orders</h3>
-                            <button className="btn-outline" style={{ fontSize: '12px' }} onClick={() => navigate('/admin/orders')}>View All</button>
+                            <CardFilter section="recent_orders" />
                         </div>
                         <table className="modern-table">
                             <thead>
@@ -265,8 +368,8 @@ export default function Dashboard() {
                         <div className="card-header">
                             <div>
                                 <h3 style={{ fontSize: '16px' }}>Live Activity</h3>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Real-time shopper pulse</p>
                             </div>
+                            <CardFilter section="activity" />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '10px' }}>
                             {analytics.recentActivity?.map((log, i) => {
@@ -296,6 +399,7 @@ export default function Dashboard() {
                     <div className="white-card" style={{ marginTop: '32px' }}>
                         <div className="card-header">
                             <h3 style={{ fontSize: '16px' }}>Order Status</h3>
+                            <CardFilter section="status_counts" />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {[
@@ -387,8 +491,8 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* WhatsApp Configuration & Status - Tenant/Branch only */}
-            {tenant && localStorage.getItem('adminRole') !== 'superadmin' && (
+            {/* WhatsApp Configuration & Status - Tenant only */}
+            {tenant && localStorage.getItem('adminRole') === 'tenant' && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px', marginTop: '32px' }}>
                     {/* Column 1: Config Form */}
                     <div className="white-card">

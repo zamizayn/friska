@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw } from 'lucide-react';
+import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import DatePicker from 'react-datepicker';
@@ -185,6 +185,19 @@ export default function Orders() {
         setModalOpen(false);
         setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery' });
         fetchOrders();
+    };
+
+    const handleForwardToDelivery = (order) => {
+        const orderId = order.id;
+        const customerName = order.customer?.name || order.customerName || 'N/A';
+        const customerPhone = order.customerPhone;
+        const address = order.formattedAddress || order.address;
+        const mapLink = order.address?.startsWith('http') ? order.address : '';
+
+        const text = `🚚 *New Delivery Assignment*\n\n*Order ID:* #${orderId}\n*Customer:* ${customerName}\n*Phone:* ${customerPhone}\n*Address:* ${address}${mapLink ? `\n\n*Map Link:* ${mapLink}` : ''}\n\n*Please deliver as soon as possible!* 🛵`;
+
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(waUrl, '_blank');
     };
 
     const copyToClipboard = (text, id) => {
@@ -484,13 +497,14 @@ export default function Orders() {
                             <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setAddressModalOpen(false)}>✕</button>
                         </div>
                         <div style={{ background: 'var(--bg-app)', padding: '20px', borderRadius: '16px', fontSize: '14px', lineHeight: 1.6, color: 'var(--text-main)', marginBottom: '24px' }}>
-                            {selectedRawAddress?.startsWith('http') ? (
-                                <>
-                                    <div style={{ fontWeight: 700, marginBottom: '8px' }}>📍 {selectedAddress}</div>
-                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{selectedRawAddress}</div>
-                                </>
-                            ) : (
-                                selectedAddress
+                            <div style={{ fontWeight: 700, marginBottom: '8px' }}>📍 {selectedAddress}</div>
+                            {selectedRawAddress?.startsWith('http') && selectedRawAddress !== selectedAddress && (
+                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{selectedRawAddress}</div>
+                            )}
+                            {selectedRawAddress && !selectedRawAddress.startsWith('http') && selectedRawAddress !== selectedAddress && (
+                                <div style={{ fontSize: '13px', color: 'var(--text-muted)', borderTop: '1px dashed var(--border-color)', marginTop: '12px', paddingTop: '12px' }}>
+                                    {selectedRawAddress}
+                                </div>
                             )}
                         </div>
                         <div style={{ display: 'flex', gap: '12px' }}>
@@ -552,20 +566,22 @@ export default function Orders() {
                         <div style={{ marginBottom: '32px' }}>
                             <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Location Details</h4>
                             <div style={{ background: 'var(--bg-app)', padding: '16px', borderRadius: '12px', fontSize: '13px', lineHeight: 1.5, border: '1px solid var(--border-color)' }}>
-                                {viewingOrder.formattedAddress && (
-                                    <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--text-main)' }}>
-                                        📍 {viewingOrder.formattedAddress}
-                                    </div>
-                                )}
-                                <div style={{ wordBreak: 'break-all' }}>
-                                    {viewingOrder.address?.startsWith('http') ? (
-                                        <a href={viewingOrder.address} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                                    📍 {viewingOrder.formattedAddress || viewingOrder.address}
+                                </div>
+                                {viewingOrder.address?.startsWith('http') ? (
+                                    <div style={{ marginTop: '12px' }}>
+                                        <a href={viewingOrder.address} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
                                             <MapPin size={14} /> Open in Google Maps
                                         </a>
-                                    ) : (
-                                        viewingOrder.address
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    viewingOrder.address && viewingOrder.address !== viewingOrder.formattedAddress && (
+                                        <div style={{ marginTop: '8px', color: 'var(--text-muted)', fontSize: '12px' }}>
+                                            {viewingOrder.address}
+                                        </div>
+                                    )
+                                )}
                             </div>
                         </div>
 
@@ -609,8 +625,11 @@ export default function Orders() {
                             </table>
                         </div>
 
-                        <div className="modal-actions">
-                            <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setViewModalOpen(false)}>Close Details</button>
+                        <div className="modal-actions" style={{ gap: '12px' }}>
+                            <button className="btn-outline" style={{ flex: 1, justifyContent: 'center', borderColor: '#25d366', color: '#25d366' }} onClick={() => handleForwardToDelivery(viewingOrder)}>
+                                <Send size={16} /> Forward to Delivery
+                            </button>
+                            <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setViewModalOpen(false)}>Close Details</button>
                         </div>
                     </div>
                 </div>

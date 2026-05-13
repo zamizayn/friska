@@ -296,6 +296,21 @@ const uploadMedia = async (filePath, type, config = {}) => {
     }
 };
 
+const getMediaUrl = async (mediaId, config = {}) => {
+    try {
+        const token = config.whatsappToken || process.env.WHATSAPP_TOKEN;
+        const version = config.version || process.env.GRAPH_API_VERSION || 'v17.0';
+
+        const res = await axios.get(`https://graph.facebook.com/${version}/${mediaId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return res.data.url;
+    } catch (error) {
+        console.error('WhatsApp Get Media URL Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
 /**
  * Syncs a product to the Meta Catalog via the Batch API
  */
@@ -358,5 +373,6 @@ module.exports = {
     sendCarouselMessage,
     sendDocumentMessage,
     uploadMedia,
+    getMediaUrl,
     syncProductToMeta
 };

@@ -8,9 +8,18 @@ const getSupportRequests = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
-        const { unreadOnly } = req.query;
-
+        const { unreadOnly, date } = req.query;
         let where = await req.getScope({ actionType: 'SUPPORT_REQUEST' });
+
+        if (date) {
+            const start = new Date(date);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(date);
+            end.setHours(23, 59, 59, 999);
+            where.createdAt = {
+                [Op.between]: [start, end]
+            };
+        }
 
         if (unreadOnly === 'true') {
             where[Op.and] = [
@@ -71,7 +80,40 @@ const replyToSupportRequest = async (req, res) => {
     }
 };
 
+const getMediaProxy = async (req, res) => {
+    try {
+        const { mediaId } = req.params;
+        const tenantId = req.user.tenantId;
+        const config = await getTenantConfig(tenantId);
+
+        if (!config.whatsappToken) {
+            return res.status(400).json({ error: 'WhatsApp configuration missing for this tenant' });
+        }
+
+        const { getMediaUrl } = require('../services/whatsappService');
+        const mediaUrl = await getMediaUrl(mediaId, config);
+
+        if (!mediaUrl) return res.status(404).json({ error: 'Media URL not found' });
+
+        const axios = require('axios');
+        const response = await axios.get(mediaUrl, {
+            headers: { 'Authorization': `Bearer ${config.whatsappToken}` },
+            responseType: 'stream'
+        });
+
+        // WhatsApp voice notes are OGG/Opus. 
+        // Meta often misidentifies them as audio/mpeg or application/octet-stream, 
+        // which causes NotSupportedError in browsers.
+        res.set('Content-Type', 'audio/ogg');
+        response.data.pipe(res);
+    } catch (e) {
+        console.error('Media Proxy Error:', e.message);
+        res.status(500).json({ error: 'Failed to stream media' });
+    }
+};
+
 module.exports = {
     getSupportRequests,
-    replyToSupportRequest
+    replyToSupportRequest,
+    getMediaProxy
 };

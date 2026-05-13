@@ -52,6 +52,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
+    usageLimit: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null
+    },
+    usageCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
     branchId: {
       type: DataTypes.INTEGER,
       allowNull: false

@@ -126,7 +126,36 @@ const updateProduct = async (req, res) => {
 
         if (data.price) data.price = parseFloat(data.price);
         if (data.stock !== undefined) data.stock = parseInt(data.stock);
-        if (data.priority !== undefined) data.priority = parseInt(data.priority) || 0;
+
+        if (data.priority !== undefined) {
+            const newPriority = parseInt(data.priority) || 0;
+            const oldPriority = item.priority || 0;
+
+            if (newPriority !== oldPriority) {
+                const scopeWhere = await req.getScope();
+                // Shift priorities to accommodate the new position
+                if (newPriority < oldPriority) {
+                    // Moving UP (e.g. from 5 to 2) -> Increment everything between 2 and 4
+                    await Product.increment('priority', {
+                        where: {
+                            ...scopeWhere,
+                            priority: { [Op.between]: [newPriority, oldPriority - 1] },
+                            id: { [Op.ne]: item.id }
+                        }
+                    });
+                } else {
+                    // Moving DOWN (e.g. from 2 to 5) -> Decrement everything between 3 and 5
+                    await Product.decrement('priority', {
+                        where: {
+                            ...scopeWhere,
+                            priority: { [Op.between]: [oldPriority + 1, newPriority] },
+                            id: { [Op.ne]: item.id }
+                        }
+                    });
+                }
+            }
+            data.priority = newPriority;
+        }
 
         await item.update(data);
 

@@ -68,10 +68,10 @@ const getAllOrders = async (req, res) => {
         });
 
         const stats = {
-            completed: await Order.count({ where: { ...await req.getScope(), status: 'delivered' } }),
-            pending: await Order.count({ where: { ...await req.getScope(), status: { [Op.in]: ['pending', 'shipped'] } } }),
-            collected: await Order.sum('total', { where: { ...await req.getScope(), paymentStatus: 'paid' } }) || 0,
-            pendingCollection: await Order.sum('total', { where: { ...await req.getScope(), paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
+            completed: await Order.count({ where: { ...where, status: 'delivered' } }),
+            pending: await Order.count({ where: { ...where, status: { [Op.in]: ['pending', 'shipped'] } } }),
+            collected: await Order.sum('total', { where: { ...where, paymentStatus: 'paid' } }) || 0,
+            pendingCollection: await Order.sum('total', { where: { ...where, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
         };
 
         res.json({

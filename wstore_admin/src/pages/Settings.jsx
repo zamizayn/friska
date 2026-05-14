@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Save, ShieldCheck, Globe, Key, AlertCircle, Sparkles, Phone } from 'lucide-react';
+import { Save, ShieldCheck, Globe, Key, AlertCircle, Sparkles, Phone } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 export default function Settings() {
@@ -73,7 +73,7 @@ export default function Settings() {
         );
     }
 
-    const webhookUrl = `${window.location.origin.replace('admin.', '')}/api/payments/webhook/${tenantId || 'YOUR_TENANT_ID'}`;
+
 
     return (
         <div className="dashboard-content">
@@ -105,58 +105,7 @@ export default function Settings() {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                            <div style={{ width: '40px', height: '40px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <CreditCard size={20} />
-                            </div>
-                            <div>
-                                <h3 style={{ margin: 0 }}>Razorpay Integration</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Configure your online payment gateway credentials</p>
-                            </div>
-                        </div>
 
-                        <div className="input-group">
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Key size={14} /> Razorpay Key ID
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="rzp_live_..."
-                                value={formData.razorpayKeyId}
-                                onChange={e => setFormData({ ...formData, razorpayKeyId: e.target.value })}
-                                style={{ background: 'var(--bg-app)' }}
-                            />
-                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Get this from your Razorpay Dashboard &gt; Settings &gt; API Keys</p>
-                        </div>
-
-                        <div className="input-group">
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <ShieldCheck size={14} /> Razorpay Key Secret
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="••••••••••••••••"
-                                value={formData.razorpayKeySecret}
-                                onChange={e => setFormData({ ...formData, razorpayKeySecret: e.target.value })}
-                                style={{ background: 'var(--bg-app)' }}
-                            />
-                        </div>
-
-                        <div className="input-group" style={{ marginBottom: 0 }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Globe size={14} /> Webhook Secret
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="••••••••••••••••"
-                                value={formData.razorpayWebhookSecret}
-                                onChange={e => setFormData({ ...formData, razorpayWebhookSecret: e.target.value })}
-                                style={{ background: 'var(--bg-app)' }}
-                            />
-                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Set this secret in your Razorpay Webhook settings to verify payment notifications.</p>
-                        </div>
-                    </div>
 
                     <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
@@ -224,20 +173,7 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '16px', border: '1px dashed var(--border-color)', marginBottom: '32px' }}>
-                        <h4 style={{ fontSize: '14px', color: 'var(--text-main)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Globe size={16} /> Webhook Configuration
-                        </h4>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-                            To receive automatic payment updates, add a webhook in your Razorpay dashboard with the following URL:
-                            <br />
-                            <code style={{ background: 'white', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'block', marginTop: '12px', color: 'var(--accent)', fontWeight: 600, fontSize: '12px', wordBreak: 'break-all' }}>
-                                {webhookUrl}
-                            </code>
-                            <br />
-                            Select <b>payment_link.paid</b> as the active event.
-                        </p>
-                    </div>
+
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <button type="submit" className="btn-primary" style={{ padding: '12px 32px' }} disabled={saving}>

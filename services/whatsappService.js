@@ -374,6 +374,38 @@ const syncProductToMeta = async (product, config) => {
     }
 };
 
+/**
+ * Fetches the current status and errors for a product from Meta Catalog
+ */
+const getProductMetaStatus = async (retailerId, config) => {
+    const { catalogId, whatsappToken } = config;
+    if (!catalogId || !whatsappToken) {
+        throw new Error('catalogId or whatsappToken missing');
+    }
+
+    try {
+        const axios = require('axios');
+        const version = config.version || process.env.GRAPH_API_VERSION || 'v21.0';
+        const url = `https://graph.facebook.com/${version}/${catalogId}/products`;
+
+        const res = await axios.get(url, {
+            params: {
+                filter: JSON.stringify({ retailer_id: { eq: String(retailerId) } }),
+                fields: 'id,name,retailer_id,availability,visibility,errors,review_status',
+                access_token: whatsappToken
+            }
+        });
+
+        if (res.data.data && res.data.data.length > 0) {
+            return res.data.data[0];
+        }
+        return null;
+    } catch (e) {
+        console.error(`[Meta Status] Failed for ${retailerId}:`, e.response?.data || e.message);
+        throw e;
+    }
+};
+
 module.exports = {
     sendTextMessage,
     sendButtonMessage,
@@ -389,5 +421,6 @@ module.exports = {
     sendTypingIndicator,
     uploadMedia,
     getMediaUrl,
-    syncProductToMeta
+    syncProductToMeta,
+    getProductMetaStatus
 };

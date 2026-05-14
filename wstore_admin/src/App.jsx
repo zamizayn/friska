@@ -19,6 +19,7 @@ import Support from './pages/Support';
 import Notifications from './pages/Notifications';
 import Offers from './pages/Offers';
 import Settings from './pages/Settings';
+import PaymentSettings from './pages/PaymentSettings';
 import WhatsAppSettings from './pages/WhatsAppSettings';
 import ChangePassword from './pages/ChangePassword';
 
@@ -57,6 +58,7 @@ export default function App() {
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="offers" element={<Offers />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="payment-settings" element={<PaymentSettings />} />
                     <Route path="whatsapp-settings" element={<WhatsAppSettings />} />
                     <Route path="change-password" element={<ChangePassword />} />
                 </Route>

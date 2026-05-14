@@ -188,12 +188,21 @@ export default function Inventory() {
             {modalOpen && selectedProduct && (
                 <div className="modal-overlay active">
                     <div className="modal" style={{ maxWidth: '480px', padding: '32px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
                             <img src={selectedProduct.image} alt="" style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover' }} />
                             <div>
                                 <h3 style={{ margin: 0 }}>Adjust Stock</h3>
                                 <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--text-muted)' }}>{selectedProduct.name}</p>
                             </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '12px', padding: '12px', display: 'flex', gap: '10px', marginBottom: '24px' }}>
+                            <div style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                                <ArrowRightLeft size={16} />
+                            </div>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                                Stock updates are synced with your Meta Catalog automatically. This may take a few minutes.
+                            </p>
                         </div>
 
                         <div style={{ background: 'var(--bg-app)', padding: '20px', borderRadius: '16px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

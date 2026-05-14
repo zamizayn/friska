@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Trash2, Plus, Type, IndianRupee, AlignLeft, Image as ImageIcon, ListFilter, Fingerprint, Search, RotateCcw, X } from 'lucide-react';
+import { Edit2, Trash2, Plus, Type, IndianRupee, AlignLeft, Image as ImageIcon, ListFilter, Fingerprint, Search, RotateCcw, X, Upload, FileDown, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
@@ -18,6 +18,13 @@ export default function Products() {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    const [bulkModalOpen, setBulkModalOpen] = useState(false);
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const [uploadResults, setUploadResults] = useState(null);
+    const [bulkCsvFile, setBulkCsvFile] = useState(null);
+    const [bulkImageFiles, setBulkImageFiles] = useState([]);
+    const [metaStatus, setMetaStatus] = useState(null);
+    const [metaLoading, setMetaLoading] = useState(false);
 
     const initialFilters = {
         search: '',
@@ -169,15 +176,31 @@ export default function Products() {
         }
     };
 
+    const fetchMetaStatus = async (productId) => {
+        setMetaLoading(true);
+        setMetaStatus(null);
+        try {
+            const res = await fetch(`${API_ENDPOINTS.PRODUCTS}/${productId}/meta-status`, { headers: getHeaders() });
+            const data = await res.json();
+            setMetaStatus(data);
+        } catch (e) {
+            console.error('Error fetching meta status', e);
+        } finally {
+            setMetaLoading(false);
+        }
+    };
+
     const openModal = (item = null) => {
         if (item) {
             setFormData({ ...item });
             setImagePreview(item.image);
             setSelectedFile(null);
+            fetchMetaStatus(item.id);
         } else {
             setFormData({ id: null, name: '', price: '', categoryId: categories[0]?.id || '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
             setImagePreview(null);
             setSelectedFile(null);
+            setMetaStatus(null);
         }
         setModalOpen(true);
     };
@@ -189,6 +212,57 @@ export default function Products() {
             const reader = new FileReader();
             reader.onloadend = () => setImagePreview(reader.result);
             reader.readAsDataURL(file);
+        }
+    };
+
+    const downloadTemplate = () => {
+        const headers = ['name', 'price', 'description', 'stock', 'categoryId', 'retailerId', 'priority', 'image_file'];
+        const csvContent = "data:text/csv;charset=utf-8," + headers.join(',') + "\n" +
+            "Example Product,299,Great quality item,50,1,SKU_001,1,product_image.jpg";
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "product_template.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleBulkUpload = async (e) => {
+        e.preventDefault();
+        if (!bulkCsvFile) return alert('Please select a CSV file');
+
+        setUploadLoading(true);
+        setUploadResults(null);
+
+        const formData = new FormData();
+        formData.append('file', bulkCsvFile);
+
+        bulkImageFiles.forEach(file => {
+            formData.append('images', file);
+        });
+
+        const branchId = localStorage.getItem('selectedBranchId');
+        if (branchId) formData.append('branchId', branchId);
+
+        try {
+            const res = await fetch(`${API_ENDPOINTS.PRODUCTS}/bulk`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                },
+                body: formData
+            });
+            const data = await res.json();
+            setUploadResults(data);
+            setBulkCsvFile(null);
+            setBulkImageFiles([]);
+            fetchProducts();
+        } catch (error) {
+            console.error('Upload failed', error);
+            alert('Bulk upload failed');
+        } finally {
+            setUploadLoading(false);
         }
     };
 
@@ -219,6 +293,9 @@ export default function Products() {
                             </select>
                         </div>
                     )}
+                    <button className="btn-outline" onClick={() => setBulkModalOpen(true)}>
+                        <Upload size={18} /> Bulk Upload
+                    </button>
                     <button className="btn-primary" onClick={() => openModal()}>
                         <Plus size={18} /> Add Product
                     </button>
@@ -437,9 +514,21 @@ export default function Products() {
             {modalOpen && (
                 <div className="modal-overlay active">
                     <div className="modal" style={{ maxWidth: '700px', padding: '32px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h3>{formData.id ? 'Edit Product' : 'Add New Product'}</h3>
                             <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setModalOpen(false)}>✕</button>
+                        </div>
+
+                        <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <AlertCircle size={20} />
+                            </div>
+                            <div>
+                                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 4px 0' }}>Meta Sync Notice</h4>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                                    Changes made here may take a few minutes to reflect in your WhatsApp/Meta Catalog due to external processing.
+                                </p>
+                            </div>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
@@ -494,6 +583,49 @@ export default function Products() {
                                     <Fingerprint size={18} className="text-accent" />
                                     <h4 style={{ fontSize: '14px', color: 'var(--accent)' }}>Meta Integration</h4>
                                 </div>
+
+                                {formData.id && (
+                                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', marginBottom: '16px', border: '1px solid var(--border-color)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Status in Catalog</span>
+                                            {metaLoading ? (
+                                                <div className="spinner" style={{ width: '12px', height: '12px', border: '2px solid var(--accent-light)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+                                            ) : (
+                                                <span
+                                                    className={`status-pill ${!metaStatus || metaStatus.message ? 'warning' :
+                                                            metaStatus.review_status === 'APPROVED' ? 'success' :
+                                                                metaStatus.review_status === 'REJECTED' ? 'danger' : 'warning'
+                                                        }`}
+                                                    style={{ fontSize: '10px', padding: '2px 8px' }}
+                                                >
+                                                    {metaStatus?.message ? 'NOT SYNCED' : metaStatus?.review_status || 'PENDING'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {metaStatus && !metaStatus.message && (
+                                            <>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-main)', display: 'flex', justifyContent: 'space-between' }}>
+                                                    <span>Availability:</span>
+                                                    <span style={{ fontWeight: 700, textTransform: 'uppercase' }}>{metaStatus.availability}</span>
+                                                </div>
+                                                {metaStatus.errors && metaStatus.errors.length > 0 && (
+                                                    <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '8px', fontSize: '10px', color: 'var(--danger)' }}>
+                                                        <strong>Issues found:</strong>
+                                                        {metaStatus.errors.map((err, i) => (
+                                                            <div key={i} style={{ marginTop: '2px' }}>• {err.title}: {err.description}</div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        {!metaStatus && !metaLoading && (
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                                Product details have not been synced with Meta yet.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="input-group">
                                     <label>Retailer ID (Meta Content ID)</label>
                                     <input type="text" placeholder="e.g. SKU_123" value={formData.retailerId} onChange={e => setFormData({ ...formData, retailerId: e.target.value })} />
@@ -520,6 +652,115 @@ export default function Products() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Bulk Upload Modal */}
+            {bulkModalOpen && (
+                <div className="modal-overlay active">
+                    <div className="modal" style={{ maxWidth: '550px', padding: '32px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3>Bulk Product Upload</h3>
+                            <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => { setBulkModalOpen(false); setUploadResults(null); }}>✕</button>
+                        </div>
+
+                        <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <AlertCircle size={20} />
+                            </div>
+                            <div>
+                                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 4px 0' }}>Bulk Sync Delay</h4>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                                    Processing a large number of products can take several minutes to sync with the Meta Commerce Manager.
+                                </p>
+                            </div>
+                        </div>
+
+                        {!uploadResults ? (
+                            <form onSubmit={handleBulkUpload}>
+                                <div style={{ display: 'grid', gap: '20px', marginBottom: '32px' }}>
+                                    <div className="input-group">
+                                        <label>1. Select CSV Data File</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <label className="btn-outline" style={{ cursor: 'pointer', flexShrink: 0 }}>
+                                                <input type="file" accept=".csv" onChange={e => setBulkCsvFile(e.target.files[0])} style={{ display: 'none' }} />
+                                                Browse CSV
+                                            </label>
+                                            <span style={{ fontSize: '14px', color: bulkCsvFile ? 'var(--text-main)' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {bulkCsvFile ? bulkCsvFile.name : 'No file selected'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>2. Select Product Images (Optional)</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <label className="btn-outline" style={{ cursor: 'pointer', flexShrink: 0 }}>
+                                                <input type="file" multiple accept="image/*" onChange={e => setBulkImageFiles(Array.from(e.target.files))} style={{ display: 'none' }} />
+                                                Select Images
+                                            </label>
+                                            <span style={{ fontSize: '14px', color: bulkImageFiles.length > 0 ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                                                {bulkImageFiles.length > 0 ? `${bulkImageFiles.length} images selected` : 'Match filenames to CSV "image_file" column'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: 'var(--bg-app)', padding: '20px', borderRadius: '16px', marginBottom: '32px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                        <FileDown size={20} className="text-accent" />
+                                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent)' }}>Download Template</div>
+                                    </div>
+                                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Use our standard format to ensure your products are imported correctly.</p>
+                                    <button type="button" onClick={downloadTemplate} style={{ width: '100%', background: 'white', border: '1px solid var(--accent)', color: 'var(--accent)', fontWeight: 700, padding: '10px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px' }}>
+                                        Get product_template.csv
+                                    </button>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => { setBulkModalOpen(false); setBulkCsvFile(null); setBulkImageFiles([]); }}>Cancel</button>
+                                    <button type="submit" className="btn-primary" style={{ flex: 2, justifyContent: 'center' }} disabled={uploadLoading || !bulkCsvFile}>
+                                        {uploadLoading ? 'Uploading & Processing...' : 'Start Bulk Import'}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ marginBottom: '32px' }}>
+                                    {uploadResults.failed === 0 ? (
+                                        <CheckCircle2 size={64} style={{ color: 'var(--success)', marginBottom: '16px' }} />
+                                    ) : (
+                                        <AlertCircle size={64} style={{ color: 'var(--warning)', marginBottom: '16px' }} />
+                                    )}
+                                    <h3 style={{ marginBottom: '8px' }}>Import Summary</h3>
+                                    <p style={{ color: 'var(--text-muted)' }}>We've finished processing your file.</p>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+                                    <div style={{ padding: '20px', background: 'var(--bg-app)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                                        <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)' }}>{uploadResults.success}</div>
+                                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>Successful</div>
+                                    </div>
+                                    <div style={{ padding: '20px', background: 'var(--bg-app)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                                        <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--danger)' }}>{uploadResults.failed}</div>
+                                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>Failed</div>
+                                    </div>
+                                </div>
+
+                                {uploadResults.errors.length > 0 && (
+                                    <div style={{ textAlign: 'left', maxHeight: '150px', overflowY: 'auto', background: 'var(--bg-app)', padding: '16px', borderRadius: '12px', marginBottom: '32px', fontSize: '13px' }}>
+                                        <p style={{ fontWeight: 700, color: 'var(--danger)', marginBottom: '8px' }}>Errors:</p>
+                                        {uploadResults.errors.map((err, i) => (
+                                            <div key={i} style={{ marginBottom: '4px' }}>• <strong>{err.name}</strong>: {err.error}</div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { setBulkModalOpen(false); setUploadResults(null); }}>
+                                    Back to Products
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

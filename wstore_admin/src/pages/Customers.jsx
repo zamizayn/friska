@@ -201,6 +201,9 @@ export default function Customers() {
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                        <button className="btn-outline" style={{ padding: '8px' }} onClick={(e) => { e.stopPropagation(); setSelectedPhones([cust.phone]); setModalOpen(true); }} title="Send Message">
+                                            <MessageSquare size={16} />
+                                        </button>
                                         <button className="btn-outline" style={{ padding: '8px' }} onClick={(e) => { e.stopPropagation(); fetchLogs(cust); }} title="Activity Logs">
                                             <History size={16} />
                                         </button>
@@ -234,9 +237,9 @@ export default function Customers() {
             {modalOpen && (
                 <div className="modal-overlay active">
                     <div className="modal" style={{ maxWidth: '500px', padding: '32px' }}>
-                        <h3>Send Broadcast Message</h3>
+                        <h3>{selectedPhones.length === 1 ? 'Send Message' : 'Send Broadcast Message'}</h3>
                         <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '12px 0 24px' }}>
-                            Your message will be sent to {selectedPhones.length} customers via WhatsApp.
+                            Your message will be sent to {selectedPhones.length === 1 ? 'this customer' : `${selectedPhones.length} customers`} via WhatsApp.
                         </p>
                         <form onSubmit={handleBroadcast}>
                             <div className="input-group">

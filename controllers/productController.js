@@ -2,6 +2,9 @@ const { Product, Category, Branch } = require('../models');
 const { Op } = require('sequelize');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { syncProductToMeta } = require('../services/whatsappService');
+const fs = require('fs');
+const csv = require('csv-parser');
+const { cloudinary } = require('../services/cloudinaryService');
 
 const getAllProducts = async (req, res) => {
     try {
@@ -188,10 +191,119 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+const bulkUploadProducts = async (req, res) => {
+    const csvFile = req.files?.file?.[0];
+    const imageFiles = req.files?.images || [];
+
+    if (!csvFile) return res.status(400).json({ error: 'No CSV file uploaded' });
+
+    const products = [];
+    const results = {
+        success: 0,
+        failed: 0,
+        errors: []
+    };
+
+    const branchId = req.body.branchId || (req.user.role === 'branch' ? req.user.branchId : null);
+    if (!branchId && req.user.role !== 'superadmin') {
+        return res.status(400).json({ error: 'Branch ID is required' });
+    }
+
+    // 1. Upload images to Cloudinary and create a mapping
+    const imageMap = {};
+    for (const file of imageFiles) {
+        try {
+            const uploadRes = await cloudinary.uploader.upload(file.path, {
+                folder: 'friska_products'
+            });
+            imageMap[file.originalname] = uploadRes.secure_url;
+            fs.unlinkSync(file.path); // Cleanup local file
+        } catch (uploadError) {
+            console.error(`Failed to upload ${file.originalname} to Cloudinary:`, uploadError.message);
+        }
+    }
+
+    // 2. Parse CSV and create products
+    fs.createReadStream(csvFile.path)
+        .pipe(csv())
+        .on('data', (data) => products.push(data))
+        .on('end', async () => {
+            const tenantId = req.user.tenantId;
+            const config = await getTenantConfig(tenantId);
+
+            for (const p of products) {
+                try {
+                    // Match image from map if image_file is provided, otherwise fallback to image URL column
+                    const imageUrl = imageMap[p.image_file] || p.image || '';
+
+                    const productData = {
+                        name: p.name,
+                        price: parseFloat(p.price),
+                        description: p.description || '',
+                        stock: parseInt(p.stock) || 0,
+                        categoryId: parseInt(p.categoryId) || null,
+                        retailerId: p.retailerId || `wstore_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        priority: parseInt(p.priority) || 0,
+                        branchId: branchId || p.branchId,
+                        image: imageUrl
+                    };
+
+                    if (!productData.name || isNaN(productData.price)) {
+                        throw new Error(`Invalid name or price for product: ${p.name}`);
+                    }
+
+                    const item = await Product.create(productData);
+
+                    // Sync to Meta if config exists
+                    if (config && config.catalogId) {
+                        try {
+                            await syncProductToMeta(item, config);
+                        } catch (syncError) {
+                            console.error(`Meta sync failed for bulk item ${item.name}:`, syncError.message);
+                        }
+                    }
+
+                    results.success++;
+                } catch (e) {
+                    results.failed++;
+                    results.errors.push({ name: p.name, error: e.message });
+                }
+            }
+
+            // Cleanup the CSV file
+            fs.unlinkSync(csvFile.path);
+
+            res.json(results);
+        });
+};
+
+const getProductMetaStatusController = async (req, res) => {
+    try {
+        const item = await Product.findByPk(req.params.id);
+        if (!item) return res.status(404).json({ error: 'Product not found' });
+
+        const tenantId = req.user.tenantId || (await Branch.findByPk(item.branchId))?.tenantId;
+        const config = await getTenantConfig(tenantId);
+        
+        if (!config.catalogId) {
+            return res.status(400).json({ error: 'Meta Catalog not configured for this tenant' });
+        }
+
+        const { getProductMetaStatus } = require('../services/whatsappService');
+        const status = await getProductMetaStatus(item.retailerId, config);
+        
+        res.json(status || { message: 'Product not found in Meta Catalog' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 module.exports = {
     getAllProducts,
     getBasicProducts,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    bulkUploadProducts,
+    getProductMetaStatusController
 };

@@ -46,7 +46,7 @@ class WStoreApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SupportProvider()),
       ],
       child: MaterialApp(
-        title: 'wstore merchant app',
+        title: 'Friska',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           brightness: Brightness.light,

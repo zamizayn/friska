@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Building2, Globe, Phone, Key, Store, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
@@ -11,9 +11,9 @@ export default function OnboardingWizard() {
 
     const [tenantData, setTenantData] = useState({
         name: '',
-        phoneNumberId: '',
-        whatsappToken: '',
-        wabaId: '',
+        contactName: '',
+        contactPhone: '',
+        contactEmail: '',
         username: '',
         password: ''
     });
@@ -25,6 +25,28 @@ export default function OnboardingWizard() {
     });
 
     const [createdTenant, setCreatedTenant] = useState(null);
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const tenantId = searchParams.get('tenantId');
+        const jumpStep = searchParams.get('step');
+        
+        if (tenantId) {
+            // Fetch tenant to populate
+            fetch(`${API_ENDPOINTS.TENANTS}/${tenantId}/registration-status`)
+                .then(res => res.json())
+                .then(data => {
+                    setCreatedTenant(data);
+                    setTenantData(prev => ({
+                        ...prev,
+                        name: data.name,
+                        // We don't have sensitive data in this public endpoint, 
+                        // but we just need the context
+                    }));
+                    if (jumpStep) setStep(parseInt(jumpStep));
+                });
+        }
+    }, [searchParams]);
 
     const nextStep = () => setStep(prev => prev + 1);
     const prevStep = () => setStep(prev => prev - 1);
@@ -34,17 +56,25 @@ export default function OnboardingWizard() {
         setLoading(true);
         setError('');
         try {
-            const res = await fetch(API_ENDPOINTS.TENANTS, {
-                method: 'POST',
+            const isUpdate = !!createdTenant;
+            const url = isUpdate ? `${API_ENDPOINTS.TENANTS}/${createdTenant.id}` : API_ENDPOINTS.TENANTS;
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: getHeaders(),
                 body: JSON.stringify(tenantData)
             });
             const data = await res.json();
             if (res.ok) {
-                setCreatedTenant(data);
-                nextStep();
+                if (isUpdate) {
+                    nextStep();
+                } else {
+                    // Initial creation -> Payment
+                    navigate(`/registration-payment?tenantId=${data.id}`);
+                }
             } else {
-                setError(data.error || 'Failed to create tenant');
+                setError(data.error || 'Failed to process tenant');
             }
         } catch (e) {
             setError('Connection error');
@@ -85,9 +115,9 @@ export default function OnboardingWizard() {
                         <div className="wizard-header">
                             <div className="icon-badge"><Building2 size={32} /></div>
                             <h2>Welcome! Let's start with your Business</h2>
-                            <p>Enter the primary name of the business tenant you're onboarding.</p>
+                            <p>Tell us a bit about your business to get started.</p>
                         </div>
-                        <form onSubmit={(e) => { e.preventDefault(); nextStep(); }}>
+                        <form onSubmit={handleTenantSubmit}>
                             <div className="input-group">
                                 <label>Business Name</label>
                                 <input
@@ -98,8 +128,72 @@ export default function OnboardingWizard() {
                                     required
                                 />
                             </div>
-                            <button type="submit" className="btn-primary w-full py-4">
-                                Continue to Meta Integration <ArrowRight size={18} />
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div className="input-group">
+                                    <label>Contact Person Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="John Doe"
+                                        value={tenantData.contactName}
+                                        onChange={e => setTenantData({ ...tenantData, contactName: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label>Contact Phone</label>
+                                    <input
+                                        type="text"
+                                        placeholder="+91..."
+                                        value={tenantData.contactPhone}
+                                        onChange={e => setTenantData({ ...tenantData, contactPhone: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="input-group">
+                                <label>Business Email ID</label>
+                                <input
+                                    type="email"
+                                    placeholder="admin@business.com"
+                                    value={tenantData.contactEmail}
+                                    onChange={e => setTenantData({ ...tenantData, contactEmail: e.target.value })}
+                                    required
+                                />
+                            </div>
+
+                            <div style={{ padding: '20px', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '16px', marginBottom: '20px' }}>
+                                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', color: 'var(--accent)' }}>Set Admin Credentials</h4>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div className="input-group" style={{ marginBottom: 0 }}>
+                                        <label>Admin Username</label>
+                                        <input
+                                            type="text"
+                                            placeholder="tenant_admin"
+                                            value={tenantData.username}
+                                            onChange={e => setTenantData({ ...tenantData, username: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="input-group" style={{ marginBottom: 0 }}>
+                                        <label>Admin Password</label>
+                                        <input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            autoComplete="new-password"
+                                            value={tenantData.password}
+                                            onChange={e => setTenantData({ ...tenantData, password: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {error && <div className="alert-error">{error}</div>}
+
+                            <button type="submit" className="btn-primary w-full py-4" disabled={loading}>
+                                {loading ? <Loader2 className="animate-spin" /> : <>Continue to Payment <ArrowRight size={18} /></>}
                             </button>
                         </form>
                     </div>
@@ -133,6 +227,7 @@ export default function OnboardingWizard() {
                                     <input
                                         type="password"
                                         placeholder="EAAl..."
+                                        autoComplete="new-password"
                                         value={tenantData.whatsappToken}
                                         onChange={e => setTenantData({ ...tenantData, whatsappToken: e.target.value })}
                                         required
@@ -167,6 +262,7 @@ export default function OnboardingWizard() {
                                         <input
                                             type="password"
                                             placeholder="••••••••"
+                                            autoComplete="new-password"
                                             value={tenantData.password}
                                             onChange={e => setTenantData({ ...tenantData, password: e.target.value })}
                                             required
@@ -218,6 +314,7 @@ export default function OnboardingWizard() {
                                     <label>Admin Password</label>
                                     <input
                                         type="password"
+                                        autoComplete="new-password"
                                         value={branchData.password}
                                         onChange={e => setBranchData({ ...branchData, password: e.target.value })}
                                         required

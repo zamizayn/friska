@@ -22,6 +22,9 @@ export const API_ENDPOINTS = {
   OFFERS: `${BASE_URL}/offers`,
   WHATSAPP_SETTINGS: `${BASE_URL}/tenants/me/whatsapp-settings`,
   CHANGE_PASSWORD: `${BASE_URL}/change-password`,
+  GLOBAL_CONFIGS: `${BASE_URL}/global-configs`,
+  REGISTRATION_PAYMENT: '/api/payments/registration', // Note: This is not under /api/admin
+  REGISTRATION_STATUS: (id) => `${BASE_URL}/tenants/${id}/registration-status`,
 };
 
 export const getHeaders = () => {

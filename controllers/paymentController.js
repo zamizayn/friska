@@ -1,7 +1,27 @@
-const { Order, Customer, Tenant } = require('../models');
-const { verifyWebhookSignature } = require('../services/paymentService');
+const { GlobalConfig, Order, Customer, Tenant } = require('../models');
+const { verifyWebhookSignature, createRegistrationPaymentLink } = require('../services/paymentService');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage } = require('../services/whatsappService');
+
+const createRegistrationPayment = async (req, res) => {
+  try {
+    const { tenantId } = req.body;
+    const tenant = await Tenant.findByPk(tenantId);
+    if (!tenant) return res.status(404).json({ error: 'Tenant not found' });
+
+    const feeConfig = await GlobalConfig.findOne({ where: { key: 'registrationFee' } });
+    const amount = parseFloat(feeConfig?.value || '1000');
+
+    const paymentLink = await createRegistrationPaymentLink(tenant, amount);
+    
+    tenant.registrationPaymentId = paymentLink.id;
+    await tenant.save();
+
+    res.json({ url: paymentLink.short_url });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
 
 const handleRazorpayWebhook = async (req, res) => {
   try {
@@ -9,15 +29,19 @@ const handleRazorpayWebhook = async (req, res) => {
     const signature = req.headers['x-razorpay-signature'];
     const body = JSON.stringify(req.body);
 
-    const tenant = await Tenant.findByPk(tenantId);
-    if (!tenant) {
-      console.error(`Webhook error: Tenant ${tenantId} not found`);
-      return res.status(404).json({ error: 'Tenant not found' });
+    let tenant;
+    let secret = process.env.PLATFORM_RAZORPAY_WEBHOOK_SECRET;
+
+    // If tenantId is 'platform', it's a global registration payment
+    if (tenantId !== 'platform') {
+        tenant = await Tenant.findByPk(tenantId);
+        if (tenant && tenant.razorpayWebhookSecret) {
+            secret = tenant.razorpayWebhookSecret;
+        }
     }
 
-    // Verify signature if tenant has a webhook secret set
-    if (tenant.razorpayWebhookSecret) {
-      const isValid = verifyWebhookSignature(body, signature, tenant.razorpayWebhookSecret);
+    if (secret) {
+      const isValid = verifyWebhookSignature(body, signature, secret);
       if (!isValid) {
         console.error(`Invalid signature for tenant ${tenantId}`);
         return res.status(400).json({ error: 'Invalid signature' });
@@ -31,10 +55,21 @@ const handleRazorpayWebhook = async (req, res) => {
       const paymentLink = payload.payment_link ? payload.payment_link.entity : null;
       const payment = payload.payment ? payload.payment.entity : null;
       const notes = paymentLink ? paymentLink.notes : (payment ? payment.notes : {});
+      
       const orderId = notes.order_id;
+      const paymentType = notes.type; // 'registration'
+      const targetTenantId = notes.tenant_id;
+      
       const paymentId = payment ? payment.id : (payload.payment_link ? payload.payment_link.entity.payment_id : null);
 
-      if (orderId) {
+      if (paymentType === 'registration' && targetTenantId) {
+          const tenantToUpdate = await Tenant.findByPk(targetTenantId);
+          if (tenantToUpdate) {
+              tenantToUpdate.paymentStatus = 'paid';
+              await tenantToUpdate.save();
+              console.log(`Registration payment confirmed for tenant ${targetTenantId}`);
+          }
+      } else if (orderId) {
         const order = await Order.findByPk(orderId);
         if (order) {
           order.paymentStatus = 'paid';
@@ -60,5 +95,6 @@ const handleRazorpayWebhook = async (req, res) => {
 };
 
 module.exports = {
-  handleRazorpayWebhook
+  handleRazorpayWebhook,
+  createRegistrationPayment
 };

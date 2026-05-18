@@ -15,7 +15,7 @@ export default function Landing() {
                     </div>
                     <div className="nav-links">
                         <Link to="/login" className="nav-link">Login</Link>
-                        <Link to="/onboarding-steps" className="btn-vibrant">Get Started</Link>
+                        <Link to="/onboard-wizard" className="btn-vibrant">Get Started</Link>
                     </div>
                 </div>
             </nav>
@@ -170,7 +170,7 @@ export default function Landing() {
                         <Sparkles className="cta-sparkle" size={48} />
                         <h2>Ready to automate your business?</h2>
                         <p>Join the future of conversational commerce today.</p>
-                        <Link to="/login" className="btn-white-large">Create Your Store Now</Link>
+                        <Link to="/onboard-wizard" className="btn-white-large">Create Your Store Now</Link>
                     </div>
                 </div>
             </section>

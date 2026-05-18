@@ -12,7 +12,9 @@ router.use('/', authRoutes);
 // Special case: Tenant and Branch creation are allowed without tokens for onboarding
 // We handle this by mounting specific paths before the general authenticateToken middleware
 router.post('/tenants', require('../../controllers/tenantController').createTenant);
+router.get('/tenants/:id/registration-status', require('../../controllers/tenantController').getRegistrationStatus);
 router.post('/branches', require('../../controllers/branchController').createBranch);
+router.get('/global-configs', require('../../controllers/globalConfigController').getConfigs);
 
 // 2. Protected Routes (Apply Auth Middleware)
 router.use(authenticateToken);
@@ -30,5 +32,6 @@ router.get('/product-sales', require('../../controllers/analyticsController').ge
 router.use('/notifications', require('./notification'));
 router.use('/fcm', require('./fcm'));
 router.use('/offers', require('./offer'));
+router.put('/global-configs', require('../../controllers/globalConfigController').updateConfigs);
 
 module.exports = router;

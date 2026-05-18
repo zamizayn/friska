@@ -46,18 +46,49 @@ const createPaymentLink = async (order, tenant, customer = null) => {
   }
 };
 
-/**
- * Verifies a Razorpay payment signature (for webhooks)
- * @param {string} body - The raw request body
- * @param {string} signature - The signature from X-Razorpay-Signature header
- * @returns {boolean}
- */
+const createRegistrationPaymentLink = async (tenant, amountInRupees) => {
+  try {
+    const amount = Math.round(amountInRupees * 100);
+    const razorpay = getRazorpayInstance(
+      process.env.PLATFORM_RAZORPAY_KEY_ID,
+      process.env.PLATFORM_RAZORPAY_KEY_SECRET
+    );
+
+    const response = await razorpay.paymentLink.create({
+      amount: amount,
+      currency: 'INR',
+      accept_partial: false,
+      description: `Registration Fee for ${tenant.name}`,
+      customer: {
+        name: tenant.contactName || 'Tenant Admin',
+        contact: tenant.contactPhone || undefined,
+        email: tenant.contactEmail || undefined,
+      },
+      notify: {
+        sms: false,
+        email: false
+      },
+      reminder_enable: true,
+      notes: {
+        tenant_id: tenant.id.toString(),
+        type: 'registration'
+      }
+    });
+
+    return response;
+  } catch (error) {
+    console.error('Razorpay Registration Payment Link Error:', error);
+    throw new Error('Failed to create registration payment link');
+  }
+};
+
 const verifyWebhookSignature = (body, signature, secret) => {
-  return Razorpay.validateWebhookSignature(body, signature, secret);
+  return Razorpay.validateWebhookSignature(JSON.stringify(body), signature, secret);
 };
 
 module.exports = {
   createPaymentLink,
+  createRegistrationPaymentLink,
   verifyWebhookSignature,
   getRazorpayInstance
 };

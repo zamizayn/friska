@@ -64,7 +64,15 @@ module.exports = (sequelize, DataTypes) => {
     geminiApiKey: {
       type: DataTypes.STRING,
       allowNull: true
-    }
+    },
+    contactName: DataTypes.STRING,
+    contactPhone: DataTypes.STRING,
+    contactEmail: DataTypes.STRING,
+    paymentStatus: {
+      type: DataTypes.ENUM('pending', 'paid'),
+      defaultValue: 'pending'
+    },
+    registrationPaymentId: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Tenant',

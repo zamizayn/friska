@@ -22,6 +22,8 @@ import Settings from './pages/Settings';
 import PaymentSettings from './pages/PaymentSettings';
 import WhatsAppSettings from './pages/WhatsAppSettings';
 import ChangePassword from './pages/ChangePassword';
+import RegistrationPayment from './pages/RegistrationPayment';
+import PlatformSettings from './pages/PlatformSettings';
 
 const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem('adminToken');
@@ -36,6 +38,7 @@ export default function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/onboarding-steps" element={<OnboardingGuide />} />
                 <Route path="/onboard-wizard" element={<OnboardingWizard />} />
+                <Route path="/registration-payment" element={<RegistrationPayment />} />
                 <Route path="/login" element={<Login />} />
                 <Route
                     path="/admin"
@@ -48,6 +51,7 @@ export default function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="branches" element={<Branches />} />
                     <Route path="tenants" element={<Tenants />} />
+                    <Route path="platform-settings" element={<PlatformSettings />} />
                     <Route path="categories" element={<Categories />} />
                     <Route path="products" element={<Products />} />
                     <Route path="product-sales" element={<ProductSales />} />

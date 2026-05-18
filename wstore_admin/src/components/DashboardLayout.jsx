@@ -215,9 +215,14 @@ export default function DashboardLayout() {
                         <LayoutDashboard size={18} /> <span>Dashboard</span>
                     </NavLink>
                     {role === 'superadmin' && (
-                        <NavLink to="/admin/tenants" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
-                            <Building2 size={18} /> <span>Tenants</span>
-                        </NavLink>
+                        <>
+                            <NavLink to="/admin/tenants" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                                <Building2 size={18} /> <span>Tenants</span>
+                            </NavLink>
+                            <NavLink to="/admin/platform-settings" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                                <Settings size={18} /> <span>Platform Settings</span>
+                            </NavLink>
+                        </>
                     )}
 
                     <div className="nav-section-label">Commerce</div>

@@ -180,6 +180,18 @@ const updateWhatsAppSettings = async (req, res) => {
     }
 };
 
+const getRegistrationStatus = async (req, res) => {
+    try {
+        const tenant = await Tenant.findByPk(req.params.id, {
+            attributes: ['id', 'name', 'paymentStatus']
+        });
+        if (!tenant) return res.status(404).json({ error: 'Tenant not found' });
+        res.json(tenant);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 module.exports = {
     getMyTenant,
     getAllTenants,
@@ -190,5 +202,6 @@ module.exports = {
     getSettings,
     updateSettings,
     getWhatsAppSettings,
-    updateWhatsAppSettings
+    updateWhatsAppSettings,
+    getRegistrationStatus
 };

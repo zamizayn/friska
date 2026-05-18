@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     CheckCircle2, ArrowRight, ArrowLeft, ExternalLink, Key, Phone, Settings, Globe, Layout, Hexagon,
-    UserPlus, AppWindow, Briefcase, MousePointerClick, Wand2, Save, Rocket, Bell, ToggleRight
+    UserPlus, AppWindow, Briefcase, MousePointerClick, Wand2, Save, Rocket, Bell, ToggleRight, X
 } from 'lucide-react';
 
 const steps = [
@@ -74,13 +74,36 @@ const steps = [
     }
 ];
 
+const indexToTip = [
+    "Ensure you have administrative access to your Facebook Business Manager for a smoother verification process.",
+    "Naming your app clearly (e.g., 'Friska [YourStoreName]') helps identify it in the Meta dashboard.",
+    "Double-check your business address and website URL; they must match your official business records.",
+    "Selecting the wrong business account can cause integration errors later. Take a moment to confirm.",
+    "Defining your use case correctly helps Meta optimize your messaging experience and approval speed.",
+    "Temporary tokens expire in 24 hours. Always use Permanent Tokens for your live storefront.",
+    "These IDs are unique to your setup and are required for our dashboard to communicate with WhatsApp.",
+    "Our system uses this webhook to receive real-time updates when customers send you messages.",
+    "Meta provides a free tier for the first 1,000 conversations every month.",
+    "Subscribing to these fields is essential for the AI bot to 'hear' and 'respond' to your customers.",
+    "Once enabled, the AI bot will automatically handle incoming inquiries and process orders."
+];
+
 export default function OnboardingGuide() {
     const [activeStep, setActiveStep] = useState(0);
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const tenantId = searchParams.get('tenantId');
 
     const handleNext = () => {
         if (activeStep === steps.length - 1) {
-            navigate('/onboard-wizard');
+            if (tenantId) {
+                // Return to wizard at Step 2 (now that they've read the guide)
+                // Actually, the wizard Step 2 is now for Meta Integration.
+                // We should probably just go to /admin/settings or back to wizard.
+                navigate(`/onboard-wizard?tenantId=${tenantId}&step=2`);
+            } else {
+                navigate('/onboard-wizard');
+            }
         } else {
             setActiveStep(prev => prev + 1);
         }
@@ -156,19 +179,3 @@ export default function OnboardingGuide() {
         </div>
     );
 }
-
-const indexToTip = [
-    "Ensure you have administrative access to your Facebook Business Manager for a smoother verification process.",
-    "Naming your app clearly (e.g., 'Friska [YourStoreName]') helps identify it in the Meta dashboard.",
-    "Double-check your business address and website URL; they must match your official business records.",
-    "Selecting the wrong business account can cause integration errors later. Take a moment to confirm.",
-    "Defining your use case correctly helps Meta optimize your messaging experience and approval speed.",
-    "Temporary tokens expire in 24 hours. Always use Permanent Tokens for your live storefront.",
-    "These IDs are unique to your setup and are required for our dashboard to communicate with WhatsApp.",
-    "Our system uses this webhook to receive real-time updates when customers send you messages.",
-    "Meta provides a free tier for the first 1,000 conversations every month.",
-    "Subscribing to these fields is essential for the AI bot to 'hear' and 'respond' to your customers.",
-    "Once enabled, the AI bot will automatically handle incoming inquiries and process orders."
-];
-
-import { X } from 'lucide-react';

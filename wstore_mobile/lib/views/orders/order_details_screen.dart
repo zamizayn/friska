@@ -45,15 +45,15 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   Future<void> _launchWhatsApp(String text) async {
     final urlString = 'https://wa.me/?text=${Uri.encodeComponent(text)}';
     final uri = Uri.parse(urlString);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to open WhatsApp')),
-        );
-      }
-    }
+    // if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    // } else {
+    //   if (mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('Failed to open WhatsApp')),
+    //     );
+    //   }
+    // }
   }
 
   void _forwardToDelivery() {

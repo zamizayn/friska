@@ -6,6 +6,7 @@ export default function WhatsAppSettings() {
     const [settings, setSettings] = useState({
         welcomeReturning: 'Welcome back to *{{tenant_name}}*, {{customer_name}}! 😊',
         welcomeNew: 'Welcome to *{{tenant_name}}*! 🛍️',
+        menuTriggers: 'hi, hello, start, menu, hey, hii, hai',
         supportMessage: '🆘 *Help & Support*\n\nIs your issue related to a specific order?',
         searchProductsMessage: '🔍 *Product Search*\n\nType the name of the product you are looking for:',
         chooseBranchMessage: '📍 Choose your nearest branch',
@@ -77,6 +78,7 @@ export default function WhatsAppSettings() {
             fields: [
                 { id: 'welcomeReturning', label: 'Returning Customer Welcome', placeholder: 'Welcome back to *{{tenant_name}}*, {{customer_name}}! 😊', hint: 'Placeholders: {{tenant_name}}, {{customer_name}}' },
                 { id: 'welcomeNew', label: 'New Customer Welcome', placeholder: 'Welcome to *{{tenant_name}}*! 🛍️', hint: 'Placeholders: {{tenant_name}}' },
+                { id: 'menuTriggers', label: 'Custom Menu Triggers (Comma-separated)', placeholder: 'hey, hello, hii, hai', hint: 'Words that trigger the main menu' },
             ]
         },
         {

@@ -2,13 +2,19 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn('Tenants', 'razorpayWebhookSecret', {
-      type: Sequelize.STRING,
-      allowNull: true
-    });
+    const tableInfo = await queryInterface.describeTable('Tenants');
+    if (!tableInfo.razorpayWebhookSecret) {
+      await queryInterface.addColumn('Tenants', 'razorpayWebhookSecret', {
+        type: Sequelize.STRING,
+        allowNull: true
+      });
+    }
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn('Tenants', 'razorpayWebhookSecret');
+    const tableInfo = await queryInterface.describeTable('Tenants');
+    if (tableInfo.razorpayWebhookSecret) {
+      await queryInterface.removeColumn('Tenants', 'razorpayWebhookSecret');
+    }
   }
 };

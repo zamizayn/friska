@@ -3317,8 +3317,17 @@ const receiveWebhook = async (req, res) => {
         }
 
         // ── Global "Menu" shortcuts that should work from any state ───
-        const menuTriggers = ['hi', 'hello', 'start', 'menu'];
-        if (menuTriggers.includes(text)) {
+        const defaultTriggers = ['hi', 'hello', 'start', 'menu', 'hey', 'hii', 'hai', 'helo', 'hola', 'yo'];
+        const customTriggersRaw = tenant.whatsappSettings?.menuTriggers || '';
+        const customTriggers = customTriggersRaw
+            ? customTriggersRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+            : [];
+        const menuTriggers = [...new Set([...defaultTriggers, ...customTriggers])];
+
+        // Strip punctuation and lowercase for flexible matching (e.g. "Hello!" or "Hi.")
+        const normalizedText = text.replace(/[!.,?]/g, '').trim().toLowerCase();
+
+        if (menuTriggers.includes(normalizedText)) {
             await logCustomerActivity(from, tenant.id, session.branchId, 'MENU_VIEWED');
             return await handleHomeMenu(from, session, tenant, customer);
         }

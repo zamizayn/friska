@@ -19,6 +19,7 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
   final Map<String, TextEditingController> _controllers = {
     'welcomeReturning': TextEditingController(),
     'welcomeNew': TextEditingController(),
+    'menuTriggers': TextEditingController(),
     'searchProductsMessage': TextEditingController(),
     'chooseBranchMessage': TextEditingController(),
     'cartEmptyMessage': TextEditingController(),
@@ -217,6 +218,7 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
                     [
                       _buildField('welcomeReturning', 'Returning Customer Welcome', 'Placeholders: {{tenant_name}}, {{customer_name}}'),
                       _buildField('welcomeNew', 'New Customer Welcome', 'Placeholders: {{tenant_name}}'),
+                      _buildField('menuTriggers', 'Custom Menu Triggers (Comma-separated)', 'Words that trigger the main menu (e.g. hey, hello, hii)'),
                     ],
                   ),
                   _buildSection(

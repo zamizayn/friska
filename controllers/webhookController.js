@@ -3158,6 +3158,15 @@ const receiveWebhook = async (req, res) => {
         const change = entry?.changes?.[0];
         const metadata = change?.value?.metadata;
         const message = change?.value?.messages?.[0];
+        const statuses = change?.value?.statuses?.[0];
+
+        if (statuses) {
+            console.log(`[Webhook Status] Status Update for message ${statuses.id} to ${statuses.recipient_id} | status: ${statuses.status}`);
+            if (statuses.status === 'failed' && statuses.errors) {
+                console.error(`[Webhook Status ERROR] Message delivery failed:`, JSON.stringify(statuses.errors, null, 2));
+            }
+            return;
+        }
 
         if (!message || !metadata) return;
 

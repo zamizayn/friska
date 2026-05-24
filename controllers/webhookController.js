@@ -2116,6 +2116,9 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
             `Welcome to *{{tenant_name}}*! 🛍️ We're excited to help you find precisely what you're looking for today. Feel free to browse our catalogs and reach out if you have any questions! ✨`,
             { tenant_name: tenant.name });
 
+    // Send the welcome message first as a text message to guarantee it is received
+    await sendTextMessage(from, welcomeMsg, session.config);
+
     let productsShown = false;
     let queryBranchId = session.branchId;
     if (!queryBranchId) {
@@ -2136,11 +2139,11 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
                     const productItems = buildUniqueRetailerItems(products);
                     if (productItems.length > 0) {
                         const sections = [{ title: 'Our Featured Collection', product_items: productItems }];
-                        await sendMultiProductMessage(from, session.catalogId, `🛍️ ${tenant.name}`, welcomeMsg, sections, session.config);
+                        await sendMultiProductMessage(from, session.catalogId, `🛍️ ${tenant.name}`, 'Check out our featured products below:', sections, session.config);
                         productsShown = true;
                     }
                 } else {
-                    productsShown = await sendProductsAsCarousel(from, products, welcomeMsg, session);
+                    productsShown = await sendProductsAsCarousel(from, products, 'Check out our featured products below:', session);
                 }
             }
         } catch (e) {
@@ -2148,9 +2151,7 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
         }
     }
 
-    const menuBody = productsShown ? '🏠 Explore more options below:' : welcomeMsg;
-
-    await sendListMessage(from, menuBody, 'Main Menu', [
+    await sendListMessage(from, '🏠 Explore more options below:', 'Main Menu', [
         {
             title: '🛒 Shopping',
             rows: [

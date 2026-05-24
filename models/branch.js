@@ -24,7 +24,11 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     tenantId: DataTypes.INTEGER,
     openingTime: DataTypes.STRING,
-    closingTime: DataTypes.STRING
+    closingTime: DataTypes.STRING,
+    latitude: DataTypes.DECIMAL(10, 8),
+    longitude: DataTypes.DECIMAL(11, 8),
+    deliveryRadius: DataTypes.FLOAT,
+    address: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'Branch',

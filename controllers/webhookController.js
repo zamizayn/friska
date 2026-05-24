@@ -2085,15 +2085,92 @@ const sendAddressSelectionOrRequest = async (from, session, tenant, { addressIdP
 };
 
 // =========================
+// Helper: Geocoding (Address to Coordinates)
+// =========================
+const getCoordsFromAddress = async (address, apiKey) => {
+    if (!apiKey || !address) return null;
+    try {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+        const res = await axios.get(url, { timeout: 5000 });
+        console.log(`[Geocoding Address] Status: ${res.data.status}`);
+        if (res.data.status === 'OK' && res.data.results.length > 0) {
+            const loc = res.data.results[0].geometry.location;
+            return {
+                latitude: loc.lat,
+                longitude: loc.lng,
+                formattedAddress: res.data.results[0].formatted_address
+            };
+        }
+        if (res.data.status !== 'OK') {
+            console.error(`[Geocoding Address] Error: ${res.data.error_message || 'Unknown'}`);
+        }
+        return null;
+    } catch (e) {
+        console.error('Geocoding Error:', e.message);
+        return null;
+    }
+};
+
+// =========================
+// Helper: Calculate Haversine Distance (in km)
+// =========================
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
+
+// =========================
+// Helper: Check Delivery Availability (Geofencing)
+// =========================
+const checkDeliveryAvailability = async (session, latitude, longitude) => {
+    if (!session.branchId) return { available: true };
+    const branch = await Branch.findByPk(session.branchId);
+    if (!branch) return { available: true };
+    
+    if (branch.latitude == null || branch.longitude == null || branch.deliveryRadius == null) {
+        return { available: true };
+    }
+    
+    if (latitude == null || longitude == null) {
+        return { available: true }; // Fail gracefully
+    }
+    
+    const distance = calculateDistance(
+        parseFloat(branch.latitude), 
+        parseFloat(branch.longitude), 
+        parseFloat(latitude), 
+        parseFloat(longitude)
+    );
+    
+    const inRange = distance <= parseFloat(branch.deliveryRadius);
+    return {
+        available: inRange,
+        distance,
+        deliveryRadius: branch.deliveryRadius,
+        reason: inRange ? null : 'out_of_radius'
+    };
+};
+
+// =========================
 // Helper: Save & Confirm Address
 // =========================
-const saveCustomerAddress = async (from, text, formattedAddress) => {
+const saveCustomerAddress = async (from, text, formattedAddress, latitude, longitude) => {
     try {
         await CustomerAddress.create({
             customerPhone: from,
             address: text,
             formattedAddress: formattedAddress || null,
-            label: 'Saved Address'
+            label: 'Saved Address',
+            latitude: latitude || null,
+            longitude: longitude || null
         });
     } catch (e) {
         console.error('Failed to save customer address:', e.message);
@@ -2922,8 +2999,32 @@ const handleCheckout = async (from, session, tenant) => {
 // Handler: Address Collection
 // =========================
 const handleAddressCollection = async (from, text, session, tenant) => {
+    let lat = session.latitude;
+    let lng = session.longitude;
+    let formattedAddress = session.formattedAddress;
+
+    if (lat == null || lng == null) {
+        const geo = await getCoordsFromAddress(text, tenant.googleMapsApiKey);
+        if (geo) {
+            lat = geo.latitude;
+            lng = geo.longitude;
+            formattedAddress = geo.formattedAddress;
+        }
+    }
+
+    const availability = await checkDeliveryAvailability(session, lat, lng);
+    if (!availability.available) {
+        const limitKm = availability.deliveryRadius;
+        await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please send/type a different delivery address.`, session.config);
+        return;
+    }
+
+    session.latitude = lat;
+    session.longitude = lng;
+    session.formattedAddress = formattedAddress;
     session.address = text;
-    await saveCustomerAddress(from, text, session.formattedAddress);
+
+    await saveCustomerAddress(from, text, formattedAddress, lat, lng);
     session.state = 'CHECKOUT_PAYMENT';
 
     const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
@@ -3261,8 +3362,10 @@ const receiveWebhook = async (req, res) => {
         // ── Extract Text ──────────────────────────────────────────────
         let text = extractTextFromMessage(message);
 
-        // ── Reverse Geocoding ─────────────────────────────────────────
+        // ── Reverse Geocoding & Coordinate Storing ────────────────────
         if (message.type === 'location') {
+            session.latitude = message.location.latitude;
+            session.longitude = message.location.longitude;
             console.log(`[Geocoding] API key present: ${!!tenant.googleMapsApiKey}`);
             if (tenant.googleMapsApiKey) {
                 const resolved = await getAddressFromCoords(
@@ -3273,6 +3376,8 @@ const receiveWebhook = async (req, res) => {
                 }
             }
         } else if (message.type === 'text') {
+            session.latitude = null;
+            session.longitude = null;
             session.formattedAddress = null;
         }
 
@@ -3310,14 +3415,41 @@ const receiveWebhook = async (req, res) => {
         // ── Catalog Order: Address Provided ───────────────────────────
         if (session.state === 'CATALOG_ORDER_ADDRESS') {
             await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
-            await saveCustomerAddress(from, text, session.formattedAddress);
+            
+            let lat = session.latitude;
+            let lng = session.longitude;
+            let formattedAddress = session.formattedAddress;
+
+            if (lat == null || lng == null) {
+                const geo = await getCoordsFromAddress(text, tenant.googleMapsApiKey);
+                if (geo) {
+                    lat = geo.latitude;
+                    lng = geo.longitude;
+                    formattedAddress = geo.formattedAddress;
+                }
+            }
+
+            const availability = await checkDeliveryAvailability(session, lat, lng);
+            if (!availability.available) {
+                const limitKm = availability.deliveryRadius;
+                await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please send/type a different delivery address.`, session.config);
+                return;
+            }
+
+            session.latitude = lat;
+            session.longitude = lng;
+            session.formattedAddress = formattedAddress;
+            session.address = text;
+
+            await saveCustomerAddress(from, text, formattedAddress, lat, lng);
+            
             notificationService.sendToTenant(
                 tenant.id, '📍 Address Received',
                 `Customer (+${from}) address: ${text}`,
                 'address_update',
                 { customerPhone: from, address: text, branchId: session.branchId }
             ).catch(err => console.error('[FCM error]', err.message));
-            session.address = text;
+
             session.state = 'CHECKOUT_PAYMENT';
             await sendButtonMessage(from,
                 getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),
@@ -3453,6 +3585,34 @@ const receiveWebhook = async (req, res) => {
                 const addressId = parseInt(text.split('_')[1], 10);
                 const selected = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
                 if (selected) {
+                    let lat = selected.latitude;
+                    let lng = selected.longitude;
+                    if (lat == null || lng == null) {
+                        const geo = await getCoordsFromAddress(selected.address, tenant.googleMapsApiKey);
+                        if (geo) {
+                            lat = geo.latitude;
+                            lng = geo.longitude;
+                            selected.latitude = lat;
+                            selected.longitude = lng;
+                            if (geo.formattedAddress && !selected.formattedAddress) {
+                                selected.formattedAddress = geo.formattedAddress;
+                            }
+                            await selected.save().catch(e => console.error('Failed to update coordinates for saved address:', e.message));
+                        }
+                    }
+
+                    const availability = await checkDeliveryAvailability(session, lat, lng);
+                    if (!availability.available) {
+                        const limitKm = availability.deliveryRadius;
+                        await sendTextMessage(from, `❌ Sorry, your saved address is outside our delivery radius of ${limitKm} km. Please select another address or add a new one.`, session.config);
+                        await sendAddressSelectionOrRequest(from, session, tenant, {
+                            addressIdPrefix: 'address_',
+                            newAddressId: 'address_new',
+                            nextState: 'CHECKOUT_ADDRESS'
+                        });
+                        return;
+                    }
+
                     session.address = selected.address;
                     session.formattedAddress = selected.formattedAddress;
                     session.state = 'CHECKOUT_PAYMENT';
@@ -3479,6 +3639,34 @@ const receiveWebhook = async (req, res) => {
                 const addressId = parseInt(text.split('_')[1], 10);
                 const selected = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
                 if (selected) {
+                    let lat = selected.latitude;
+                    let lng = selected.longitude;
+                    if (lat == null || lng == null) {
+                        const geo = await getCoordsFromAddress(selected.address, tenant.googleMapsApiKey);
+                        if (geo) {
+                            lat = geo.latitude;
+                            lng = geo.longitude;
+                            selected.latitude = lat;
+                            selected.longitude = lng;
+                            if (geo.formattedAddress && !selected.formattedAddress) {
+                                selected.formattedAddress = geo.formattedAddress;
+                            }
+                            await selected.save().catch(e => console.error('Failed to update coordinates for saved address:', e.message));
+                        }
+                    }
+
+                    const availability = await checkDeliveryAvailability(session, lat, lng);
+                    if (!availability.available) {
+                        const limitKm = availability.deliveryRadius;
+                        await sendTextMessage(from, `❌ Sorry, your saved address is outside our delivery radius of ${limitKm} km. Please select another address or add a new one.`, session.config);
+                        await sendAddressSelectionOrRequest(from, session, tenant, {
+                            addressIdPrefix: 'cataddress_',
+                            newAddressId: 'cataddress_new',
+                            nextState: 'CATALOG_ORDER_ADDRESS'
+                        });
+                        return;
+                    }
+
                     session.address = selected.address;
                     session.formattedAddress = selected.formattedAddress;
                     session.state = 'CHECKOUT_PAYMENT';
@@ -3491,12 +3679,39 @@ const receiveWebhook = async (req, res) => {
             } else {
                 // Free-text address typed by the user
                 await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
-                await saveCustomerAddress(from, text, session.formattedAddress);
+                
+                let lat = session.latitude;
+                let lng = session.longitude;
+                let formattedAddress = session.formattedAddress;
+
+                if (lat == null || lng == null) {
+                    const geo = await getCoordsFromAddress(text, tenant.googleMapsApiKey);
+                    if (geo) {
+                        lat = geo.latitude;
+                        lng = geo.longitude;
+                        formattedAddress = geo.formattedAddress;
+                    }
+                }
+
+                const availability = await checkDeliveryAvailability(session, lat, lng);
+                if (!availability.available) {
+                    const limitKm = availability.deliveryRadius;
+                    await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please select another address or add/send a different one.`, session.config);
+                    return;
+                }
+
+                session.latitude = lat;
+                session.longitude = lng;
+                session.formattedAddress = formattedAddress;
+                session.address = text;
+
+                await saveCustomerAddress(from, text, formattedAddress, lat, lng);
+
                 notificationService.sendToTenant(tenant.id, '📍 Address Received',
                     `Customer (+${from}) address: ${text}`, 'address_update',
                     { customerPhone: from, address: text, branchId: session.branchId }
                 ).catch(err => console.error('[FCM error]', err.message));
-                session.address = text;
+                
                 session.state = 'CHECKOUT_PAYMENT';
                 await sendButtonMessage(from,
                     getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),

@@ -4,7 +4,6 @@ const { getTenantConfig } = require('../utils/tenantHelpers');
 const { syncProductToMeta } = require('../services/whatsappService');
 const fs = require('fs');
 const csv = require('csv-parser');
-const { cloudinary } = require('../services/cloudinaryService');
 
 const getAllProducts = async (req, res) => {
     try {
@@ -86,7 +85,7 @@ const createProduct = async (req, res) => {
     if (req.user.role === 'branch') data.branchId = req.user.branchId;
 
     if (req.file) {
-        data.image = req.file.path;
+        data.image = `${req.protocol}://${req.get('host')}/uploads/products/${req.file.filename}`;
     }
 
     if (data.price) data.price = parseFloat(data.price);
@@ -124,7 +123,7 @@ const updateProduct = async (req, res) => {
 
         const data = { ...req.body };
         if (req.file) {
-            data.image = req.file.path;
+            data.image = `${req.protocol}://${req.get('host')}/uploads/products/${req.file.filename}`;
         }
 
         if (data.price) data.price = parseFloat(data.price);
@@ -209,18 +208,10 @@ const bulkUploadProducts = async (req, res) => {
         return res.status(400).json({ error: 'Branch ID is required' });
     }
 
-    // 1. Upload images to Cloudinary and create a mapping
+    // 1. Map uploaded local images
     const imageMap = {};
     for (const file of imageFiles) {
-        try {
-            const uploadRes = await cloudinary.uploader.upload(file.path, {
-                folder: 'friska_products'
-            });
-            imageMap[file.originalname] = uploadRes.secure_url;
-            fs.unlinkSync(file.path); // Cleanup local file
-        } catch (uploadError) {
-            console.error(`Failed to upload ${file.originalname} to Cloudinary:`, uploadError.message);
-        }
+        imageMap[file.originalname] = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
     }
 
     // 2. Parse CSV and create products

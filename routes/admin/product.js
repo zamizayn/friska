@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../../controllers/productController');
-const { upload } = require('../../services/cloudinaryService');
+const { upload } = require('../../services/uploadService');
 const multer = require('multer');
 const path = require('path');
 

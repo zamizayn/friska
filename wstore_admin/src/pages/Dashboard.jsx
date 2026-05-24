@@ -598,7 +598,7 @@ export default function Dashboard() {
                                     style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                                 >
                                     <option value="catalog">Catalog (Native WhatsApp)</option>
-                                    <option value="list">List (Interactive Messages)</option>
+                                    <option value="carousel">List (Interactive Messages)</option>
                                 </select>
                             </div>
 

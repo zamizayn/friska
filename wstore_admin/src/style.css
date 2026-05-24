@@ -852,6 +852,10 @@ table tr:hover td {
   margin-top: 32px;
 }
 
+.pac-container {
+  z-index: 9999 !important;
+}
+
 /* Login Page Styles */
 .login-split-body {
   display: flex;

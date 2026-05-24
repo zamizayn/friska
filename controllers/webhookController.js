@@ -2088,7 +2088,21 @@ const sendAddressSelectionOrRequest = async (from, session, tenant, { addressIdP
 // Helper: Geocoding (Address to Coordinates)
 // =========================
 const getCoordsFromAddress = async (address, apiKey) => {
-    if (!apiKey || !address) return null;
+    if (!address) return null;
+
+    // Extract coordinates directly if address is a Google Maps URL
+    const mapsMatch = address.match(/maps\.google\.com\/\?q=(-?\d+\.\d+),(-?\d+\.\d+)/i) || 
+                      address.match(/maps\.googleapis\.com\/maps\/api\/staticmap\?center=(-?\d+\.\d+),(-?\d+\.\d+)/i) ||
+                      address.match(/google\.com\/maps\?q=(-?\d+\.\d+),(-?\d+\.\d+)/i);
+    if (mapsMatch) {
+        return {
+            latitude: parseFloat(mapsMatch[1]),
+            longitude: parseFloat(mapsMatch[2]),
+            formattedAddress: null
+        };
+    }
+
+    if (!apiKey) return null;
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
         const res = await axios.get(url, { timeout: 5000 });
@@ -2157,6 +2171,45 @@ const checkDeliveryAvailability = async (session, latitude, longitude) => {
         deliveryRadius: branch.deliveryRadius,
         reason: inRange ? null : 'out_of_radius'
     };
+};
+
+// =========================
+// Helper: Find Nearest Branch
+// =========================
+const findNearestBranch = async (tenantId, latitude, longitude) => {
+    if (latitude == null || longitude == null) return null;
+    try {
+        const branches = await Branch.findAll({
+            where: {
+                tenantId,
+                latitude: { [Op.not]: null },
+                longitude: { [Op.not]: null }
+            }
+        });
+        
+        if (branches.length === 0) return null;
+        
+        let nearestBranch = null;
+        let minDistance = Infinity;
+        
+        for (const branch of branches) {
+            const dist = calculateDistance(
+                parseFloat(branch.latitude),
+                parseFloat(branch.longitude),
+                parseFloat(latitude),
+                parseFloat(longitude)
+            );
+            if (dist !== null && dist < minDistance) {
+                minDistance = dist;
+                nearestBranch = branch;
+            }
+        }
+        
+        return nearestBranch;
+    } catch (e) {
+        console.error('Error finding nearest branch:', e.message);
+        return null;
+    }
 };
 
 // =========================
@@ -3012,6 +3065,14 @@ const handleAddressCollection = async (from, text, session, tenant) => {
         }
     }
 
+    if (!session.branchId && lat != null && lng != null) {
+        const nearest = await findNearestBranch(tenant.id, lat, lng);
+        if (nearest) {
+            session.branchId = nearest.id;
+            console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+        }
+    }
+
     const availability = await checkDeliveryAvailability(session, lat, lng);
     if (!availability.available) {
         const limitKm = availability.deliveryRadius;
@@ -3429,6 +3490,14 @@ const receiveWebhook = async (req, res) => {
                 }
             }
 
+            if (!session.branchId && lat != null && lng != null) {
+                const nearest = await findNearestBranch(tenant.id, lat, lng);
+                if (nearest) {
+                    session.branchId = nearest.id;
+                    console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+                }
+            }
+
             const availability = await checkDeliveryAvailability(session, lat, lng);
             if (!availability.available) {
                 const limitKm = availability.deliveryRadius;
@@ -3601,6 +3670,14 @@ const receiveWebhook = async (req, res) => {
                         }
                     }
 
+                    if (!session.branchId && lat != null && lng != null) {
+                        const nearest = await findNearestBranch(tenant.id, lat, lng);
+                        if (nearest) {
+                            session.branchId = nearest.id;
+                            console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+                        }
+                    }
+
                     const availability = await checkDeliveryAvailability(session, lat, lng);
                     if (!availability.available) {
                         const limitKm = availability.deliveryRadius;
@@ -3655,6 +3732,14 @@ const receiveWebhook = async (req, res) => {
                         }
                     }
 
+                    if (!session.branchId && lat != null && lng != null) {
+                        const nearest = await findNearestBranch(tenant.id, lat, lng);
+                        if (nearest) {
+                            session.branchId = nearest.id;
+                            console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+                        }
+                    }
+
                     const availability = await checkDeliveryAvailability(session, lat, lng);
                     if (!availability.available) {
                         const limitKm = availability.deliveryRadius;
@@ -3690,6 +3775,14 @@ const receiveWebhook = async (req, res) => {
                         lat = geo.latitude;
                         lng = geo.longitude;
                         formattedAddress = geo.formattedAddress;
+                    }
+                }
+
+                if (!session.branchId && lat != null && lng != null) {
+                    const nearest = await findNearestBranch(tenant.id, lat, lng);
+                    if (nearest) {
+                        session.branchId = nearest.id;
+                        console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
                     }
                 }
 

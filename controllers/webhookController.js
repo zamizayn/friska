@@ -2135,7 +2135,7 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
             });
 
             if (products.length > 0) {
-                if (session.catalogId && session.config.displayMode !== 'carousel') {
+                if (session.catalogId && tenant.displayMode !== 'carousel' && tenant.displayMode !== 'list') {
                     const productItems = buildUniqueRetailerItems(products);
                     if (productItems.length > 0) {
                         const sections = [{ title: 'Our Featured Collection', product_items: productItems }];
@@ -2347,7 +2347,7 @@ const handleSearchMode = async (from, session, tenant) => {
     await sendTextMessage(from, msg, session.config);
 };
 
-const handleSearching = async (from, text, session) => {
+const handleSearching = async (from, text, session, tenant) => {
     if (text === 'menu' || text === 'shop') {
         session.state = 'START';
         return 'RE_ROUTE';
@@ -2385,7 +2385,7 @@ const handleSearching = async (from, text, session) => {
             session.config);
     }
 
-    if (session.catalogId && session.config.displayMode !== 'carousel') {
+    if (session.catalogId && tenant.displayMode !== 'carousel' && tenant.displayMode !== 'list') {
         const productItems = buildUniqueRetailerItems(searchResults);
         const sections = [{ title: 'Search Results', product_items: productItems }];
 
@@ -2476,7 +2476,7 @@ const handleShop = async (from, text, session, tenant, customer) => {
     // If a category is already scoped in session, show its products directly
     if (session.categoryId) {
         const category = await Category.findByPk(session.categoryId);
-        if (category) return await renderCategoryProducts(from, category, session);
+        if (category) return await renderCategoryProducts(from, category, session, tenant);
     }
 
     // Offer to continue with known branch
@@ -2558,14 +2558,14 @@ const sendCategoryList = async (from, branch, session, page = 1) => {
 // =========================
 // Helper: Render products for a category
 // =========================
-const renderCategoryProducts = async (from, category, session) => {
+const renderCategoryProducts = async (from, category, session, tenant) => {
     const branchId = session.branchId || category.branchId;
     const catProducts = await Product.findAll({
         where: { categoryId: category.id, branchId },
         order: [['name', 'ASC']]
     });
 
-    if (session.catalogId && session.config.displayMode !== 'carousel') {
+    if (session.catalogId && tenant.displayMode !== 'carousel' && tenant.displayMode !== 'list') {
         const productItems = buildUniqueRetailerItems(catProducts);
         if (productItems.length === 0) {
             return await sendTextMessage(from, '🛍️ No products available in this category.', session.config);
@@ -2605,7 +2605,7 @@ const handleAllProducts = async (from, session, tenant) => {
 
     if (count === 0) return await sendTextMessage(from, '🛍️ No products available in this branch yet.', session.config);
 
-    if (session.catalogId && session.config.displayMode !== 'carousel') {
+    if (session.catalogId && tenant.displayMode !== 'carousel' && tenant.displayMode !== 'list') {
         const productItems = buildUniqueRetailerItems(products);
         const sections = [{ title: `All Products (Page ${page})`, product_items: productItems }];
         await sendMultiProductMessage(from, session.catalogId, '🛍️ Our Collection', 'Browse all items below', sections, session.config);
@@ -2652,7 +2652,7 @@ const handleBranchSelection = async (from, text, session) => {
 // =========================
 // Handler: Category Selection
 // =========================
-const handleCategorySelection = async (from, text, session) => {
+const handleCategorySelection = async (from, text, session, tenant) => {
     if (!await validateShopOpen(from, session)) return;
     const categoryId = text.replace('category_', '');
     const category = await Category.findByPk(categoryId);
@@ -2685,7 +2685,7 @@ const handleCategorySelection = async (from, text, session) => {
 
     console.log(`[DEBUG] Category Selection - Catalog ID: ${session.catalogId}`);
 
-    if (session.catalogId && session.config.displayMode !== 'carousel') {
+    if (session.catalogId && tenant.displayMode !== 'carousel' && tenant.displayMode !== 'list') {
         const productItems = buildUniqueRetailerItems(catProducts);
 
         if (productItems.length === 0) {
@@ -2746,7 +2746,7 @@ const handlePaginationAndSorting = async (from, text, session) => {
 // =========================
 // Handler: Product View
 // =========================
-const handleProductSelection = async (from, text, session) => {
+const handleProductSelection = async (from, text, session, tenant) => {
     const productId = text.replace('product_', '');
     const selectedProduct = await Product.findByPk(productId);
 
@@ -2757,7 +2757,7 @@ const handleProductSelection = async (from, text, session) => {
     session.state = 'VIEWING_PRODUCT';
     session.productId = selectedProduct.id;
 
-    if (session.catalogId && session.config.displayMode !== 'carousel') {
+    if (session.catalogId && tenant.displayMode !== 'carousel' && tenant.displayMode !== 'list') {
         await sendSingleProductMessage(from, session.catalogId, selectedProduct.retailerId,
             `🔥 ${selectedProduct.name}`, 'Friska 🛍️', session.config);
     } else {
@@ -3344,7 +3344,7 @@ const receiveWebhook = async (req, res) => {
         if (session.state === 'COLLECTING_FEEDBACK') return await handleCollectingFeedback(from, text, session);
         if (text === 'search_mode') return await handleSearchMode(from, session, tenant);
         if (session.state === 'SEARCHING') {
-            const reroute = await handleSearching(from, text, session);
+            const reroute = await handleSearching(from, text, session, tenant);
             if (reroute === 'RE_ROUTE') return await handleHomeMenu(from, session, tenant, customer);
             return;
         }
@@ -3408,7 +3408,7 @@ const receiveWebhook = async (req, res) => {
         if (text.startsWith('branch_')) return await handleBranchSelection(from, text, session);
         if (['next_page_', 'prev_page_', 'sort_toggle_', 'sort_low_', 'sort_high_', 'sort_name_'].some(p => text.startsWith(p))) {
             const nextText = await handlePaginationAndSorting(from, text, session);
-            if (nextText) return await handleCategorySelection(from, nextText, session);
+            if (nextText) return await handleCategorySelection(from, nextText, session, tenant);
             return;
         }
         if (text.startsWith('shop_page_')) {
@@ -3417,11 +3417,11 @@ const receiveWebhook = async (req, res) => {
         }
         if (text.startsWith('search_page_')) {
             session.page = parseInt(text.replace('search_page_', ''), 10);
-            if (session.searchQuery) return await handleSearching(from, session.searchQuery, session);
+            if (session.searchQuery) return await handleSearching(from, session.searchQuery, session, tenant);
             return await handleHomeMenu(from, session, tenant, customer);
         }
-        if (text.startsWith('category_')) return await handleCategorySelection(from, text, session);
-        if (text.startsWith('product_')) return await handleProductSelection(from, text, session);
+        if (text.startsWith('category_')) return await handleCategorySelection(from, text, session, tenant);
+        if (text.startsWith('product_')) return await handleProductSelection(from, text, session, tenant);
         if (text.startsWith('add_') || text.startsWith('buy_')) return await handleAddToCart(from, text, session);
         if (session.state === 'COLLECTING_QUANTITY') return await handleQuantitySelection(from, text, session);
         if (text === 'cart') {

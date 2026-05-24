@@ -16,7 +16,7 @@ const ALL_PAGES = [
     { label: 'Inventory', path: '/admin/inventory', icon: Boxes, keywords: ['inventory', 'stock', 'warehouse', 'supply'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Offers', path: '/admin/offers', icon: Tags, keywords: ['offer', 'discount', 'coupon', 'promo', 'rules'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
-    { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub'], roles: ['superadmin', 'tenant'] },
+    { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub', 'settings'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Settings', path: '/admin/settings', icon: Settings, keywords: ['settings', 'config', 'preferences'], roles: ['tenant'] },
     { label: 'Payment Settings', path: '/admin/payment-settings', icon: CreditCard, keywords: ['payment', 'razorpay', 'keys', 'gateway', 'checkout'], roles: ['tenant'] },
     { label: 'WhatsApp Flows', path: '/admin/whatsapp-settings', icon: MessageSquare, keywords: ['whatsapp', 'message', 'bot', 'conversation', 'auto-reply'], roles: ['tenant'] },
@@ -252,9 +252,9 @@ export default function DashboardLayout() {
                     <NavLink to="/admin/support" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                         <LifeBuoy size={18} /> <span>Help Desk</span>
                     </NavLink>
-                    {(role === 'superadmin' || role === 'tenant') && (
+                    {(role === 'superadmin' || role === 'tenant' || role === 'branch') && (
                         <NavLink to="/admin/branches" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
-                            <MapPin size={18} /> <span>Branches</span>
+                            <MapPin size={18} /> <span>{role === 'branch' ? 'Hub Settings' : 'Branches'}</span>
                         </NavLink>
                     )}
                     {role === 'tenant' && (

@@ -1347,11 +1347,20 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                 const productIds = userCart.map(item => item.id);
                 const products = await Product.findAll({
                     where: { id: { [Op.in]: productIds } },
-                    include: [{ model: Category, as: 'category', attributes: ['gstRate'] }],
                     lock: t.LOCK.UPDATE,
                     transaction: t
                 });
                 const productMap = new Map(products.map(p => [p.id, p]));
+
+                const categoryIds = [...new Set(products.filter(p => p.categoryId).map(p => p.categoryId))];
+                const categories = categoryIds.length > 0
+                    ? await Category.findAll({
+                        where: { id: { [Op.in]: categoryIds } },
+                        transaction: t
+                    })
+                    : [];
+                const gstRateMap = new Map(categories.map(c => [c.id, c.gstRate || 0]));
+
                 for (const item of userCart) {
                     const product = productMap.get(item.id);
                     if (!product) {
@@ -1366,7 +1375,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                     }
 
                     const itemSubtotal = item.price * item.quantity;
-                    const itemGstRate = product.category?.gstRate || 0;
+                    const itemGstRate = gstRateMap.get(product.categoryId) || 0;
                     const itemGst = Math.round(itemSubtotal * itemGstRate / 100 * 100) / 100;
 
                     subtotalBeforeTax += itemSubtotal;

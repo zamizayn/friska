@@ -74,12 +74,15 @@ export default function Orders() {
     const fetchDeliveryBoys = async () => {
         try {
             const res = await fetch(API_ENDPOINTS.DELIVERY_BOYS, { headers: getHeaders() });
-            if (res.ok) {
-                const data = await res.json();
-                setDeliveryBoys(data);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                console.error('[DeliveryBoys] Failed to fetch:', res.status, err.error || res.statusText);
+                return;
             }
+            const data = await res.json();
+            setDeliveryBoys(data);
         } catch (e) {
-            console.error(e);
+            console.error('[DeliveryBoys] Fetch error:', e.message);
         }
     };
 

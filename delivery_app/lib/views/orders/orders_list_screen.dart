@@ -118,7 +118,7 @@ class _OrdersListScreenState extends State<OrdersListScreen>
             child: Center(
               child: Text(
                 auth.authenticated
-                    ? 'Hi, ${auth.runtimeType.toString()}'
+                    ? 'Hi, ${StorageService.deliveryName}'
                     : '',
                 style: GoogleFonts.poppins(
                   fontSize: 13,

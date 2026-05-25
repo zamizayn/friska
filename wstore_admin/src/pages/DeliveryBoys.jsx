@@ -1,25 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Bike, Plus, Trash2, Edit3, X, Check } from 'lucide-react';
+import { Bike, Plus, Trash2, Edit3, Check } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 export default function DeliveryBoys() {
     const [boys, setBoys] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ name: '', phone: '', password: '' });
 
     const fetchBoys = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            const res = await fetch(`${API_ENDPOINTS.ORDERS}/../delivery-boys`, {
-                headers: getHeaders()
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setBoys(data);
+            const res = await fetch(API_ENDPOINTS.DELIVERY_BOYS, { headers: getHeaders() });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `Server error (${res.status})`);
             }
+            const data = await res.json();
+            setBoys(data);
         } catch (e) {
-            console.error(e);
+            setError(e.message);
         }
         setLoading(false);
     };
@@ -28,37 +31,45 @@ export default function DeliveryBoys() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
         try {
             const url = editing
-                ? `${API_ENDPOINTS.ORDERS}/../delivery-boys/${editing.id}`
-                : `${API_ENDPOINTS.ORDERS}/../delivery-boys`;
+                ? `${API_ENDPOINTS.DELIVERY_BOYS}/${editing.id}`
+                : API_ENDPOINTS.DELIVERY_BOYS;
             const method = editing ? 'PUT' : 'POST';
             const res = await fetch(url, {
                 method,
                 headers: getHeaders(),
                 body: JSON.stringify(editing ? { ...form, password: form.password || undefined } : form)
             });
-            if (res.ok) {
-                setForm({ name: '', phone: '', password: '' });
-                setShowForm(false);
-                setEditing(null);
-                fetchBoys();
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `Server error (${res.status})`);
             }
+            setForm({ name: '', phone: '', password: '' });
+            setShowForm(false);
+            setEditing(null);
+            fetchBoys();
         } catch (e) {
-            console.error(e);
+            setError(e.message);
         }
     };
 
     const handleDelete = async (id) => {
         if (!confirm('Remove this delivery boy?')) return;
+        setError(null);
         try {
-            await fetch(`${API_ENDPOINTS.ORDERS}/../delivery-boys/${id}`, {
+            const res = await fetch(`${API_ENDPOINTS.DELIVERY_BOYS}/${id}`, {
                 method: 'DELETE',
                 headers: getHeaders()
             });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `Server error (${res.status})`);
+            }
             fetchBoys();
         } catch (e) {
-            console.error(e);
+            setError(e.message);
         }
     };
 
@@ -74,10 +85,16 @@ export default function DeliveryBoys() {
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Bike size={24} /> Delivery Boys
                 </h2>
-                <button className="btn-primary" onClick={() => { setForm({ name: '', phone: '', password: '' }); setEditing(null); setShowForm(!showForm); }}>
+                <button className="btn-primary" onClick={() => { setError(null); setForm({ name: '', phone: '', password: '' }); setEditing(null); setShowForm(!showForm); }}>
                     <Plus size={16} /> {showForm ? 'Cancel' : 'Add Delivery Boy'}
                 </button>
             </div>
+
+            {error && (
+                <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', fontWeight: 600, border: '1px solid #fecaca' }}>
+                    {error}
+                </div>
+            )}
 
             {showForm && (
                 <form onSubmit={handleSubmit} style={{ background: 'var(--bg-app)', padding: '20px', borderRadius: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '400px' }}>

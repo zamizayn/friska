@@ -46,6 +46,8 @@ const getOrders = async (req, res) => {
         const { status, page = 1, limit = 20 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
+        console.log(`[DeliveryOrders] deliveryBoyId=${deliveryBoyId}, status=${status}`);
+
         const where = { deliveryBoyId };
 
         if (status) {
@@ -84,7 +86,7 @@ const getOrders = async (req, res) => {
             return { ...plain, distanceFromBranch: distance };
         });
 
-        res.json({ data, total: count, page, totalPages: Math.ceil(count / limit) });
+        res.json({ data, total: count, page: parseInt(page), totalPages: Math.ceil(count / limit) });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

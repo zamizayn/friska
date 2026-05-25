@@ -216,10 +216,15 @@ export default function Orders() {
             });
             if (res.ok) {
                 setViewingOrder(prev => ({ ...prev, deliveryBoyId: parseInt(selectedDeliveryBoyId) }));
+                setSelectedDeliveryBoyId('');
                 fetchOrders();
+                fetchDeliveryBoys();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || `Assignment failed (${res.status})`);
             }
         } catch (e) {
-            console.error(e);
+            alert('Failed to assign delivery boy');
         }
     };
 

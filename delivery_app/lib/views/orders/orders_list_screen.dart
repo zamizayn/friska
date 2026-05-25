@@ -17,15 +17,15 @@ class OrdersListScreen extends StatefulWidget {
 class _OrdersListScreenState extends State<OrdersListScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _pendingCount = 0;
+  int _activeCount = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        _fetchOrders();
-      }
+      if (!_tabController.indexIsChanging) _fetchOrders();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchOrders());
   }
@@ -56,34 +56,34 @@ class _OrdersListScreenState extends State<OrdersListScreen>
   Color _statusColor(String status) {
     switch (status) {
       case 'pending':
-        return Colors.orange;
+        return const Color(0xFFF97316);
       case 'accepted':
-        return Colors.blue;
+        return const Color(0xFF3B82F6);
       case 'picked_up':
-        return Colors.purple;
+        return const Color(0xFF8B5CF6);
       case 'delivered':
-        return Colors.green;
+        return const Color(0xFF10B981);
       case 'cancelled':
-        return Colors.red;
+        return const Color(0xFFEF4444);
       default:
         return Colors.grey;
     }
   }
 
-  IconData _statusIcon(String status) {
+  String _statusLabel(String status) {
     switch (status) {
       case 'pending':
-        return Icons.schedule;
+        return 'New';
       case 'accepted':
-        return Icons.check_circle_outline;
+        return 'Accepted';
       case 'picked_up':
-        return Icons.delivery_dining;
+        return 'Picked Up';
       case 'delivered':
-        return Icons.check_circle;
+        return 'Delivered';
       case 'cancelled':
-        return Icons.cancel;
+        return 'Cancelled';
       default:
-        return Icons.help_outline;
+        return status;
     }
   }
 
@@ -97,32 +97,51 @@ class _OrdersListScreenState extends State<OrdersListScreen>
       appBar: AppBar(
         title: Text(
           'Deliveries',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
         ),
-        backgroundColor: Colors.orange.shade600,
+        backgroundColor: const Color(0xFFF97316),
         foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'New'),
-            Tab(text: 'Active'),
-            Tab(text: 'Delivered'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.white24, width: 0.5),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white60,
+              labelStyle: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              tabs: [
+                Tab(text: 'New ($_pendingCount)'),
+                Tab(text: 'Active ($_activeCount)'),
+                const Tab(text: 'Delivered'),
+              ],
+            ),
+          ),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 4),
             child: Center(
               child: Text(
-                auth.authenticated
-                    ? 'Hi, ${StorageService.deliveryName}'
+                StorageService.deliveryName.isNotEmpty
+                    ? StorageService.deliveryName.split(' ').first
                     : '',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   color: Colors.white70,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -130,29 +149,44 @@ class _OrdersListScreenState extends State<OrdersListScreen>
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (v) {
-              if (v == 'logout') {
-                auth.logout();
-              }
+              if (v == 'logout') auth.logout();
             },
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             itemBuilder: (_) => [
               PopupMenuItem(
-                value: 'profile',
-                child: ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(StorageService.deliveryName),
-                  subtitle: Text(StorageService.deliveryBranchName),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
+                enabled: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      StorageService.deliveryName,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      StorageService.deliveryBranchName,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const PopupMenuDivider(),
               const PopupMenuItem(
                 value: 'logout',
-                child: ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Logout', style: TextStyle(color: Colors.red)),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red, size: 18),
+                    SizedBox(width: 10),
+                    Text('Logout', style: TextStyle(color: Colors.red)),
+                  ],
                 ),
               ),
             ],
@@ -161,183 +195,306 @@ class _OrdersListScreenState extends State<OrdersListScreen>
       ),
       body: RefreshIndicator(
         onRefresh: _fetchOrders,
+        color: const Color(0xFFF97316),
         child: ordersProv.loading && orders.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : orders.isEmpty
-                ? ListView(
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.6,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.inbox_outlined,
-                                  size: 64, color: Colors.grey.shade400),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No orders here',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: orders.length,
-                    itemBuilder: (context, index) {
-                      final order = orders[index];
-                      final dateStr = order.createdAt.isNotEmpty
-                          ? DateFormat('dd MMM, hh:mm a').format(
-                              DateTime.parse(order.createdAt))
-                          : '';
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 1,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    OrderDetailScreen(orderId: order.id),
-                              ),
-                            ).then((_) => _fetchOrders());
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Order #${order.id}',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _statusColor(order.status)
-                                            .withOpacity(0.1),
-                                        borderRadius:
-                                            BorderRadius.circular(20),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            _statusIcon(order.status),
-                                            size: 14,
-                                            color:
-                                                _statusColor(order.status),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            order.status
-                                                .replaceAll('_', ' ')
-                                                .toUpperCase(),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                              color:
-                                                  _statusColor(order.status),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                if (order.customerName != null)
-                                  Text(
-                                    order.customerName!,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                if (order.customerPhone != null)
-                                  Text(
-                                    order.customerPhone!,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  order.formattedAddress ??
-                                      order.address ??
-                                      'No address',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    if (order.distanceFromBranch != null)
-                                      Text(
-                                        '${order.distanceFromBranch!.toStringAsFixed(1)} km',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          color: Colors.orange.shade700,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    Text(
-                                      '₹${order.total.toStringAsFixed(2)}',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (dateStr.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      dateStr,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 11,
-                                        color: Colors.grey.shade400,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+            : ordersProv.error != null
+                ? _buildError(ordersProv.error!)
+                : orders.isEmpty
+                    ? _buildEmpty()
+                    : _buildList(orders),
       ),
     );
   }
-}
 
+  Widget _buildError(String error) {
+    return ListView(
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(Icons.wifi_off_rounded,
+                        size: 32, color: Colors.red.shade400),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    error,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.red.shade600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: _fetchOrders,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Try Again'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFF97316),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmpty() {
+    final messages = {
+      0: 'No new orders assigned yet',
+      1: 'No active deliveries',
+      2: 'No completed deliveries',
+    };
+    final icons = {
+      0: Icons.inbox_rounded,
+      1: Icons.delivery_dining_outlined,
+      2: Icons.check_circle_outline,
+    };
+    final index = _tabController.index;
+
+    return ListView(
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Icon(
+                    icons[index] ?? Icons.inbox_rounded,
+                    size: 40,
+                    color: Colors.orange.shade300,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  messages[index] ?? 'No orders',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildList(List<OrderItem> orders) {
+    _pendingCount = orders.where((o) => o.status == 'pending').length;
+    _activeCount = orders
+        .where((o) => o.status == 'accepted' || o.status == 'picked_up')
+        .length;
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        final dateStr = order.createdAt.isNotEmpty
+            ? DateFormat('dd MMM, hh:mm a')
+                .format(DateTime.parse(order.createdAt))
+            : '';
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            elevation: 0,
+            shadowColor: Colors.black.withOpacity(0.04),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => OrderDetailScreen(orderId: order.id),
+                  ),
+                ).then((_) => _fetchOrders());
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: Colors.grey.shade100),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Order #${order.id}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  if (order.distanceFromBranch != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF97316)
+                                            .withOpacity(0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        '${order.distanceFromBranch!.toStringAsFixed(1)} km',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFFF97316),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              if (order.customerName != null ||
+                                  order.customerPhone != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.person_outline,
+                                          size: 13,
+                                          color: Colors.grey.shade400),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        order.customerName ??
+                                            order.customerPhone ??
+                                            '',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _statusColor(order.status)
+                                    .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _statusLabel(order.status),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: _statusColor(order.status),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '₹${order.total.toStringAsFixed(0)}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey.shade900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_outlined,
+                            size: 14, color: Colors.grey.shade400),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            order.formattedAddress ??
+                                order.address ??
+                                'No address',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (dateStr.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Row(
+                          children: [
+                            Icon(Icons.access_time,
+                                size: 12, color: Colors.grey.shade400),
+                            const SizedBox(width: 4),
+                            Text(
+                              dateStr,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

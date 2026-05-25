@@ -29,7 +29,21 @@ class DeliveryApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           textTheme: GoogleFonts.poppinsTextTheme(),
-          scaffoldBackgroundColor: Colors.white,
+          scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFFF97316),
+            brightness: Brightness.light,
+          ),
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            centerTitle: true,
+          ),
+          cardTheme: CardTheme(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
         ),
         home: Consumer<AuthProvider>(
           builder: (context, auth, _) {

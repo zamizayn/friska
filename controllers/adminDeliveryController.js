@@ -170,7 +170,7 @@ const getAvailableOrders = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        res.json({ data: rows, total: count, page, totalPages: Math.ceil(count / limit) });
+        res.json({ data: rows, total: count, page: parseInt(page), totalPages: Math.ceil(count / limit) });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

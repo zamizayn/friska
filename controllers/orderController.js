@@ -103,7 +103,7 @@ const getAllOrders = async (req, res) => {
         res.json({
             data: dataWithDistance,
             total: count,
-            page,
+            page: parseInt(page),
             totalPages: Math.ceil(count / limit),
             summary: stats
         });

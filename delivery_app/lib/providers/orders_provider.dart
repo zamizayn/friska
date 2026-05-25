@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import '../config/api_config.dart';
 import '../services/api_client.dart';
@@ -40,23 +41,30 @@ class OrderItem {
     required this.createdAt,
   });
 
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id'].toString()) ?? 0,
       address: json['address'],
       formattedAddress: json['formattedAddress'],
-      total: (json['total'] ?? 0).toDouble(),
+      total: _parseDouble(json['total']) ?? 0,
       status: json['status'] ?? 'pending',
       customerName: json['customer']?['name'],
       customerPhone: json['customer']?['phone'],
       items: json['items'] ?? [],
-      distanceFromBranch: json['distanceFromBranch']?.toDouble(),
-      deliveryLatitude: json['deliveryLatitude']?.toDouble(),
-      deliveryLongitude: json['deliveryLongitude']?.toDouble(),
+      distanceFromBranch: _parseDouble(json['distanceFromBranch']),
+      deliveryLatitude: _parseDouble(json['deliveryLatitude']),
+      deliveryLongitude: _parseDouble(json['deliveryLongitude']),
       paymentMethod: json['paymentMethod'],
       paymentStatus: json['paymentStatus'],
       appliedOfferCode: json['appliedOfferCode'],
-      discountAmount: json['discountAmount']?.toDouble(),
+      discountAmount: _parseDouble(json['discountAmount']) ?? 0,
       createdAt: json['createdAt'] ?? '',
     );
   }
@@ -84,18 +92,19 @@ class OrdersProvider extends ChangeNotifier {
       if (status != null) url += '&status=$status';
 
       final res = await ApiClient.get(url);
-
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         _orders =
             (data['data'] as List).map((o) => OrderItem.fromJson(o)).toList();
-        _totalPages = data['totalPages'] ?? 1;
-        _currentPage = data['page'] ?? 1;
+        _totalPages = int.tryParse(data['totalPages']?.toString() ?? '') ?? 1;
+        _currentPage = int.tryParse(data['page']?.toString() ?? '') ?? 1;
       } else {
         _error = 'Failed to load orders';
       }
-    } catch (e) {
-      _error = 'Connection error';
+    } catch (e, stack) {
+      _error = 'Connection error: ${e.toString()}';
+      print('[OrdersProvider] Fetch error: $e');
+      print('[OrdersProvider] Stack: $stack');
     }
 
     _loading = false;

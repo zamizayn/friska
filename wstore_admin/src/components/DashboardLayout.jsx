@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -255,6 +255,11 @@ export default function DashboardLayout() {
                     {(role === 'superadmin' || role === 'tenant' || role === 'branch') && (
                         <NavLink to="/admin/branches" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                             <MapPin size={18} /> <span>{role === 'branch' ? 'Hub Settings' : 'Branches'}</span>
+                        </NavLink>
+                    )}
+                    {(role === 'superadmin' || role === 'tenant' || role === 'branch') && (
+                        <NavLink to="/admin/delivery-boys" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                            <Bike size={18} /> <span>Delivery Boys</span>
                         </NavLink>
                     )}
                     {role === 'tenant' && (

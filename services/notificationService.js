@@ -112,4 +112,64 @@ async function sendToAll(title, body, type = 'general', extraData = {}) {
     }
 }
 
-module.exports = { sendToTenant, sendToAll };
+/**
+ * Send push notification to a specific delivery boy
+ */
+async function sendToDeliveryBoy(deliveryBoyId, title, body, type = 'general', extraData = {}) {
+    try {
+        const tokenRecords = await FcmToken.findAll({
+            where: { deliveryBoyId }
+        });
+
+        if (tokenRecords.length === 0) {
+            console.log(`[FCM] No FCM tokens found for delivery boy #${deliveryBoyId}`);
+            return;
+        }
+
+        const tokens = tokenRecords.map(t => t.token);
+
+        const message = {
+            notification: { title, body },
+            data: {
+                type,
+                ...Object.fromEntries(Object.entries(extraData).map(([k, v]) => [k, String(v)]))
+            }
+        };
+
+        const CHUNK_SIZE = 500;
+        let successCount = 0;
+        const tokensToRemove = new Set();
+
+        for (let i = 0; i < tokens.length; i += CHUNK_SIZE) {
+            const tokenChunk = tokens.slice(i, i + CHUNK_SIZE);
+            const response = await admin.messaging().sendEachForMulticast({
+                tokens: tokenChunk,
+                ...message
+            });
+
+            successCount += response.successCount;
+
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success) {
+                    const errorCode = resp.error?.code;
+                    if (
+                        errorCode === 'messaging/registration-token-not-registered' ||
+                        errorCode === 'messaging/invalid-registration-token'
+                    ) {
+                        tokensToRemove.add(tokenChunk[idx]);
+                    }
+                }
+            });
+        }
+
+        if (tokensToRemove.size > 0) {
+            await FcmToken.destroy({ where: { token: Array.from(tokensToRemove) } });
+        }
+
+        console.log(`[FCM] Sent "${title}" to ${successCount}/${tokens.length} delivery boy devices`);
+    } catch (error) {
+        console.error('[FCM] Error sending to delivery boy:', error.message);
+    }
+}
+
+module.exports = { sendToTenant, sendToAll, sendToDeliveryBoy };

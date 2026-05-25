@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
   GLOBAL_CONFIGS: `${BASE_URL}/global-configs`,
   REGISTRATION_PAYMENT: '/api/payments/registration', // Note: This is not under /api/admin
   REGISTRATION_STATUS: (id) => `${BASE_URL}/tenants/${id}/registration-status`,
+  DELIVERY_BOYS: `${BASE_URL}/delivery-boys`,
 };
 
 export const getHeaders = () => {

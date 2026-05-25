@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send } from 'lucide-react';
+import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import DatePicker from 'react-datepicker';
@@ -39,6 +39,8 @@ export default function Orders() {
         endDate: today
     };
     const [filters, setFilters] = useState(initialFilters);
+    const [deliveryBoys, setDeliveryBoys] = useState([]);
+    const [selectedDeliveryBoyId, setSelectedDeliveryBoyId] = useState('');
     const navigate = useNavigate();
 
     const fetchOrders = async (page = 1) => {
@@ -69,9 +71,22 @@ export default function Orders() {
         setProducts(result || []);
     };
 
+    const fetchDeliveryBoys = async () => {
+        try {
+            const res = await fetch(API_ENDPOINTS.DELIVERY_BOYS, { headers: getHeaders() });
+            if (res.ok) {
+                const data = await res.json();
+                setDeliveryBoys(data);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     useEffect(() => {
         fetchOrders();
         fetchProducts();
+        fetchDeliveryBoys();
     }, [filters]);
 
     const handlePageChange = (newPage) => {
@@ -186,6 +201,23 @@ export default function Orders() {
         setModalOpen(false);
         setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery' });
         fetchOrders();
+    };
+
+    const handleAssignDeliveryBoy = async () => {
+        if (!viewingOrder || !selectedDeliveryBoyId) return;
+        try {
+            const res = await fetch(`${API_ENDPOINTS.ORDERS}/${viewingOrder.id}/assign-delivery`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ deliveryBoyId: parseInt(selectedDeliveryBoyId) })
+            });
+            if (res.ok) {
+                setViewingOrder(prev => ({ ...prev, deliveryBoyId: parseInt(selectedDeliveryBoyId) }));
+                fetchOrders();
+            }
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     const handleForwardToDelivery = (order) => {
@@ -605,6 +637,41 @@ export default function Orders() {
                                     )
                                 )}
                             </div>
+                        </div>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Delivery Assignment</h4>
+                            {viewingOrder.deliveryBoyId ? (
+                                <div style={{ padding: '12px 16px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: '#166534' }}>
+                                    <Bike size={18} />
+                                    {deliveryBoys.find(b => b.id === viewingOrder.deliveryBoyId)?.name || 'Delivery Boy #' + viewingOrder.deliveryBoyId}
+                                </div>
+                            ) : viewingOrder.status === 'pending' ? (
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <select
+                                        style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'white' }}
+                                        value={selectedDeliveryBoyId}
+                                        onChange={e => setSelectedDeliveryBoyId(e.target.value)}
+                                    >
+                                        <option value="">Select delivery boy…</option>
+                                        {deliveryBoys
+                                            .filter(b => b.status === 'active')
+                                            .map(b => (
+                                                <option key={b.id} value={b.id}>{b.name} ({b.phone})</option>
+                                            ))}
+                                    </select>
+                                    <button
+                                        className="btn-primary"
+                                        style={{ whiteSpace: 'nowrap' }}
+                                        disabled={!selectedDeliveryBoyId}
+                                        onClick={handleAssignDeliveryBoy}
+                                    >
+                                        <Check size={16} /> Assign
+                                    </button>
+                                </div>
+                            ) : (
+                                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Not assigned</div>
+                            )}
                         </div>
 
                         <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>Ordered Items</h4>

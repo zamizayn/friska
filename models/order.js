@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         targetKey: 'phone',
         as: 'customer'
       });
+      Order.belongsTo(models.DeliveryBoy, {
+        foreignKey: 'deliveryBoyId',
+        as: 'deliveryBoy'
+      });
     }
   }
   Order.init({
@@ -39,7 +43,8 @@ module.exports = (sequelize, DataTypes) => {
     paymentTransactionId: DataTypes.STRING,
     formattedAddress: DataTypes.TEXT,
     deliveryLatitude: DataTypes.DECIMAL(10, 8),
-    deliveryLongitude: DataTypes.DECIMAL(11, 8)
+    deliveryLongitude: DataTypes.DECIMAL(11, 8),
+    deliveryBoyId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Order',

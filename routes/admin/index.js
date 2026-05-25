@@ -34,4 +34,7 @@ router.use('/fcm', require('./fcm'));
 router.use('/offers', require('./offer'));
 router.put('/global-configs', require('../../controllers/globalConfigController').updateConfigs);
 
+// Delivery boy management
+router.use('/', require('./delivery'));
+
 module.exports = router;

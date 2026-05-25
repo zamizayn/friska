@@ -24,6 +24,7 @@ import WhatsAppSettings from './pages/WhatsAppSettings';
 import ChangePassword from './pages/ChangePassword';
 import RegistrationPayment from './pages/RegistrationPayment';
 import PlatformSettings from './pages/PlatformSettings';
+import DeliveryBoys from './pages/DeliveryBoys';
 
 const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem('adminToken');
@@ -50,6 +51,7 @@ export default function App() {
                 >
                     <Route index element={<Dashboard />} />
                     <Route path="branches" element={<Branches />} />
+                    <Route path="delivery-boys" element={<DeliveryBoys />} />
                     <Route path="tenants" element={<Tenants />} />
                     <Route path="platform-settings" element={<PlatformSettings />} />
                     <Route path="categories" element={<Categories />} />

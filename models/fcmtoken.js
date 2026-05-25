@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
     adminId: { type: DataTypes.INTEGER, allowNull: false },
     tenantId: { type: DataTypes.INTEGER, allowNull: true },
     branchId: { type: DataTypes.INTEGER, allowNull: true },
-    role: { type: DataTypes.STRING, allowNull: true }
+    role: { type: DataTypes.STRING, allowNull: true },
+    deliveryBoyId: { type: DataTypes.INTEGER, allowNull: true }
   }, {
     sequelize,
     modelName: 'FcmToken',

@@ -1266,7 +1266,12 @@ const handleAddressCollection = async (from, text, session, tenant) => {
     const availability = await checkDeliveryAvailability(session, lat, lng);
     if (!availability.available) {
         const limitKm = availability.deliveryRadius;
-        await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please send/type a different delivery address.`, session.config);
+        await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please select another address or add a new one.`, session.config);
+        await sendAddressSelectionOrRequest(from, session, tenant, {
+            addressIdPrefix: 'address_',
+            newAddressId: 'address_new',
+            nextState: 'CHECKOUT_ADDRESS'
+        });
         return;
     }
 
@@ -1691,7 +1696,12 @@ const receiveWebhook = async (req, res) => {
             const availability = await checkDeliveryAvailability(session, lat, lng);
             if (!availability.available) {
                 const limitKm = availability.deliveryRadius;
-                await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please send/type a different delivery address.`, session.config);
+                await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please select another address or add a new one.`, session.config);
+                await sendAddressSelectionOrRequest(from, session, tenant, {
+                    addressIdPrefix: 'cataddress_',
+                    newAddressId: 'cataddress_new',
+                    nextState: 'CATALOG_ORDER_ADDRESS'
+                });
                 return;
             }
 
@@ -1979,7 +1989,12 @@ const receiveWebhook = async (req, res) => {
                 const availability = await checkDeliveryAvailability(session, lat, lng);
                 if (!availability.available) {
                     const limitKm = availability.deliveryRadius;
-                    await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please select another address or add/send a different one.`, session.config);
+                    await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please select another address or add a new one.`, session.config);
+                    await sendAddressSelectionOrRequest(from, session, tenant, {
+                        addressIdPrefix: 'cataddress_',
+                        newAddressId: 'cataddress_new',
+                        nextState: 'CATALOG_ORDER_ADDRESS'
+                    });
                     return;
                 }
 

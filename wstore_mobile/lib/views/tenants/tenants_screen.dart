@@ -90,7 +90,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
               child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+            style: TextButton.styleFrom(foregroundColor: AppColors.accent),
             child: const Text('Enable'),
           ),
         ],
@@ -342,7 +342,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
                                         }
                                       },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: AppColors.accent,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14)),
                                 ),
@@ -445,7 +445,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
                   style: GoogleFonts.outfit(
                       color: Colors.white, fontWeight: FontWeight.w600)),
               style: TextButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.accent,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
@@ -458,7 +458,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent)))
           : _tenants.isEmpty
               ? Center(
                   child: Column(
@@ -481,7 +481,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
                       ElevatedButton(
                         onPressed: () => _showTenantModal(),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: AppColors.accent,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12))),
                         child: Text('Add New Tenant',

@@ -7,6 +7,7 @@ import '../../providers/branches_provider.dart';
 import '../../services/api_client.dart';
 import '../../config/api_config.dart';
 import '../../services/storage_service.dart';
+import '../../widgets/glass_scaffold.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,10 +19,14 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // WhatsApp Settings Controllers
   final _phoneIdController = TextEditingController();
   final _metaTokenController = TextEditingController();
   final _wabaIdController = TextEditingController();
+  final _googleMapsKeyController = TextEditingController();
+  final _geminiKeyController = TextEditingController();
+  final _storePhoneController = TextEditingController();
+  final _contactNameController = TextEditingController();
+  final _contactEmailController = TextEditingController();
   bool _isSavingSettings = false;
   String _settingsError = "";
 
@@ -52,6 +57,11 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
           _phoneIdController.text = data['phoneNumberId'] ?? '';
           _metaTokenController.text = data['whatsappToken'] ?? '';
           _wabaIdController.text = data['wabaId'] ?? '';
+          _googleMapsKeyController.text = data['googleMapsApiKey'] ?? '';
+          _geminiKeyController.text = data['geminiApiKey'] ?? '';
+          _storePhoneController.text = data['contactPhone'] ?? '';
+          _contactNameController.text = data['contactName'] ?? '';
+          _contactEmailController.text = data['contactEmail'] ?? '';
         });
       }
     } catch (_) {}
@@ -76,6 +86,11 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
           'phoneNumberId': _phoneIdController.text.trim(),
           'whatsappToken': _metaTokenController.text.trim(),
           'wabaId': _wabaIdController.text.trim(),
+          'googleMapsApiKey': _googleMapsKeyController.text.trim(),
+          'geminiApiKey': _geminiKeyController.text.trim(),
+          'contactPhone': _storePhoneController.text.trim(),
+          'contactName': _contactNameController.text.trim(),
+          'contactEmail': _contactEmailController.text.trim(),
         },
       );
 
@@ -117,11 +132,11 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                 error = "";
               });
 
-              final success = await context.read<BranchesProvider>().createBranch(
-                    nameController.text.trim(),
-                    userController.text.trim(),
-                    passController.text,
-                  );
+              final success = await context.read<BranchesProvider>().createBranch({
+                    'name': nameController.text.trim(),
+                    'username': userController.text.trim(),
+                    'password': passController.text,
+                  });
 
               if (success && mounted) {
                 Navigator.pop(context);
@@ -137,43 +152,19 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
             }
 
             return AlertDialog(
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.cardBg,
+              surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               title: Text('Create Branch Hub', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      controller: nameController,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Branch Hub Name (e.g. Pune City)',
-                        hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
+                    GlassInput(controller: nameController, hint: 'Branch Hub Name (e.g. Pune City)'),
                     const SizedBox(height: 12),
-                    TextField(
-                      controller: userController,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Admin Username',
-                        hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
+                    GlassInput(controller: userController, hint: 'Admin Username'),
                     const SizedBox(height: 12),
-                    TextField(
-                      controller: passController,
-                      obscureText: true,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Admin Password',
-                        hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
+                    GlassInput(controller: passController, hint: 'Admin Password', obscure: true),
                     if (error.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Text(error, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
@@ -184,13 +175,13 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
               actions: [
                 TextButton(
                   onPressed: isSaving ? null : () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textPrimary54)),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
                 ),
                 TextButton(
                   onPressed: isSaving ? null : submit,
                   child: isSaving
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                      : const Text('Provision', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold)),
+                      : const Text('Provision', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -214,27 +205,14 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
           style: GoogleFonts.outfit(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.cardBg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.cardBorder),
-          ),
-          child: TextField(
-            controller: controller,
-            obscureText: isPassword,
-            style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: GoogleFonts.inter(color: const Color(0xFF475569)),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-          ),
+        GlassInput(
+          controller: controller,
+          hint: hint,
+          obscure: isPassword,
         ),
         const SizedBox(height: 16),
       ],
@@ -245,31 +223,22 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   Widget build(BuildContext context) {
     final branchesProvider = context.watch<BranchesProvider>();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Platform Configuration', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFF6366F1),
-          labelColor: Colors.white,
-          unselectedLabelColor: const Color(0xFF475569),
-          labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
-          tabs: const [
-            Tab(text: 'WhatsApp Config'),
-            Tab(text: 'Hubs Manager'),
-          ],
-        ),
+    return GlassScaffold(
+      title: 'Platform Configuration',
+      bottom: TabBar(
+        controller: _tabController,
+        indicatorColor: AppColors.accent,
+        labelColor: Colors.white,
+        unselectedLabelColor: AppColors.textMuted,
+        labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+        tabs: const [
+          Tab(text: 'WhatsApp Config'),
+          Tab(text: 'Hubs Manager'),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // WhatsApp Meta config tab
           SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -277,43 +246,43 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
               children: [
                 Text('WhatsApp Meta integrations', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                 const SizedBox(height: 6),
-                Text('Define phone ID and user access token properties to support direct customer messages.', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
+                Text('Define phone ID and user access token properties to support direct customer messages.', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted)),
                 const SizedBox(height: 24),
                 _buildTextField(controller: _phoneIdController, label: 'Meta Phone Number ID', hint: 'e.g. 109273...'),
                 _buildTextField(controller: _metaTokenController, label: 'Meta User Access Token', hint: 'EAAl...', isPassword: true),
                 _buildTextField(controller: _wabaIdController, label: 'WABA ID (Optional)', hint: 'e.g. WABA1039...'),
-                
-                if (_settingsError.isNotEmpty) ...[
+                const Divider(height: 32, color: AppColors.border),
+                Text('Additional Integrations', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _googleMapsKeyController, label: 'Google Maps API Key', hint: 'AIza...', isPassword: true),
+                _buildTextField(controller: _geminiKeyController, label: 'Gemini AI API Key', hint: 'Enter Gemini key for AI chat', isPassword: true),
+                const Divider(height: 32, color: AppColors.border),
+                Text('Store Contact Info', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _storePhoneController, label: 'Store Phone', hint: '+91...'),
+                _buildTextField(controller: _contactNameController, label: 'Contact Person', hint: 'Store manager name'),
+                _buildTextField(controller: _contactEmailController, label: 'Contact Email', hint: 'email@store.com'),
+
+                if (_settingsError.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(color: const Color(0xFFEF4444).withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.2))),
-                    child: Text(_settingsError, style: GoogleFonts.inter(color: const Color(0xFFFCA5A5), fontSize: 12), textAlign: TextAlign.center),
-                  ),
-                ],
-
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFA855F7)]),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _isSavingSettings ? null : _updateMetaSettings,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    decoration: BoxDecoration(
+                      color: AppColors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.red.withOpacity(0.2)),
                     ),
-                    child: _isSavingSettings
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                        : Text('Save Configuration', style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                    child: Text(_settingsError, style: GoogleFonts.inter(color: AppColors.red, fontSize: 12), textAlign: TextAlign.center),
                   ),
+
+                GlassButton(
+                  label: 'Save Configuration',
+                  onPressed: _isSavingSettings ? null : _updateMetaSettings,
+                  isLoading: _isSavingSettings,
                 ),
               ],
             ),
           ),
-          // Branches logs tab
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -324,7 +293,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                   children: [
                     Text('Sales Branch Hubs', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                     IconButton(
-                      icon: const Icon(Icons.add, color: Color(0xFF6366F1)),
+                      icon: const Icon(Icons.add, color: AppColors.accent),
                       onPressed: _showAddBranchDialog,
                     ),
                   ],
@@ -332,9 +301,9 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                 const SizedBox(height: 14),
                 Expanded(
                   child: branchesProvider.isLoading
-                      ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1))))
+                      ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent)))
                       : branchesProvider.branches.isEmpty
-                          ? Center(child: Text('No sales hubs configured', style: GoogleFonts.inter(color: const Color(0xFF475569))))
+                          ? Center(child: Text('No sales hubs configured', style: GoogleFonts.inter(color: AppColors.textMuted)))
                           : ListView.separated(
                               itemCount: branchesProvider.branches.length,
                               separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -342,19 +311,13 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                                 final b = branchesProvider.branches[index];
                                 final name = b['name'] ?? 'Branch';
                                 final id = b['id']?.toString() ?? 'N/A';
-                                return Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.cardBg,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: AppColors.cardBorder),
-                                  ),
+                                return GlassCard(
                                   child: Row(
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(color: const Color(0xFF6366F1).withOpacity(0.1), shape: BoxShape.circle),
-                                        child: const Icon(Icons.store, color: Color(0xFF6366F1), size: 20),
+                                        decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), shape: BoxShape.circle),
+                                        child: const Icon(Icons.store, color: AppColors.accent, size: 20),
                                       ),
                                       const SizedBox(width: 14),
                                       Expanded(
@@ -363,7 +326,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                                           children: [
                                             Text(name, style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
                                             const SizedBox(height: 4),
-                                            Text('Hub ID: $id', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11)),
+                                            Text('Hub ID: $id', style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 11)),
                                           ],
                                         ),
                                       ),

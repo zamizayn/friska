@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:wstore_mobile/config/theme_config.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:wstore_mobile/config/theme_config.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -65,13 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required IconData icon,
     required Color color,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
+    return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -80,10 +74,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 title,
-                style: GoogleFonts.outfit(
+                style: TextStyle(
+                  fontFamily: 'Outfit',
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF64748B),
+                  color: AppColors.textMuted,
                   letterSpacing: 1.0,
                 ),
               ),
@@ -93,7 +88,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 14),
           Text(
             value,
-            style: GoogleFonts.outfit(
+            style: TextStyle(
+              fontFamily: 'Outfit',
               fontSize: 22,
               fontWeight: FontWeight.w900,
               color: AppColors.textPrimary,
@@ -102,9 +98,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 4),
           Text(
             sub,
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: 'Inter',
               fontSize: 11,
-              color: const Color(0xFF10B981),
+              color: AppColors.green,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -115,32 +112,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDateFilterPill(
       String key, String label, String activeKey, Function(String) onTap) {
-    bool isActive = key == activeKey;
-    return GestureDetector(
+    return GlassChip(
+      label: label,
+      selected: key == activeKey,
       onTap: () => onTap(key),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive
-              ? const Color(0xFF6366F1)
-              : AppColors.cardOpacityBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isActive
-                ? const Color(0xFF6366F1)
-                : AppColors.cardBorder,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.outfit(
-            color: isActive ? Colors.white : const Color(0xFF94A3B8),
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-      ),
     );
   }
 
@@ -149,12 +124,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final provider = context.watch<DashboardProvider>();
 
     if (provider.isLoading) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-          ),
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
         ),
       );
     }
@@ -168,9 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         int.tryParse(kpi['activeCustomers']?.toString() ?? '0') ?? 0;
     final aovValue = double.tryParse(kpi['aov']?.toString() ?? '0') ?? 0.0;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
+    return SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -219,10 +189,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         return Theme(
                           data: Theme.of(context).copyWith(
                             colorScheme: const ColorScheme.dark(
-                              primary: Color(0xFF6366F1),
+                              primary: AppColors.accent,
                               onPrimary: Colors.white,
-                              surface: AppColors.surface,
-                              onSurface: Color(0xFFE2E8F0),
+                              surface: AppColors.cardOpacityBg,
+                              onSurface: AppColors.textSecondary,
                             ),
                             dialogBackgroundColor: AppColors.background,
                           ),
@@ -234,23 +204,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       provider.setCustomDateRange(picked.start, picked.end);
                     }
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: provider.dateRange == 'custom'
-                          ? const Color(0xFF6366F1)
-                          : AppColors.cardOpacityBg,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: provider.dateRange == 'custom'
-                            ? const Color(0xFF6366F1)
-                            : AppColors.cardBorder,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: provider.dateRange == 'custom'
+                              ? AppColors.accent.withOpacity(0.2)
+                              : AppColors.cardOpacityBg,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: provider.dateRange == 'custom'
+                                ? AppColors.accent.withOpacity(0.5)
+                                : AppColors.cardBorder,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.calendar_month_outlined,
+                          color: AppColors.textPrimary,
+                          size: 20,
+                        ),
                       ),
-                    ),
-                    child: const Icon(
-                      Icons.calendar_month_outlined,
-                      color: AppColors.textPrimary,
-                      size: 20,
                     ),
                   ),
                 ),
@@ -260,26 +236,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 provider.customStartDate != null &&
                 provider.customEndDate != null) ...[
               const SizedBox(height: 12),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: const Color(0xFF6366F1).withOpacity(0.2)),
-                ),
+              GlassCard(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
                         const Icon(Icons.date_range,
-                            color: Color(0xFF818CF8), size: 18),
+                            color: AppColors.accentLight, size: 18),
                         const SizedBox(width: 8),
                         Text(
                           '${DateFormat('dd MMM, yyyy').format(provider.customStartDate!)}  -  ${DateFormat('dd MMM, yyyy').format(provider.customEndDate!)}',
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
                             color: AppColors.textPrimary,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -290,7 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     GestureDetector(
                       onTap: () => provider.setDateRange('today'),
                       child: const Icon(Icons.close,
-                          color: AppColors.textPrimary70, size: 18),
+                          color: AppColors.textPrimary, size: 18),
                     ),
                   ],
                 ),
@@ -312,28 +281,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   value: currencyFormat.format(totalRevenue),
                   sub: '+12.5% vs last week',
                   icon: Icons.currency_rupee,
-                  color: const Color(0xFF10B981),
+                  color: AppColors.green,
                 ),
                 _buildStatCard(
                   title: 'TOTAL ORDERS',
                   value: totalOrders.toString(),
                   sub: '+8.4% vs last week',
                   icon: Icons.shopping_basket,
-                  color: const Color(0xFF6366F1),
+                  color: AppColors.accent,
                 ),
                 _buildStatCard(
                   title: 'ACTIVE CLIENTS',
                   value: activeCustomers.toString(),
                   sub: '+18.2% vs last week',
                   icon: Icons.people_outline,
-                  color: const Color(0xFFF59E0B),
+                  color: AppColors.amber,
                 ),
                 _buildStatCard(
                   title: 'AVERAGE VALUE',
                   value: currencyFormat.format(aovValue),
                   sub: '+3.1% vs last week',
                   icon: Icons.insights,
-                  color: const Color(0xFFEC4899),
+                  color: AppColors.accentLight,
                 ),
               ],
             ),
@@ -345,32 +314,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   'Revenue Trend (INR)',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const Icon(Icons.show_chart, color: Color(0xFF6366F1)),
+                const Icon(Icons.show_chart, color: AppColors.accent),
               ],
             ),
             const SizedBox(height: 16),
 
             // FlChart Line Graph
-            Container(
-              height: 220,
+            GlassCard(
               padding: const EdgeInsets.only(right: 20, top: 16, bottom: 8),
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: provider.revenueTrend.isEmpty
+              radius: 24,
+              child: SizedBox(
+                height: 220,
+                child: provider.revenueTrend.isEmpty
                   ? Center(
                       child: Text(
                         'Not enough trend data for dates',
-                        style:
-                            GoogleFonts.inter(color: const Color(0xFF475569)),
+                          style:
+                              TextStyle(color: AppColors.textMuted),
                       ),
                     )
                   : LineChart(
@@ -409,8 +376,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     axisSide: meta.axisSide,
                                     child: Text(
                                       shortDate,
-                                      style: GoogleFonts.inter(
-                                          color: const Color(0xFF475569),
+                                      style: TextStyle(
+                                          color: AppColors.textMuted,
                                           fontSize: 10),
                                     ),
                                   );
@@ -430,8 +397,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     value >= 1000
                                         ? '${(value / 1000).toStringAsFixed(0)}k'
                                         : value.toStringAsFixed(0),
-                                    style: GoogleFonts.inter(
-                                        color: const Color(0xFF475569),
+                                    style: TextStyle(
+                                        color: AppColors.textMuted,
                                         fontSize: 10),
                                   ),
                                 );
@@ -451,7 +418,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             }).toList(),
                             isCurved: true,
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color(0xFFA855F7)],
+                              colors: [AppColors.accent, Color(0xFFA855F7)],
                             ),
                             barWidth: 4,
                             isStrokeCapRound: true,
@@ -460,7 +427,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               show: true,
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF6366F1).withOpacity(0.2),
+                                  AppColors.accent.withOpacity(0.2),
                                   const Color(0xFFA855F7).withOpacity(0.0),
                                 ],
                                 begin: Alignment.topCenter,
@@ -471,6 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                       ),
                     ),
+                  ),
             ),
             const SizedBox(height: 28),
 
@@ -479,11 +447,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 children: [
                   const Icon(Icons.warning_amber_rounded,
-                      color: Color(0xFFEF4444), size: 22),
+                      color: AppColors.red, size: 22),
                   const SizedBox(width: 8),
                   Text(
                     'Inventory Low Stock Warnings',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -492,13 +461,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: const Color(0xFFEF4444).withOpacity(0.1)),
-                ),
+              GlassCard(
+                padding: EdgeInsets.zero,
+                radius: 16,
                 child: ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -510,27 +475,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     return ListTile(
                       title: Text(
                         item['name'] ?? 'Product',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                            fontFamily: 'Outfit',
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 14),
                       ),
                       subtitle: Text(
                         'Category: ${item['category']?['name'] ?? 'General'}',
-                        style: GoogleFonts.inter(
-                            color: const Color(0xFF64748B), fontSize: 11),
+                        style: TextStyle(
+                            fontFamily: 'Inter',
+                            color: AppColors.textMuted,
+                            fontSize: 11),
                       ),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withOpacity(0.15),
+                          color: AppColors.red.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '${item['stock'] ?? 0} left',
-                          style: GoogleFonts.outfit(
-                              color: const Color(0xFFFCA5A5),
+                          style: TextStyle(
+                              fontFamily: 'Outfit',
+                              color: AppColors.red,
                               fontWeight: FontWeight.bold,
                               fontSize: 11),
                         ),
@@ -548,32 +517,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   'Live Activity Logs',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const Icon(Icons.bolt, color: Color(0xFFF59E0B)),
+                const Icon(Icons.bolt, color: AppColors.amber),
               ],
             ),
             const SizedBox(height: 14),
 
             // Activity Log List
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
+            GlassCard(
+              padding: EdgeInsets.zero,
               child: provider.activityFeed.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(28.0),
+                  ? const Padding(
+                      padding: EdgeInsets.all(28.0),
                       child: Center(
                         child: Text(
                           'No customer logs recorded',
-                          style:
-                              GoogleFonts.inter(color: const Color(0xFF475569)),
+                          style: TextStyle(color: AppColors.textMuted),
                         ),
                       ),
                     )
@@ -595,26 +560,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ? log['createdAt'].toString().split('T')[0]
                             : 'Just now';
 
-                        Color actionColor = const Color(0xFF6366F1);
+                        Color actionColor = AppColors.accent;
                         IconData actionIcon = Icons.remove_red_eye;
 
                         if (action == 'CHECKOUT') {
-                          actionColor = const Color(0xFFEF4444);
+                          actionColor = AppColors.red;
                           actionIcon = Icons.shopping_cart;
                         } else if (action == 'PRODUCT_VIEWED') {
-                          actionColor = const Color(0xFF6366F1);
+                          actionColor = AppColors.accent;
                           actionIcon = Icons.mouse;
                         } else if (action == 'ADDED_TO_CART') {
-                          actionColor = const Color(0xFF10B981);
+                          actionColor = AppColors.green;
                           actionIcon = Icons.shopping_bag;
                         } else if (action == 'SEARCHED') {
-                          actionColor = const Color(0xFFF59E0B);
+                          actionColor = AppColors.amber;
                           actionIcon = Icons.search;
                         } else if (action == 'CATEGORY_VIEWED') {
-                          actionColor = const Color(0xFF38BDF8);
+                          actionColor = AppColors.blue;
                           actionIcon = Icons.grid_view;
                         } else if (action == 'SUPPORT_REQUEST') {
-                          actionColor = const Color(0xFF8B5CF6);
+                          actionColor = AppColors.accentLight;
                           actionIcon = Icons.phone;
                         }
 
@@ -633,22 +598,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           title: Text(
                             text,
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
+                                fontFamily: 'Inter',
                                 color: AppColors.textPrimary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(
                             action.toString().replaceAll('_', ' '),
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
+                                fontFamily: 'Outfit',
                                 color: actionColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 10),
                           ),
                           trailing: Text(
                             time,
-                            style: GoogleFonts.inter(
-                                color: const Color(0xFF475569), fontSize: 11),
+                            style: TextStyle(
+                                fontFamily: 'Inter',
+                                color: AppColors.textMuted,
+                                fontSize: 11),
                           ),
                         );
                       },
@@ -657,7 +626,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 30),
           ],
         ),
-      ),
-    );
+      );
   }
 }

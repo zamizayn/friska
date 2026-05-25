@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wstore_mobile/config/theme_config.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:wstore_mobile/widgets/glass_scaffold.dart';
 import 'package:provider/provider.dart';
 import '../../providers/products_provider.dart';
 
@@ -13,19 +13,36 @@ class InventoryScreen extends StatefulWidget {
 
 class _InventoryScreenState extends State<InventoryScreen> {
   final _searchController = TextEditingController();
+  int _currentPage = 1;
+  bool _lowStockOnly = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductsProvider>().setFilters(search: '');
+      context.read<ProductsProvider>().setFilters(search: '', stockStatus: '');
       context.read<ProductsProvider>().fetchProducts();
     });
   }
 
   void _onSearchChanged(String query) {
+    _currentPage = 1;
     context.read<ProductsProvider>().setFilters(search: query);
     context.read<ProductsProvider>().fetchProducts();
+  }
+
+  void _toggleLowStock() {
+    setState(() {
+      _lowStockOnly = !_lowStockOnly;
+      _currentPage = 1;
+    });
+    context.read<ProductsProvider>().setFilters(stockStatus: _lowStockOnly ? 'low' : '');
+    context.read<ProductsProvider>().fetchProducts();
+  }
+
+  void _goToPage(int page) {
+    setState(() => _currentPage = page);
+    context.read<ProductsProvider>().fetchProducts(page: page);
   }
 
   Future<void> _updateStockValue(Map<String, dynamic> product, int delta) async {
@@ -53,7 +70,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Stock count updated for $name! ($currentStock -> $newStock)'),
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: AppColors.green,
           duration: const Duration(seconds: 1),
         ),
       );
@@ -64,50 +81,55 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<ProductsProvider>();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Stock Operations', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return GlassScaffold(
+      title: 'Stock Operations',
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search product stock levels...',
-                  hintStyle: GoogleFonts.inter(color: const Color(0xFF475569)),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF6366F1), size: 20),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GlassInput(
+                    controller: _searchController,
+                    hint: 'Search product stock levels...',
+                    prefixIcon: const Icon(Icons.search, color: AppColors.accent, size: 20),
+                    onChanged: _onSearchChanged,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _toggleLowStock,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: _lowStockOnly ? AppColors.red.withOpacity(0.12) : AppColors.cardBg,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: _lowStockOnly ? AppColors.red : AppColors.cardBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.warning_amber, color: _lowStockOnly ? AppColors.red : AppColors.textPrimary54, size: 18),
+                        const SizedBox(width: 4),
+                        Text('Low', style: TextStyle(fontFamily: 'Outfit', color: _lowStockOnly ? AppColors.red : AppColors.textPrimary54, fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
             child: provider.isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1))),
+                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent)),
                   )
                 : provider.products.isEmpty
                     ? Center(
                         child: Text(
                           'No products found matching filters',
-                          style: GoogleFonts.inter(color: const Color(0xFF475569)),
+                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textMuted),
                         ),
                       )
                     : ListView.separated(
@@ -120,20 +142,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           final stock = int.tryParse(product['stock']?.toString() ?? '0') ?? 0;
                           final categoryName = product['category']?['name'] ?? 'General';
 
-                          Color stockColor = Colors.green;
+                          Color stockColor = AppColors.green;
                           if (stock == 0) {
-                            stockColor = Colors.red;
+                            stockColor = AppColors.red;
                           } else if (stock <= 10) {
-                            stockColor = Colors.orange;
+                            stockColor = AppColors.amber;
                           }
 
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardBg,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.cardBorder),
-                            ),
+                          return GlassCard(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
@@ -146,14 +162,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                         children: [
                                           Text(
                                             name,
-                                            style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                                            style: TextStyle(fontFamily: 'Outfit', color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             'Category: $categoryName',
-                                            style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 11),
+                                            style: TextStyle(fontFamily: 'Inter', color: AppColors.textMuted, fontSize: 11),
                                           ),
                                         ],
                                       ),
@@ -166,7 +182,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                       ),
                                       child: Text(
                                         stock == 0 ? 'OUT OF STOCK' : '$stock units',
-                                        style: GoogleFonts.outfit(color: stockColor, fontWeight: FontWeight.bold, fontSize: 11),
+                                        style: TextStyle(fontFamily: 'Outfit', color: stockColor, fontWeight: FontWeight.bold, fontSize: 11),
                                       ),
                                     ),
                                   ],
@@ -189,13 +205,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                     ),
                                     OutlinedButton(
                                       onPressed: () => _updateStockValue(product, 1),
-                                      style: OutlinedButton.styleFrom(side: BorderSide(color: Color(0xFF6366F1).withOpacity(0.3))),
-                                      child: const Text('+1', style: TextStyle(color: Color(0xFF818CF8))),
+                                      style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.accent.withOpacity(0.3))),
+                                      child: const Text('+1', style: TextStyle(color: AppColors.accentLight)),
                                     ),
                                     OutlinedButton(
                                       onPressed: () => _updateStockValue(product, 10),
-                                      style: OutlinedButton.styleFrom(side: BorderSide(color: Color(0xFF6366F1).withOpacity(0.3))),
-                                      child: const Text('+10', style: TextStyle(color: Color(0xFF818CF8))),
+                                      style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.accent.withOpacity(0.3))),
+                                      child: const Text('+10', style: TextStyle(color: AppColors.accentLight)),
                                     ),
                                   ],
                                 ),
@@ -205,6 +221,31 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         },
                       ),
           ),
+          if (provider.pagination['totalPages'] > 1)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                border: Border(top: BorderSide(color: AppColors.cardBorder)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left, color: AppColors.textPrimary),
+                    onPressed: _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
+                  ),
+                  Text(
+                    'Page ${_currentPage} of ${provider.pagination['totalPages']}',
+                    style: TextStyle(fontFamily: 'Outfit', color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, color: AppColors.textPrimary),
+                    onPressed: _currentPage < (provider.pagination['totalPages'] ?? 1) ? () => _goToPage(_currentPage + 1) : null,
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

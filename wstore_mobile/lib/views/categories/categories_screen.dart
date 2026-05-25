@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:wstore_mobile/config/theme_config.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:wstore_mobile/config/theme_config.dart';
+import 'package:wstore_mobile/widgets/glass_scaffold.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../providers/categories_provider.dart';
@@ -30,6 +30,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         TextEditingController(text: isEdit ? category['name'] : '');
     final priorityController = TextEditingController(
         text: isEdit ? category['priority']?.toString() : '1');
+    final gstRateController = TextEditingController(
+        text: isEdit ? (category['gstRate']?.toString() ?? '0') : '0');
     File? selectedImage;
     bool isSaving = false;
     String error = "";
@@ -64,11 +66,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 error = "";
               });
 
+              final gstRate =
+                  double.tryParse(gstRateController.text.trim()) ?? 0;
               final success =
                   await context.read<CategoriesProvider>().saveCategory(
                         id: category?['id'],
                         name: nameController.text.trim(),
                         priority: priorityController.text.trim(),
+                        gstRate: gstRate,
                         imageFile: selectedImage,
                       );
 
@@ -79,7 +84,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     content: Text(isEdit
                         ? 'Category modified successfully!'
                         : 'Category added successfully!'),
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: AppColors.green,
                   ),
                 );
               } else {
@@ -96,7 +101,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   borderRadius: BorderRadius.circular(20)),
               title: Text(
                 isEdit ? 'Modify Category' : 'Create Category',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
+                    fontFamily: 'Outfit',
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 18),
@@ -106,12 +112,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Category Image selector
                     GestureDetector(
                       onTap: () {
                         showModalBottomSheet(
                           context: context,
-                          backgroundColor: const Color(0xFF090D1A),
+                          backgroundColor: AppColors.background,
                           builder: (context) => Padding(
                             padding: const EdgeInsets.all(20.0),
                             child: Column(
@@ -119,7 +124,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               children: [
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt,
-                                      color: Color(0xFF6366F1)),
+                                      color: AppColors.accent),
                                   title: const Text('Camera',
                                       style: TextStyle(
                                           color: AppColors.textPrimary)),
@@ -130,7 +135,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo,
-                                      color: Color(0xFFA855F7)),
+                                      color: AppColors.accentLight),
                                   title: const Text('Gallery',
                                       style: TextStyle(
                                           color: AppColors.textPrimary)),
@@ -165,56 +170,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                   )
                                 : const Center(
                                     child: Icon(Icons.add_photo_alternate,
-                                        color: Color(0xFF6366F1), size: 28),
+                                        color: AppColors.accent, size: 28),
                                   ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
+                    GlassInput(
                       controller: nameController,
-                      style: GoogleFonts.inter(
-                          color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Category Name',
-                        hintStyle:
-                            GoogleFonts.inter(color: AppColors.textMuted),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: AppColors.border)),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: AppColors.border)),
-                      ),
+                      hint: 'Category Name',
                     ),
                     const SizedBox(height: 12),
-                    TextField(
+                    GlassInput(
                       controller: priorityController,
+                      hint: 'Priority Rank (1, 2, ...)',
                       keyboardType: TextInputType.number,
-                      style: GoogleFonts.inter(
-                          color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Priority Rank (1, 2, ...)',
-                        hintStyle:
-                            GoogleFonts.inter(color: AppColors.textMuted),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: AppColors.border)),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: AppColors.border)),
-                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GlassInput(
+                      controller: gstRateController,
+                      hint: 'GST Rate % (e.g. 18)',
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                     ),
                     if (error.isNotEmpty) ...[
                       const SizedBox(height: 10),
@@ -222,31 +198,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           style: const TextStyle(
                               color: Colors.redAccent, fontSize: 12)),
                     ],
+                    const SizedBox(height: 16),
+                    GlassButton(
+                      label: isEdit ? 'Modify Category' : 'Create Category',
+                      onPressed: isSaving ? null : submit,
+                      isLoading: isSaving,
+                    ),
                   ],
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: isSaving ? null : () => Navigator.pop(context),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: AppColors.textPrimary54)),
-                ),
-                TextButton(
-                  onPressed: isSaving ? null : submit,
-                  child: isSaving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white)))
-                      : const Text('Save',
-                          style: TextStyle(
-                              color: Color(0xFF6366F1),
-                              fontWeight: FontWeight.bold)),
-                ),
-              ],
             );
           },
         );
@@ -258,32 +218,25 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<CategoriesProvider>();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Categories Manager',
-            style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return GlassScaffold(
+      title: 'Categories Manager',
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF6366F1),
+        backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: AppColors.textPrimary),
         onPressed: () => _showAddCategoryDialog(),
       ),
       body: provider.isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1))),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.accent)),
             )
           : provider.categories.isEmpty
               ? Center(
                   child: Text(
                     'No categories established yet',
-                    style: GoogleFonts.inter(color: const Color(0xFF475569)),
+                    style: TextStyle(
+                        fontFamily: 'Inter', color: AppColors.textMuted),
                   ),
                 )
               : ListView.separated(
@@ -295,15 +248,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     final id = cat['id'] ?? 0;
                     final name = cat['name'] ?? 'Category';
                     final priority = cat['priority'] ?? 1;
+                    final gstRate = cat['gstRate'] ?? 0;
                     final imageUrl = cat['imageUrl'] ?? '';
 
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.cardBorder),
-                      ),
+                    return GlassCard(
                       child: Row(
                         children: [
                           ClipRRect(
@@ -313,11 +261,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     width: 50,
                                     height: 50,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                        Icons.category,
-                                        color: AppColors.textPrimary24))
+                                    errorBuilder: (_, __, ___) =>
+                                        const Icon(Icons.category,
+                                            color: AppColors.textPrimary24))
                                 : const Icon(Icons.category,
-                                    color: AppColors.textPrimary24, size: 30),
+                                    color: AppColors.textPrimary24,
+                                    size: 30),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -326,16 +275,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               children: [
                                 Text(
                                   name,
-                                  style: GoogleFonts.outfit(
+                                  style: TextStyle(
+                                      fontFamily: 'Outfit',
                                       color: AppColors.textPrimary,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Priority Rank: $priority',
-                                  style: GoogleFonts.inter(
-                                      color: const Color(0xFF64748B),
+                                  'Priority Rank: $priority${gstRate > 0 ? '  |  GST: ${gstRate}%' : ''}',
+                                  style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      color: AppColors.textMuted,
                                       fontSize: 12),
                                 ),
                               ],
@@ -349,15 +300,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete,
-                                color: Color(0xFFEF4444), size: 20),
+                                color: AppColors.red, size: 20),
                             onPressed: () async {
-                              final success = await provider.deleteCategory(id);
+                              final success =
+                                  await provider.deleteCategory(id);
                               if (success && mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content:
-                                          Text('Category deleted successfully'),
-                                      backgroundColor: Color(0xFF10B981)),
+                                      content: Text(
+                                          'Category deleted successfully'),
+                                      backgroundColor: AppColors.green),
                                 );
                               }
                             },

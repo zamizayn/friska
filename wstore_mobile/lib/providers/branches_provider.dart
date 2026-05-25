@@ -66,22 +66,41 @@ class BranchesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> createBranch(String name, String username, String password) async {
+  Future<bool> createBranch(Map<String, dynamic> data) async {
     _setLoading(true);
     final tenantId = StorageService.tenantId;
     try {
-      final response = await ApiClient.post(
-        ApiConfig.branches,
-        body: {
-          'name': name,
-          'username': username,
-          'password': password,
-          'tenantId': tenantId,
-        },
-      );
+      data['tenantId'] = tenantId;
+      final response = await ApiClient.post(ApiConfig.branches, body: data);
       if (response.statusCode == 200 || response.statusCode == 201) {
         await fetchBranches();
         _setLoading(false);
+        return true;
+      }
+    } catch (_) {}
+    _setLoading(false);
+    return false;
+  }
+
+  Future<bool> updateBranch(int id, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      final response = await ApiClient.put('${ApiConfig.branches}/$id', body: data);
+      if (response.statusCode == 200) {
+        await fetchBranches();
+        return true;
+      }
+    } catch (_) {}
+    _setLoading(false);
+    return false;
+  }
+
+  Future<bool> deleteBranch(int id) async {
+    _setLoading(true);
+    try {
+      final response = await ApiClient.delete('${ApiConfig.branches}/$id');
+      if (response.statusCode == 200) {
+        await fetchBranches();
         return true;
       }
     } catch (_) {}

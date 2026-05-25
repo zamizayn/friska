@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:wstore_mobile/config/theme_config.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../widgets/glass_scaffold.dart';
+import '../../services/api_client.dart';
+import '../../config/api_config.dart';
 import '../../providers/customers_provider.dart';
 
 class CustomersScreen extends StatefulWidget {
@@ -20,6 +25,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CustomersProvider>().fetchCustomers();
+    });
+    _searchController.addListener(() {
+      _onSearchChanged(_searchController.text);
     });
   }
 
@@ -61,8 +69,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -77,7 +86,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 error = "";
               });
 
-              final success = await context.read<CustomersProvider>().sendBroadcast(
+              final success = await context
+                  .read<CustomersProvider>()
+                  .sendBroadcast(
                     message: msgController.text.trim(),
                     targetPhoneNumbers: _selectedPhones,
                   );
@@ -86,7 +97,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 Navigator.pop(context);
                 setState(() => _selectedPhones.clear());
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('WhatsApp Broadcast Campaign dispatched!'), backgroundColor: Color(0xFF10B981)),
+                  const SnackBar(
+                      content: Text(
+                          'WhatsApp Broadcast Campaign dispatched!'),
+                      backgroundColor: AppColors.green),
                 );
               } else {
                 setSheetState(() {
@@ -96,69 +110,372 @@ class _CustomersScreenState extends State<CustomersScreen> {
               }
             }
 
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 24.0,
-                right: 24.0,
-                top: 24.0,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
+            return ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.cardBg,
+                    border: Border(
+                        top: BorderSide(color: AppColors.cardBorder)),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 24.0,
+                      right: 24.0,
+                      top: 24.0,
+                      bottom:
+                          MediaQuery.of(context).viewInsets.bottom + 24.0,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'WhatsApp Broadcast',
+                              style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                  color:
+                                      AppColors.accent.withOpacity(0.12),
+                                  borderRadius:
+                                      BorderRadius.circular(20)),
+                              child: Text(
+                                '${_selectedPhones.length} Selected',
+                                style: const TextStyle(
+                                    fontFamily: 'Outfit',
+                                    color: AppColors.accentLight,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        GlassInput(
+                          controller: msgController,
+                          hint:
+                              'Type your promotional coupon details, discount updates here...',
+                          maxLines: 4,
+                        ),
+                        if (error.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Text(error,
+                              style: const TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: 12)),
+                        ],
+                        const SizedBox(height: 20),
+                        GlassButton(
+                          label: 'Shoot Broadcast Campaign 🚀',
+                          onPressed: isSending ? null : submit,
+                          isLoading: isSending,
+                          primary: false,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'WhatsApp Broadcast',
-                        style: GoogleFonts.outfit(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: const Color(0xFF6366F1).withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          '${_selectedPhones.length} Selected',
-                          style: GoogleFonts.outfit(color: const Color(0xFF818CF8), fontWeight: FontWeight.bold, fontSize: 11),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showCustomerOrders(BuildContext context, String phone) {
+    final currencyFormat =
+        NumberFormat.currency(locale: 'HI', symbol: '₹', decimalDigits: 0);
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Consumer<CustomersProvider>(
+          builder: (context, _, child) {
+            return FutureBuilder(
+              future: ApiClient.get(ApiConfig.customerOrders(phone)),
+              builder: (context, snapshot) {
+                List<dynamic> orders = [];
+                bool loading =
+                    snapshot.connectionState != ConnectionState.done;
+                if (snapshot.hasData &&
+                    snapshot.data!.statusCode == 200) {
+                  final data = jsonDecode(snapshot.data!.body);
+                  orders = data['data'] ?? data ?? [];
+                }
+                return Dialog(
+                  backgroundColor: Colors.transparent,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBg.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: AppColors.cardBorder),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.stretch,
+                          children: [
+                            const Text('Order History',
+                                style: TextStyle(
+                                    fontFamily: 'Outfit',
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18)),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              height: 300,
+                              child: loading
+                                  ? const Center(
+                                      child:
+                                          CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<
+                                                Color>(AppColors.accent),
+                                      ),
+                                    )
+                                  : orders.isEmpty
+                                      ? const Center(
+                                          child: Text(
+                                              'No orders found',
+                                              style: TextStyle(
+                                                  color: AppColors
+                                                      .textMuted)))
+                                      : ListView.separated(
+                                          itemCount: orders.length,
+                                          separatorBuilder: (_, __) =>
+                                              const Divider(
+                                                  color: AppColors
+                                                      .textPrimary10),
+                                          itemBuilder: (context, i) {
+                                            final o = orders[i];
+                                            final oid =
+                                                o['id'] ?? '#';
+                                            final total = double.tryParse(
+                                                    o['total']
+                                                            ?.toString() ??
+                                                        '0') ??
+                                                0;
+                                            final status =
+                                                o['status'] ??
+                                                    'pending';
+                                            final date = o['createdAt']
+                                                ?.toString()
+                                                .split('T')[0] ??
+                                                '';
+                                            return ListTile(
+                                              title: Text(
+                                                  'Order #$oid',
+                                                  style: const TextStyle(
+                                                      fontFamily:
+                                                          'Outfit',
+                                                      color: AppColors
+                                                          .textPrimary,
+                                                      fontWeight:
+                                                          FontWeight
+                                                              .bold,
+                                                      fontSize: 14)),
+                                              subtitle: Text(
+                                                  date,
+                                                  style: const TextStyle(
+                                                      color: AppColors
+                                                          .textMuted,
+                                                      fontSize: 12)),
+                                              trailing: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .end,
+                                                children: [
+                                                  Text(
+                                                    currencyFormat
+                                                        .format(total),
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'Outfit',
+                                                        color: AppColors
+                                                            .accent,
+                                                        fontWeight:
+                                                            FontWeight
+                                                                .bold,
+                                                        fontSize: 14),
+                                                  ),
+                                                  const SizedBox(
+                                                      height: 2),
+                                                  Text(
+                                                    status
+                                                        .toUpperCase(),
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                          'Outfit',
+                                                      color: status
+                                                          .toString()
+                                                          .statusColor,
+                                                      fontSize: 9,
+                                                      fontWeight:
+                                                          FontWeight
+                                                              .bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Close',
+                                  style: TextStyle(
+                                      color:
+                                          AppColors.textPrimary54)),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: msgController,
-                    maxLines: 4,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Type your promotional coupon details, discount updates here...',
-                      hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
-                  if (error.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(error, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
-                  ],
-                  const SizedBox(height: 20),
-                  Container(
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showCustomerLogs(BuildContext context, String phone) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return FutureBuilder(
+          future: ApiClient.get(ApiConfig.customerLogs(phone)),
+          builder: (context, snapshot) {
+            List<dynamic> logs = [];
+            bool loading =
+                snapshot.connectionState != ConnectionState.done;
+            if (snapshot.hasData &&
+                snapshot.data!.statusCode == 200) {
+              final data = jsonDecode(snapshot.data!.body);
+              logs = data['data'] ?? data ?? [];
+            }
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: const LinearGradient(colors: [Color(0xFF25D366), Color(0xFF128C7E)]),
+                      color: AppColors.cardBg.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(20),
+                      border:
+                          Border.all(color: AppColors.cardBorder),
                     ),
-                    child: ElevatedButton(
-                      onPressed: isSending ? null : submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: isSending
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                          : Text('Shoot Broadcast Campaign 🚀', style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text('Activity Logs',
+                            style: TextStyle(
+                                fontFamily: 'Outfit',
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18)),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 300,
+                          child: loading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                            AppColors.accent),
+                                  ),
+                                )
+                              : logs.isEmpty
+                                  ? const Center(
+                                      child: Text(
+                                          'No activity recorded',
+                                          style: TextStyle(
+                                              color: AppColors
+                                                  .textMuted)))
+                                  : ListView.separated(
+                                      itemCount: logs.length,
+                                      separatorBuilder: (_, __) =>
+                                          const Divider(
+                                              color: AppColors
+                                                  .textPrimary10),
+                                      itemBuilder: (context, i) {
+                                        final log = logs[i];
+                                        final action = log['action'] ??
+                                            log['event'] ?? 'Activity';
+                                        final desc = log[
+                                                    'description'] ??
+                                                log['details'] ??
+                                                '';
+                                        final date = log['createdAt']
+                                            ?.toString()
+                                            .split('T')[0] ??
+                                            '';
+                                        return ListTile(
+                                          leading: const Icon(
+                                              Icons.circle,
+                                              color: AppColors.accent,
+                                              size: 8),
+                                          title: Text(
+                                              action.toString(),
+                                              style: const TextStyle(
+                                                  fontFamily: 'Outfit',
+                                                  color: AppColors
+                                                      .textPrimary,
+                                                  fontWeight:
+                                                      FontWeight.w600,
+                                                  fontSize: 13)),
+                                          subtitle: Text(
+                                              '$desc${date.isNotEmpty ? ' • $date' : ''}',
+                                              style: const TextStyle(
+                                                  color: AppColors
+                                                      .textMuted,
+                                                  fontSize: 11)),
+                                        );
+                                      },
+                                    ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Close',
+                              style: TextStyle(
+                                  color: AppColors.textPrimary54)),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             );
           },
@@ -172,48 +489,28 @@ class _CustomersScreenState extends State<CustomersScreen> {
     final provider = context.watch<CustomersProvider>();
     final list = provider.customers;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Customers Directory', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (list.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.select_all, color: AppColors.textPrimary),
-              onPressed: () => _toggleSelectAll(list),
-            ),
-        ],
-      ),
+    return GlassScaffold(
+      title: 'Customers Directory',
+      actions: [
+        if (list.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.select_all,
+                color: AppColors.textPrimary),
+            onPressed: () => _toggleSelectAll(list),
+          ),
+      ],
       bottomNavigationBar: _selectedPhones.isNotEmpty
           ? Container(
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(top: BorderSide(color: AppColors.textPrimary10)),
+                color: AppColors.cardBg,
+                border: Border(
+                    top: BorderSide(color: AppColors.textPrimary10)),
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFA855F7)]),
-                ),
-                child: ElevatedButton(
-                  onPressed: _showBroadcastCampaignSheet,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: Text(
+              child: GlassButton(
+                label:
                     'Setup WhatsApp Broadcast (${_selectedPhones.length})',
-                    style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                ),
+                onPressed: _showBroadcastCampaignSheet,
               ),
             )
           : null,
@@ -221,86 +518,157 @@ class _CustomersScreenState extends State<CustomersScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search customer name or phone...',
-                  hintStyle: GoogleFonts.inter(color: const Color(0xFF475569)),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF6366F1), size: 20),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                ),
-              ),
+            child: GlassInput(
+              controller: _searchController,
+              hint: 'Search customer name or phone...',
+              prefixIcon: const Icon(Icons.search,
+                  color: AppColors.accent, size: 20),
             ),
           ),
           Expanded(
             child: provider.isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1))),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.accent),
+                    ),
                   )
                 : list.isEmpty
                     ? Center(
                         child: Text(
                           'No customer logs recorded',
-                          style: GoogleFonts.inter(color: const Color(0xFF475569)),
+                          style:
+                              TextStyle(color: AppColors.textMuted),
                         ),
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 20),
                         itemCount: list.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final customer = list[index];
                           final id = customer['id'] ?? 0;
-                          final name = customer['name'] ?? 'Guest Customer';
-                          final phone = customer['phone']?.toString() ?? 'N/A';
-                          final email = customer['email'] ?? 'N/A';
-                          final isSelected = _selectedPhones.contains(phone);
+                          final name = customer['name'] ??
+                              'Guest Customer';
+                          final phone = customer['phone']
+                                  ?.toString() ??
+                              'N/A';
+                          final email =
+                              customer['email'] ?? 'N/A';
+                          final isSelected =
+                              _selectedPhones.contains(phone);
 
-                          return Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardBg,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.cardBorder),
-                            ),
+                          return GlassCard(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 4, horizontal: 4),
                             child: ListTile(
                               leading: Checkbox(
-                                activeColor: const Color(0xFF6366F1),
+                                activeColor: AppColors.accent,
                                 checkColor: Colors.white,
                                 value: isSelected,
-                                onChanged: (_) => _toggleSelectCustomer(phone),
+                                onChanged: (_) =>
+                                    _toggleSelectCustomer(phone),
                               ),
                               title: Text(
                                 name,
-                                style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                                style: const TextStyle(
+                                    fontFamily: 'Outfit',
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15),
                               ),
                               subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 4),
-                                  Text('Phone: $phone', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-                                  Text('Email: $email', style: const TextStyle(color: Color(0xFF475569), fontSize: 11)),
+                                  Text('Phone: $phone',
+                                      style: const TextStyle(
+                                          color:
+                                              AppColors.textMuted,
+                                          fontSize: 12)),
+                                  Text('Email: $email',
+                                      style: const TextStyle(
+                                          color: AppColors
+                                              .textMuted,
+                                          fontSize: 11)),
                                 ],
                               ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 22),
-                                onPressed: () async {
-                                  final success = await provider.deleteCustomer(id);
-                                  if (success && mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Customer profile deleted'), backgroundColor: Color(0xFF10B981)),
-                                    );
+                              trailing: PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert,
+                                    color:
+                                        AppColors.textPrimary54),
+                                color: AppColors.surface,
+                                onSelected: (value) async {
+                                  if (value == 'orders') {
+                                    _showCustomerOrders(
+                                        context, phone);
+                                  } else if (value == 'logs') {
+                                    _showCustomerLogs(
+                                        context, phone);
+                                  } else if (value == 'delete') {
+                                    final success =
+                                        await provider
+                                            .deleteCustomer(id);
+                                    if (success && mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Customer profile deleted'),
+                                            backgroundColor:
+                                                AppColors.green),
+                                      );
+                                    }
                                   }
                                 },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'orders',
+                                    child: ListTile(
+                                      leading: Icon(
+                                          Icons.receipt_long,
+                                          color: AppColors.accent),
+                                      title: Text(
+                                          'Order History',
+                                          style: TextStyle(
+                                              color: AppColors
+                                                  .textPrimary,
+                                              fontSize: 14)),
+                                      dense: true,
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'logs',
+                                    child: ListTile(
+                                      leading: Icon(Icons.history,
+                                          color: AppColors.green),
+                                      title: Text(
+                                          'Activity Logs',
+                                          style: TextStyle(
+                                              color: AppColors
+                                                  .textPrimary,
+                                              fontSize: 14)),
+                                      dense: true,
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: ListTile(
+                                      leading: Icon(Icons.delete,
+                                          color: AppColors.red),
+                                      title: Text(
+                                          'Delete Customer',
+                                          style: TextStyle(
+                                              color:
+                                                  AppColors.red,
+                                              fontSize: 14)),
+                                      dense: true,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );

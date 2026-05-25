@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wstore_mobile/config/theme_config.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:wstore_mobile/widgets/glass_scaffold.dart';
 import 'package:provider/provider.dart';
 import '../../providers/offers_provider.dart';
 
@@ -25,8 +25,13 @@ class _OffersScreenState extends State<OffersScreen> {
     final codeController = TextEditingController(text: isEdit ? offer['code'] : '');
     final valueController = TextEditingController(text: isEdit ? offer['value']?.toString() : '');
     final dateController = TextEditingController(text: isEdit ? offer['expiryDate']?.toString().split('T')[0] : '');
-    
+    final startDateController = TextEditingController(text: isEdit ? offer['startDate']?.toString().split('T')[0] : '');
+    final minOrderController = TextEditingController(text: isEdit ? offer['minOrderAmount']?.toString() : '');
+    final maxDiscountController = TextEditingController(text: isEdit ? offer['maxDiscount']?.toString() : '');
+    final usageLimitController = TextEditingController(text: isEdit ? offer['usageLimit']?.toString() : '');
+
     String type = isEdit ? offer['type'] ?? 'percentage' : 'percentage';
+    String usageType = isEdit ? (offer['usageType'] ?? 'unlimited') : 'unlimited';
     bool isActive = isEdit ? offer['active'] == true : true;
     bool isSaving = false;
     String error = "";
@@ -38,7 +43,9 @@ class _OffersScreenState extends State<OffersScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             Future<void> submit() async {
-              if (codeController.text.trim().isEmpty || valueController.text.trim().isEmpty || dateController.text.trim().isEmpty) {
+              if (codeController.text.trim().isEmpty ||
+                  valueController.text.trim().isEmpty ||
+                  dateController.text.trim().isEmpty) {
                 setDialogState(() => error = "Please fill all promotional offer fields");
                 return;
               }
@@ -60,6 +67,13 @@ class _OffersScreenState extends State<OffersScreen> {
                     value: valDouble,
                     expiryDate: dateController.text.trim(),
                     active: isActive,
+                    minOrderAmount: double.tryParse(minOrderController.text.trim()),
+                    maxDiscount: double.tryParse(maxDiscountController.text.trim()),
+                    usageLimit: int.tryParse(usageLimitController.text.trim()),
+                    usageType: usageType,
+                    startDate: startDateController.text.trim().isEmpty
+                        ? null
+                        : startDateController.text.trim(),
                   );
 
               if (success && mounted) {
@@ -67,7 +81,7 @@ class _OffersScreenState extends State<OffersScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(isEdit ? 'Promo Offer modified!' : 'Promo Offer added!'),
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: AppColors.green,
                   ),
                 );
               } else {
@@ -80,112 +94,143 @@ class _OffersScreenState extends State<OffersScreen> {
 
             return AlertDialog(
               backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               title: Text(
                 isEdit ? 'Modify Offer' : 'Create Offer',
-                style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18),
               ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextField(
+                    GlassInput(
                       controller: codeController,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'PROMO CODE (e.g. SAVE20)',
-                        hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                      hint: 'PROMO CODE (e.g. SAVE20)',
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
-                          child: GestureDetector(
-                            onTap: () => setDialogState(() => type = 'percentage'),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: type == 'percentage' ? const Color(0xFF6366F1).withOpacity(0.12) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: type == 'percentage' ? const Color(0xFF6366F1) : Colors.white10),
-                              ),
-                              child: const Text('% Ratio', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-                            ),
+                          child: GlassChip(
+                            label: '% Ratio',
+                            selected: type == 'percentage',
+                            onTap: () =>
+                                setDialogState(() => type = 'percentage'),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: GestureDetector(
-                            onTap: () => setDialogState(() => type = 'fixed'),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: type == 'fixed' ? const Color(0xFF6366F1).withOpacity(0.12) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: type == 'fixed' ? const Color(0xFF6366F1) : Colors.white10),
-                              ),
-                              child: const Text('Flat ₹', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-                            ),
+                          child: GlassChip(
+                            label: 'Flat ₹',
+                            selected: type == 'fixed',
+                            onTap: () =>
+                                setDialogState(() => type = 'fixed'),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    TextField(
+                    GlassInput(
                       controller: valueController,
+                      hint: 'Discount Value',
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Discount Value',
-                        hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
                     ),
                     const SizedBox(height: 12),
-                    TextField(
-                      controller: dateController,
+                    GlassInput(
+                      controller: startDateController,
+                      hint: 'Start Date (YYYY-MM-DD, optional)',
                       keyboardType: TextInputType.datetime,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Expiry Date (YYYY-MM-DD)',
-                        hintStyle: const TextStyle(color: AppColors.textPrimary24),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GlassInput(
+                      controller: dateController,
+                      hint: 'Expiry Date (YYYY-MM-DD)',
+                      keyboardType: TextInputType.datetime,
+                    ),
+                    const SizedBox(height: 12),
+                    GlassInput(
+                      controller: minOrderController,
+                      hint: 'Min Order Amount (optional)',
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    GlassInput(
+                      controller: maxDiscountController,
+                      hint: 'Max Discount Cap (optional)',
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    GlassInput(
+                      controller: usageLimitController,
+                      hint: 'Usage Limit (optional)',
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GlassChip(
+                            label: 'Unlimited',
+                            selected: usageType == 'unlimited',
+                            onTap: () =>
+                                setDialogState(() => usageType = 'unlimited'),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: GlassChip(
+                            label: 'Per User',
+                            selected: usageType == 'per_user',
+                            onTap: () =>
+                                setDialogState(() => usageType = 'per_user'),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: GlassChip(
+                            label: 'Total',
+                            selected: usageType == 'total',
+                            onTap: () =>
+                                setDialogState(() => usageType = 'total'),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Active Status', style: TextStyle(color: AppColors.textPrimary)),
+                        const Text('Active Status',
+                            style: TextStyle(color: AppColors.textPrimary)),
                         Switch(
                           value: isActive,
-                          activeColor: const Color(0xFF10B981),
-                          onChanged: (val) => setDialogState(() => isActive = val),
+                          activeColor: AppColors.green,
+                          onChanged: (val) =>
+                              setDialogState(() => isActive = val),
                         ),
                       ],
                     ),
                     if (error.isNotEmpty) ...[
                       const SizedBox(height: 10),
-                      Text(error, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                      Text(error,
+                          style: const TextStyle(
+                              color: Colors.redAccent, fontSize: 12)),
                     ],
+                    const SizedBox(height: 16),
+                    GlassButton(
+                      label: isEdit ? 'Modify Offer' : 'Create Offer',
+                      onPressed: isSaving ? null : submit,
+                      isLoading: isSaving,
+                    ),
                   ],
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: isSaving ? null : () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textPrimary54)),
-                ),
-                TextButton(
-                  onPressed: isSaving ? null : submit,
-                  child: isSaving
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                      : const Text('Save', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold)),
-                ),
-              ],
             );
           },
         );
@@ -197,33 +242,58 @@ class _OffersScreenState extends State<OffersScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<OffersProvider>();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Offers & Promo Coupons', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return GlassScaffold(
+      title: 'Offers & Promo Coupons',
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF6366F1),
+        backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: AppColors.textPrimary),
         onPressed: () => _showAddOfferDialog(),
       ),
       body: provider.isLoading
           ? const Center(
-              child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1))),
+              child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.accent)),
             )
-          : provider.offers.isEmpty
+          : provider.errorMessage.isNotEmpty
               ? Center(
-                  child: Text(
-                    'No promo coupons active',
-                    style: GoogleFonts.inter(color: const Color(0xFF475569)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.warning_amber_rounded,
+                            color: AppColors.amber, size: 48),
+                        const SizedBox(height: 16),
+                        Text(
+                          provider.errorMessage,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontFamily: 'Inter',
+                              color: AppColors.red,
+                              fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        GlassButton(
+                          label: 'Retry',
+                          icon: Icons.refresh,
+                          onPressed: () => context
+                              .read<OffersProvider>()
+                              .fetchOffers(),
+                        ),
+                      ],
+                    ),
                   ),
                 )
-              : ListView.separated(
+              : provider.offers.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No promo coupons active',
+                        style: TextStyle(
+                            fontFamily: 'Inter', color: AppColors.textMuted),
+                      ),
+                    )
+                  : ListView.separated(
                   padding: const EdgeInsets.all(20),
                   itemCount: provider.offers.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -233,25 +303,31 @@ class _OffersScreenState extends State<OffersScreen> {
                     final code = offer['code'] ?? 'COUPON';
                     final type = offer['type'] ?? 'percentage';
                     final val = offer['value'] ?? 0;
-                    final expiry = offer['expiryDate']?.toString().split('T')[0] ?? 'N/A';
+                    final expiry =
+                        offer['expiryDate']?.toString().split('T')[0] ?? 'N/A';
                     final active = offer['active'] == true;
+                    final minOrder = offer['minOrderAmount'];
+                    final maxDisc = offer['maxDiscount'];
+                    final usageLimit = offer['usageLimit'];
+                    final usageType = offer['usageType'];
+                    final startDate =
+                        offer['startDate']?.toString().split('T')[0];
 
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.cardBorder),
-                      ),
+                    return GlassCard(
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: active ? const Color(0xFF10B981).withOpacity(0.1) : const Color(0xFFEF4444).withOpacity(0.1),
+                              color: active
+                                  ? AppColors.green.withOpacity(0.1)
+                                  : AppColors.red.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.local_offer, color: active ? const Color(0xFF10B981) : const Color(0xFFEF4444), size: 22),
+                            child: Icon(Icons.local_offer,
+                                color:
+                                    active ? AppColors.green : AppColors.red,
+                                size: 22),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -260,32 +336,82 @@ class _OffersScreenState extends State<OffersScreen> {
                               children: [
                                 Text(
                                   code,
-                                  style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                                  style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  type == 'percentage' ? '$val% ratio discount' : '₹$val flat discount',
-                                  style: GoogleFonts.inter(color: const Color(0xFF6366F1), fontSize: 13, fontWeight: FontWeight.bold),
+                                  type == 'percentage'
+                                      ? '$val% ratio discount'
+                                      : '₹$val flat discount',
+                                  style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      color: AppColors.accent,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold),
                                 ),
+                                if (minOrder != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Min Order: ₹${minOrder.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        color: AppColors.textMuted,
+                                        fontSize: 11),
+                                  ),
+                                ],
+                                if (maxDisc != null && type == 'percentage') ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Max Discount: ₹${maxDisc.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        color: AppColors.textMuted,
+                                        fontSize: 11),
+                                  ),
+                                ],
+                                if (usageType != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Usage: $usageType${usageLimit != null ? ' (limit: $usageLimit)' : ''}',
+                                    style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        color: AppColors.textMuted,
+                                        fontSize: 11),
+                                  ),
+                                ],
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Expires: $expiry',
-                                  style: GoogleFonts.inter(color: const Color(0xFF475569), fontSize: 11),
+                                  '${startDate != null ? '$startDate → ' : ''}Expires: $expiry',
+                                  style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      color: AppColors.textMuted,
+                                      fontSize: 11),
                                 ),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.edit, color: AppColors.textPrimary54, size: 20),
-                            onPressed: () => _showAddOfferDialog(offer: offer),
+                            icon: const Icon(Icons.edit,
+                                color: AppColors.textPrimary54, size: 20),
+                            onPressed: () =>
+                                _showAddOfferDialog(offer: offer),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Color(0xFFEF4444), size: 20),
+                            icon: const Icon(Icons.delete,
+                                color: AppColors.red, size: 20),
                             onPressed: () async {
-                              final success = await provider.deleteOffer(id);
+                              final success =
+                                  await provider.deleteOffer(id);
                               if (success && mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Offer coupon deleted successfully'), backgroundColor: Color(0xFF10B981)),
+                                  const SnackBar(
+                                      content: Text(
+                                          'Offer coupon deleted successfully'),
+                                      backgroundColor: AppColors.green),
                                 );
                               }
                             },

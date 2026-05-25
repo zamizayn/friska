@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:wstore_mobile/config/theme_config.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/glass_scaffold.dart';
 import '../../providers/orders_provider.dart';
 import 'order_details_screen.dart';
-import 'create_order_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -33,6 +32,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<OrdersProvider>().fetchOrders();
     });
+    searchController.addListener(() {
+      _onSearchChanged(searchController.text);
+    });
   }
 
   void _onSearchChanged(String query) {
@@ -45,21 +47,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
     context.read<OrdersProvider>().fetchOrders();
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return const Color(0xFFF59E0B);
-      case 'shipped':
-        return const Color(0xFF3B82F6);
-      case 'delivered':
-        return const Color(0xFF10B981);
-      case 'cancelled':
-        return const Color(0xFFEF4444);
-      default:
-        return const Color(0xFF64748B);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<OrdersProvider>();
@@ -69,18 +56,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final totalPages =
         int.tryParse(pagination['totalPages']?.toString() ?? '1') ?? 1;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: const Color(0xFF6366F1),
-      //   child: const Icon(Icons.add, color: AppColors.textPrimary),
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(builder: (context) => const CreateOrderScreen()),
-      //     );
-      //   },
-      // ),
+    return GlassScaffold(
+      title: 'Orders',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -90,28 +67,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: Column(
               children: [
                 // Search field
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.cardOpacityBg,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.cardBorder),
-                  ),
-                  child: TextField(
-                    controller: searchController,
-                    onChanged: _onSearchChanged,
-                    style: GoogleFonts.inter(
-                        color: AppColors.textPrimary, fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Search order ID, client phone...',
-                      hintStyle:
-                          GoogleFonts.inter(color: const Color(0xFF475569)),
-                      prefixIcon: const Icon(Icons.search,
-                          color: Color(0xFF6366F1), size: 20),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
-                    ),
-                  ),
+                GlassInput(
+                  controller: searchController,
+                  hint: 'Search order ID, client phone...',
+                  prefixIcon: const Icon(Icons.search,
+                      color: AppColors.accent, size: 20),
                 ),
                 const SizedBox(height: 16),
                 // Status Filter Row
@@ -124,34 +84,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     itemBuilder: (context, index) {
                       final filter = _statusFilters[index];
                       final isSelected = filter['key'] == provider.status;
-                      return GestureDetector(
+                      return GlassChip(
+                        label: filter['label']!,
+                        selected: isSelected,
                         onTap: () => _onStatusChanged(filter['key']!),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF6366F1)
-                                : AppColors.cardOpacityBg,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFF6366F1)
-                                  : AppColors.cardBorder,
-                            ),
-                          ),
-                          child: Text(
-                            filter['label']!,
-                            style: GoogleFonts.outfit(
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF94A3B8),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
                       );
                     },
                   ),
@@ -165,15 +101,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ? const Center(
                     child: CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                          AlwaysStoppedAnimation<Color>(AppColors.accent),
                     ),
                   )
                 : provider.orders.isEmpty
                     ? Center(
                         child: Text(
                           'No orders found matching filters',
-                          style:
-                              GoogleFonts.inter(color: const Color(0xFF475569)),
+                          style: TextStyle(color: AppColors.textMuted),
                         ),
                       )
                     : ListView.separated(
@@ -193,9 +128,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           final totalVal = double.tryParse(
                                   order['total']?.toString() ?? '0') ??
                               0.0;
-                          final statusColor = _getStatusColor(status);
+                          final statusColor = status.toString().statusColor;
 
-                          return InkWell(
+                          return GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -205,14 +140,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 ),
                               );
                             },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppColors.cardBg,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.cardBorder),
-                              ),
+                            child: GlassCard(
                               child: Row(
                                 children: [
                                   Expanded(
@@ -224,7 +152,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                           children: [
                                             Text(
                                               'Order #$id',
-                                              style: GoogleFonts.outfit(
+                                              style: const TextStyle(
+                                                fontFamily: 'Outfit',
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.bold,
                                                 color: AppColors.textPrimary,
@@ -244,7 +173,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                               ),
                                               child: Text(
                                                 status.toUpperCase(),
-                                                style: GoogleFonts.outfit(
+                                                style: TextStyle(
+                                                  fontFamily: 'Outfit',
                                                   color: statusColor,
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 10,
@@ -256,16 +186,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                         const SizedBox(height: 6),
                                         Text(
                                           custName,
-                                          style: GoogleFonts.inter(
-                                            color: const Color(0xFF94A3B8),
+                                          style: const TextStyle(
+                                            color: AppColors.textSecondary,
                                             fontSize: 13,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           date,
-                                          style: GoogleFonts.inter(
-                                            color: const Color(0xFF475569),
+                                          style: const TextStyle(
+                                            color: AppColors.textMuted,
                                             fontSize: 11,
                                           ),
                                         ),
@@ -274,15 +204,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   ),
                                   Text(
                                     currencyFormat.format(totalVal),
-                                    style: GoogleFonts.outfit(
+                                    style: const TextStyle(
+                                      fontFamily: 'Outfit',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w900,
-                                      color: const Color(0xFF6366F1),
+                                      color: AppColors.accent,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   const Icon(Icons.arrow_forward_ios,
-                                      color: AppColors.textPrimary24, size: 14),
+                                      color: AppColors.textPrimary24,
+                                      size: 14),
                                 ],
                               ),
                             ),
@@ -295,7 +227,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.textPrimary10)),
+                border:
+                    Border(top: BorderSide(color: AppColors.textPrimary10)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -307,14 +240,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.cardOpacityBg,
                       disabledBackgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.textPrimary,
                     ),
                     child: const Text('Previous'),
                   ),
                   Text(
                     'Page $currentPage of $totalPages',
-                    style: GoogleFonts.inter(
-                        color: const Color(0xFF64748B), fontSize: 13),
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 13),
                   ),
                   ElevatedButton(
                     onPressed: currentPage < totalPages
@@ -323,7 +256,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.cardOpacityBg,
                       disabledBackgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.textPrimary,
                     ),
                     child: const Text('Next'),
                   ),

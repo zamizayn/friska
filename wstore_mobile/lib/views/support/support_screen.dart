@@ -1,8 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:wstore_mobile/config/theme_config.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/support_provider.dart';
+import '../../widgets/glass_scaffold.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -38,16 +40,19 @@ class _SupportScreenState extends State<SupportScreen> {
               if (replyController.text.trim().isEmpty) return;
 
               setDialogState(() => isSubmitting = true);
-              final success = await context.read<SupportProvider>().replyToTicket(
-                    id,
-                    replyController.text.trim(),
-                  );
+              final success =
+                  await context.read<SupportProvider>().replyToTicket(
+                        id,
+                        replyController.text.trim(),
+                      );
 
               if (success && mounted) {
                 replyController.clear();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Reply sent successfully!'), backgroundColor: Color(0xFF10B981)),
+                  const SnackBar(
+                      content: Text('Reply sent successfully!'),
+                      backgroundColor: Color(0xFF10B981)),
                 );
               } else {
                 setDialogState(() => isSubmitting = false);
@@ -56,11 +61,14 @@ class _SupportScreenState extends State<SupportScreen> {
 
             Future<void> resolve() async {
               setDialogState(() => isSubmitting = true);
-              final success = await context.read<SupportProvider>().resolveTicket(id);
+              final success =
+                  await context.read<SupportProvider>().resolveTicket(id);
               if (success && mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ticket marked as resolved!'), backgroundColor: Color(0xFF10B981)),
+                  const SnackBar(
+                      content: Text('Ticket marked as resolved!'),
+                      backgroundColor: Color(0xFF10B981)),
                 );
               } else {
                 setDialogState(() => isSubmitting = false);
@@ -68,21 +76,27 @@ class _SupportScreenState extends State<SupportScreen> {
             }
 
             return AlertDialog(
-              backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              backgroundColor: AppColors.cardBg,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
                       subject,
-                      style: GoogleFonts.outfit(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (ticket['status'] != 'resolved')
                     IconButton(
-                      icon: const Icon(Icons.check_circle_outline, color: Color(0xFF10B981)),
+                      icon: const Icon(Icons.check_circle_outline,
+                          color: AppColors.green),
                       tooltip: 'Mark as Resolved',
                       onPressed: isSubmitting ? null : resolve,
                     ),
@@ -94,7 +108,6 @@ class _SupportScreenState extends State<SupportScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Initial Issue Description
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -104,15 +117,20 @@ class _SupportScreenState extends State<SupportScreen> {
                       ),
                       child: Text(
                         'Issue: $issue',
-                        style: GoogleFonts.inter(color: const Color(0xFFE2E8F0), fontSize: 13, height: 1.4),
+                        style: GoogleFonts.inter(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            height: 1.4),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Chat/Replies list
                     if (replies.isNotEmpty) ...[
                       Text(
                         'Discussion History',
-                        style: GoogleFonts.outfit(color: const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Flexible(
@@ -121,27 +139,42 @@ class _SupportScreenState extends State<SupportScreen> {
                           child: ListView.separated(
                             shrinkWrap: true,
                             itemCount: replies.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final rep = replies[index];
-                              final isMerchant = rep['isAdmin'] == true || rep['role'] == 'admin';
+                              final isMerchant = rep['isAdmin'] == true ||
+                                  rep['role'] == 'admin';
                               return Align(
-                                alignment: isMerchant ? Alignment.centerRight : Alignment.centerLeft,
+                                alignment: isMerchant
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: isMerchant ? const Color(0xFF6366F1).withOpacity(0.12) : AppColors.cardOpacityBg,
+                                    color: isMerchant
+                                        ? AppColors.accent.withOpacity(0.12)
+                                        : AppColors.cardOpacityBg,
                                     borderRadius: BorderRadius.only(
                                       topLeft: const Radius.circular(10),
                                       topRight: const Radius.circular(10),
-                                      bottomLeft: isMerchant ? const Radius.circular(10) : Radius.zero,
-                                      bottomRight: isMerchant ? Radius.zero : const Radius.circular(10),
+                                      bottomLeft: isMerchant
+                                          ? const Radius.circular(10)
+                                          : Radius.zero,
+                                      bottomRight: isMerchant
+                                          ? Radius.zero
+                                          : const Radius.circular(10),
                                     ),
-                                    border: Border.all(color: isMerchant ? const Color(0xFF6366F1).withOpacity(0.3) : AppColors.cardBorder),
+                                    border: Border.all(
+                                        color: isMerchant
+                                            ? AppColors.accent.withOpacity(0.3)
+                                            : AppColors.cardBorder),
                                   ),
                                   child: Text(
                                     rep['message'] ?? '',
-                                    style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 12),
+                                    style: GoogleFonts.inter(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 12),
                                   ),
                                 ),
                               );
@@ -152,13 +185,26 @@ class _SupportScreenState extends State<SupportScreen> {
                     ],
                     const SizedBox(height: 16),
                     if (ticket['status'] != 'resolved') ...[
-                      TextField(
-                        controller: replyController,
-                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-                        decoration: InputDecoration(
-                          hintText: 'Type administrative reply...',
-                          hintStyle: const TextStyle(color: AppColors.textPrimary24, fontSize: 13),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            decoration: GlassStyles.input(),
+                            child: TextField(
+                              controller: replyController,
+                              style: const TextStyle(
+                                  color: AppColors.textPrimary, fontSize: 13),
+                              decoration: const InputDecoration(
+                                hintText: 'Type administrative reply...',
+                                hintStyle: TextStyle(
+                                    color: AppColors.textMuted, fontSize: 13),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -168,14 +214,24 @@ class _SupportScreenState extends State<SupportScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Close', style: TextStyle(color: AppColors.textPrimary54)),
+                  child: const Text('Close',
+                      style: TextStyle(color: AppColors.textSecondary)),
                 ),
                 if (ticket['status'] != 'resolved')
                   TextButton(
                     onPressed: isSubmitting ? null : sendReply,
                     child: isSubmitting
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                        : const Text('Send Reply', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold)),
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white)))
+                        : const Text('Send Reply',
+                            style: TextStyle(
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.bold)),
                   ),
               ],
             );
@@ -189,93 +245,129 @@ class _SupportScreenState extends State<SupportScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<SupportProvider>();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Support Tickets', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: provider.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1))),
-            )
-          : provider.tickets.isEmpty
-              ? Center(
-                  child: Text(
-                    'No help desk tickets pending',
-                    style: GoogleFonts.inter(color: const Color(0xFF475569)),
-                  ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: provider.tickets.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final ticket = provider.tickets[index];
-                    final subject = ticket['subject'] ?? 'Support Request';
-                    final customer = ticket['customer']?['name'] ?? ticket['customerName'] ?? 'Shopper';
-                    final status = ticket['status'] ?? 'pending';
-
-                    Color stateColor = const Color(0xFFF59E0B);
-                    if (status == 'resolved') {
-                      stateColor = const Color(0xFF10B981);
-                    }
-
-                    return InkWell(
-                      onTap: () => _showTicketChatDialog(ticket),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.cardBorder),
+    return GlassScaffold(
+      title: 'Support Tickets',
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              children: [
+                GlassChip(
+                  label: 'All',
+                  selected: provider.statusFilter == '',
+                  onTap: () {
+                    provider.setStatusFilter('');
+                    provider.fetchTickets();
+                  },
+                ),
+                const SizedBox(width: 8),
+                GlassChip(
+                  label: 'Pending',
+                  selected: provider.statusFilter == 'pending',
+                  onTap: () {
+                    provider.setStatusFilter('pending');
+                    provider.fetchTickets();
+                  },
+                ),
+                const SizedBox(width: 8),
+                GlassChip(
+                  label: 'Resolved',
+                  selected: provider.statusFilter == 'resolved',
+                  onTap: () {
+                    provider.setStatusFilter('resolved');
+                    provider.fetchTickets();
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: provider.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.accent)),
+                  )
+                : provider.tickets.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No help desk tickets pending',
+                          style: GoogleFonts.inter(color: AppColors.textMuted),
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: provider.tickets.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final ticket = provider.tickets[index];
+                          final subject =
+                              ticket['subject'] ?? 'Support Request';
+                          final customer = ticket['customer']?['name'] ??
+                              ticket['customerName'] ??
+                              'Shopper';
+                          final status = ticket['status'] ?? 'pending';
+                          final stateColor = status.statusColor;
+
+                          return GlassCard(
+                            onTap: () => _showTicketChatDialog(ticket),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        subject,
-                                        style: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            subject,
+                                            style: GoogleFonts.outfit(
+                                                color: AppColors.textPrimary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  stateColor.withOpacity(0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              status.toUpperCase(),
+                                              style: GoogleFonts.outfit(
+                                                  color: stateColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 9),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: stateColor.withOpacity(0.12),
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          status.toUpperCase(),
-                                          style: GoogleFonts.outfit(color: stateColor, fontWeight: FontWeight.bold, fontSize: 9),
-                                        ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Submitted by: $customer',
+                                        style: GoogleFonts.inter(
+                                            color: AppColors.textMuted,
+                                            fontSize: 12),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Submitted by: $customer',
-                                    style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 12),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const Icon(Icons.arrow_forward_ios,
+                                    color: AppColors.textMuted, size: 14),
+                              ],
                             ),
-                            const Icon(Icons.arrow_forward_ios, color: AppColors.textPrimary24, size: 14),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Services
 import 'services/storage_service.dart';
 
-// Providers
 import 'providers/auth_provider.dart';
 import 'providers/branches_provider.dart';
 import 'providers/dashboard_provider.dart';
@@ -15,10 +13,11 @@ import 'providers/categories_provider.dart';
 import 'providers/customers_provider.dart';
 import 'providers/offers_provider.dart';
 import 'providers/support_provider.dart';
+import 'providers/notifications_provider.dart';
+import 'providers/delivery_boys_provider.dart';
 
 import 'config/theme_config.dart';
 
-// Views
 import 'views/onboarding/landing_screen.dart';
 import 'views/dashboard/dashboard_layout.dart';
 
@@ -44,13 +43,15 @@ class WStoreApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CustomersProvider()),
         ChangeNotifierProvider(create: (_) => OffersProvider()),
         ChangeNotifierProvider(create: (_) => SupportProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider(create: (_) => DeliveryBoysProvider()),
       ],
       child: MaterialApp(
         title: 'Friska',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           brightness: Brightness.light,
-          primaryColor: AppColors.primary,
+          primaryColor: AppColors.accent,
           scaffoldBackgroundColor: AppColors.background,
           cardColor: AppColors.cardBg,
           dialogBackgroundColor: AppColors.surface,
@@ -68,13 +69,13 @@ class WStoreApp extends StatelessWidget {
           ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(
             backgroundColor: AppColors.surface,
-            selectedItemColor: AppColors.primary,
+            selectedItemColor: AppColors.accent,
             unselectedItemColor: AppColors.textMuted,
             elevation: 8,
           ),
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primary,
-            secondary: AppColors.secondary,
+            primary: AppColors.accent,
+            secondary: AppColors.accentLight,
             surface: AppColors.surface,
             onSurface: AppColors.textPrimary,
             background: AppColors.background,
@@ -93,8 +94,6 @@ class AppLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    // If authenticated, navigate straight to Dashboard Shell.
-    // Otherwise, direct the user to the interactive welcome landing wizards.
     if (auth.isAuthenticated) {
       return const DashboardLayout();
     } else {

@@ -55,6 +55,7 @@ class CategoriesProvider extends ChangeNotifier {
     int? id,
     required String name,
     required String priority,
+    double gstRate = 0,
     File? imageFile,
   }) async {
     _setLoading(true);
@@ -65,6 +66,7 @@ class CategoriesProvider extends ChangeNotifier {
     final fields = <String, String>{
       'name': name,
       'priority': priority,
+      'gstRate': gstRate.toString(),
     };
     if (id == null && branchId.isNotEmpty) {
       fields['branchId'] = branchId;

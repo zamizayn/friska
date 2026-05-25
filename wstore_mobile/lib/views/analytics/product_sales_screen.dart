@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../config/api_config.dart';
 import '../../config/theme_config.dart';
 import '../../services/api_client.dart';
+import '../../widgets/glass_scaffold.dart';
 
 class ProductSalesScreen extends StatefulWidget {
   const ProductSalesScreen({super.key});
@@ -68,20 +68,7 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
     required Color color,
     required Color bgColor,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return GlassCard(
       child: Row(
         children: [
           Container(
@@ -99,7 +86,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textSecondary,
@@ -109,7 +97,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
@@ -132,10 +121,10 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
     }
 
     final colors = [
-      const Color(0xFF6366F1),
-      const Color(0xFF10B981),
-      const Color(0xFFF59E0B),
-      const Color(0xFFEF4444),
+      AppColors.accent,
+      AppColors.green,
+      AppColors.amber,
+      AppColors.red,
       const Color(0xFF8B5CF6),
     ];
 
@@ -146,106 +135,105 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
 
     if (maxRevenue == 0) maxRevenue = 100;
 
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Top Products by Revenue',
-            style: GoogleFonts.outfit(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxRevenue * 1.2,
-                barTouchData: BarTouchData(enabled: true),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() < 0 || value.toInt() >= topProducts.length) {
-                          return const SizedBox.shrink();
-                        }
-                        String name = topProducts[value.toInt()]['name'] ?? '';
-                        if (name.length > 8) name = '${name.substring(0, 8)}...';
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            name,
-                            style: GoogleFonts.inter(
-                              color: AppColors.textSecondary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                      reservedSize: 32,
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
-                        if (value == 0) return const SizedBox.shrink();
-                        return Text(
-                          NumberFormat.compactCurrency(locale: 'en_IN', symbol: '₹').format(value),
-                          style: GoogleFonts.inter(
-                            color: AppColors.textMuted,
-                            fontSize: 10,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: AppColors.border,
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                barGroups: topProducts.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final product = entry.value;
-                  return BarChartGroupData(
-                    x: index,
-                    barRods: [
-                      BarChartRodData(
-                        toY: (product['totalRevenue'] ?? 0).toDouble(),
-                        color: colors[index % colors.length],
-                        width: 20,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-                      ),
-                    ],
-                  );
-                }).toList(),
+    return GlassCard(
+      child: SizedBox(
+        height: 300,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Top Products by Revenue',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            Expanded(
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: maxRevenue * 1.2,
+                  barTouchData: BarTouchData(enabled: true),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() < 0 || value.toInt() >= topProducts.length) {
+                            return const SizedBox.shrink();
+                          }
+                          String name = topProducts[value.toInt()]['name'] ?? '';
+                          if (name.length > 8) name = '${name.substring(0, 8)}...';
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              name,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                color: AppColors.textSecondary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          );
+                        },
+                        reservedSize: 32,
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          if (value == 0) return const SizedBox.shrink();
+                          return Text(
+                            NumberFormat.compactCurrency(locale: 'en_IN', symbol: '₹').format(value),
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              color: AppColors.textMuted,
+                              fontSize: 10,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: AppColors.cardBorder,
+                      strokeWidth: 1,
+                      dashArray: [4, 4],
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: topProducts.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final product = entry.value;
+                    return BarChartGroupData(
+                      x: index,
+                      barRods: [
+                        BarChartRodData(
+                          toY: (product['totalRevenue'] ?? 0).toDouble(),
+                          color: colors[index % colors.length],
+                          width: 20,
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -257,18 +245,14 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
           padding: const EdgeInsets.all(32.0),
           child: Text(
             'No sales data available.',
-            style: GoogleFonts.inter(color: AppColors.textMuted),
+            style: TextStyle(fontFamily: 'Inter', color: AppColors.textMuted),
           ),
         ),
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -276,19 +260,20 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Text(
               'Product Performance',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
+                fontFamily: 'Outfit',
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
           ),
-          const Divider(height: 1, color: AppColors.border),
+          const Divider(height: 1, color: AppColors.cardBorder),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: products.length,
-            separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
+            separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.cardBorder),
             itemBuilder: (context, index) {
               final product = products[index];
               return Padding(
@@ -302,7 +287,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                         children: [
                           Text(
                             product['name'] ?? 'Unknown',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                               fontSize: 14,
@@ -311,7 +297,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'ID: ${product['id']}',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
+                              fontFamily: 'Inter',
                               color: AppColors.textMuted,
                               fontSize: 11,
                             ),
@@ -323,7 +310,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                       flex: 1,
                       child: Text(
                         '${product['totalQuantity']} qty',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
+                          fontFamily: 'Inter',
                           fontWeight: FontWeight.w600,
                           color: AppColors.textSecondary,
                           fontSize: 13,
@@ -335,9 +323,10 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                       flex: 2,
                       child: Text(
                         currencyFormat.format(product['totalRevenue']),
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
+                          color: AppColors.accent,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.right,
@@ -367,24 +356,16 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
       ..sort((a, b) => (b['totalRevenue'] ?? 0).compareTo(a['totalRevenue'] ?? 0));
     final top10 = topProducts.take(10).toList();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text('Sales Analytics', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.surface,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
+    return GlassScaffold(
+      title: 'Sales Analytics',
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh, color: AppColors.textPrimary),
+          onPressed: _fetchSalesData,
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.textPrimary),
-            onPressed: _fetchSalesData,
-          ),
-        ],
-      ),
+      ],
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent)))
           : _errorMessage.isNotEmpty
               ? Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)))
               : SingleChildScrollView(
@@ -396,8 +377,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                         title: 'TOTAL REVENUE',
                         value: currencyFormat.format(totalRevenue),
                         icon: Icons.currency_rupee,
-                        color: const Color(0xFF6366F1),
-                        bgColor: const Color(0xFFE0E7FF),
+                        color: AppColors.accent,
+                        bgColor: AppColors.accent.withOpacity(0.1),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -407,8 +388,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                               title: 'UNITS SOLD',
                               value: totalQty.toString(),
                               icon: Icons.shopping_bag,
-                              color: const Color(0xFF10B981),
-                              bgColor: const Color(0xFFDCFCE7),
+                              color: AppColors.green,
+                              bgColor: AppColors.green.withOpacity(0.1),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -417,8 +398,8 @@ class _ProductSalesScreenState extends State<ProductSalesScreen> {
                               title: 'AVG. PRICE',
                               value: currencyFormat.format(avgPrice),
                               icon: Icons.trending_up,
-                              color: const Color(0xFFF59E0B),
-                              bgColor: const Color(0xFFFEF3C7),
+                              color: AppColors.amber,
+                              bgColor: AppColors.amber.withOpacity(0.1),
                             ),
                           ),
                         ],

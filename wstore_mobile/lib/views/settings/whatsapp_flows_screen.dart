@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../config/api_config.dart';
 import '../../config/theme_config.dart';
 import '../../services/api_client.dart';
+import '../../widgets/glass_scaffold.dart';
 
 class WhatsAppFlowsScreen extends StatefulWidget {
   const WhatsAppFlowsScreen({super.key});
@@ -99,14 +100,9 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
   }
 
   Widget _buildSection(String title, IconData icon, Color iconColor, List<Widget> fields) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -163,24 +159,10 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
             ),
           ],
           const SizedBox(height: 8),
-          TextField(
-            controller: _controllers[key],
+          GlassInput(
+            controller: _controllers[key]!,
+            hint: hint,
             maxLines: 3,
-            minLines: 1,
-            style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.inputBg,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
           ),
         ],
       ),
@@ -189,18 +171,10 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text('WhatsApp Flows', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.surface,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return GlassScaffold(
+      title: 'WhatsApp Flows',
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent)))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -214,7 +188,7 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
                   _buildSection(
                     'Greetings & Welcome',
                     Icons.auto_awesome,
-                    AppColors.primary,
+                    AppColors.accent,
                     [
                       _buildField('welcomeReturning', 'Returning Customer Welcome', 'Placeholders: {{tenant_name}}, {{customer_name}}'),
                       _buildField('welcomeNew', 'New Customer Welcome', 'Placeholders: {{tenant_name}}'),
@@ -224,7 +198,7 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
                   _buildSection(
                     'Shopping Experience',
                     Icons.shopping_bag,
-                    const Color(0xFF10B981),
+                    AppColors.green,
                     [
                       _buildField('searchProductsMessage', 'Product Search Prompt', ''),
                       _buildField('chooseBranchMessage', 'Branch Selection', ''),
@@ -234,7 +208,7 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
                   _buildSection(
                     'Checkout Flow',
                     Icons.inventory_2,
-                    const Color(0xFFF59E0B),
+                    AppColors.amber,
                     [
                       _buildField('enterAddressMessage', 'Address Collection', ''),
                       _buildField('selectAddressMessage', 'Select Saved Address Prompt', ''),
@@ -245,27 +219,21 @@ class _WhatsAppFlowsScreenState extends State<WhatsAppFlowsScreen> {
                   _buildSection(
                     'Support & Engagement',
                     Icons.support_agent,
-                    const Color(0xFFEF4444),
+                    AppColors.red,
                     [
                       _buildField('supportMessage', 'Help & Support Intro', ''),
                       _buildField('abandonedCartMessage', 'Abandoned Cart Reminder', ''),
                     ],
                   ),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 24),
+                  GlassButton(
+                    label: 'Save Flows',
+                    icon: Icons.save,
+                    onPressed: _isSaving ? null : _saveSettings,
+                    isLoading: _isSaving,
+                  ),
+                  const SizedBox(height: 24),
                 ],
-              ),
-            ),
-      floatingActionButton: _isLoading
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _isSaving ? null : _saveSettings,
-              backgroundColor: AppColors.primary,
-              icon: _isSaving
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.save, color: Colors.white),
-              label: Text(
-                _isSaving ? 'Saving...' : 'Save Flows',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
     );

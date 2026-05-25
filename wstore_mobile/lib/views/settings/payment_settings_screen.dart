@@ -5,6 +5,7 @@ import '../../config/api_config.dart';
 import '../../config/theme_config.dart';
 import '../../services/api_client.dart';
 import '../../services/storage_service.dart';
+import '../../widgets/glass_scaffold.dart';
 
 class PaymentSettingsScreen extends StatefulWidget {
   const PaymentSettingsScreen({super.key});
@@ -19,6 +20,7 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
 
   final TextEditingController _rzpKeyIdController = TextEditingController();
   final TextEditingController _rzpKeySecretController = TextEditingController();
+  final TextEditingController _rzpWebhookSecretController = TextEditingController();
   bool _codEnabled = false;
 
   @override
@@ -44,9 +46,10 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
         final data = jsonDecode(res.body);
         if (mounted) {
           setState(() {
-            _rzpKeyIdController.text = data['razorpayKeyId'] ?? '';
-            _rzpKeySecretController.text = data['razorpayKeySecret'] ?? '';
-            _codEnabled = data['codEnabled'] ?? false;
+          _rzpKeyIdController.text = data['razorpayKeyId'] ?? '';
+          _rzpKeySecretController.text = data['razorpayKeySecret'] ?? '';
+          _rzpWebhookSecretController.text = data['razorpayWebhookSecret'] ?? '';
+          _codEnabled = data['codEnabled'] ?? false;
           });
         }
       }
@@ -73,6 +76,7 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
         body: {
           'razorpayKeyId': _rzpKeyIdController.text.trim(),
           'razorpayKeySecret': _rzpKeySecretController.text.trim(),
+          'razorpayWebhookSecret': _rzpWebhookSecretController.text.trim(),
           'codEnabled': _codEnabled,
         },
       );
@@ -124,25 +128,10 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
+        GlassInput(
           controller: controller,
-          obscureText: isPassword,
-          style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: GoogleFonts.inter(color: AppColors.textMuted),
-            filled: true,
-            fillColor: AppColors.inputBg,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-          ),
+          hint: hint,
+          obscure: isPassword,
         ),
         const SizedBox(height: 16),
       ],
@@ -151,72 +140,48 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text('Payment Options', style: GoogleFonts.outfit(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.surface,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return GlassScaffold(
+      title: 'Payment Options',
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent)))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.cardBorder),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  GlassCard(
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.money, color: Color(0xFF10B981), size: 24),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Cash on Delivery', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                                  const SizedBox(height: 2),
-                                  Text('Allow customers to pay when they receive their order.', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
-                                ],
-                              ),
-                            ),
-                            Switch(
-                              value: _codEnabled,
-                              onChanged: (val) => setState(() => _codEnabled = val),
-                              activeColor: const Color(0xFF10B981),
-                            ),
-                          ],
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.green.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.money, color: AppColors.green, size: 24),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Cash on Delivery', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                              const SizedBox(height: 2),
+                              Text('Allow customers to pay when they receive their order.', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: _codEnabled,
+                          onChanged: (val) => setState(() => _codEnabled = val),
+                          activeColor: AppColors.green,
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Container(
+                  GlassCard(
                     padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.cardBorder),
-                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -225,10 +190,10 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withOpacity(0.1),
+                                color: AppColors.accent.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.credit_card, color: Color(0xFF6366F1), size: 24),
+                              child: const Icon(Icons.credit_card, color: AppColors.accent, size: 24),
                             ),
                             const SizedBox(width: 16),
                             Text('Razorpay Integration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
@@ -246,6 +211,12 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
                           hint: 'Enter your secret key',
                           isPassword: true,
                         ),
+                        _buildTextField(
+                          controller: _rzpWebhookSecretController,
+                          label: 'Razorpay Webhook Secret',
+                          hint: 'Enter webhook secret',
+                          isPassword: true,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Your keys are securely encrypted before storage. Leaving these fields blank will disable Razorpay on your store checkout.',
@@ -254,20 +225,15 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  GlassButton(
+                    label: 'Save Settings',
+                    icon: Icons.save,
+                    onPressed: _isSaving ? null : _saveSettings,
+                    isLoading: _isSaving,
+                  ),
+                  const SizedBox(height: 24),
                 ],
-              ),
-            ),
-      floatingActionButton: _isLoading
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _isSaving ? null : _saveSettings,
-              backgroundColor: AppColors.primary,
-              icon: _isSaving
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.save, color: Colors.white),
-              label: Text(
-                _isSaving ? 'Saving...' : 'Save Settings',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
     );

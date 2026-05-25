@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import '../config/api_config.dart';
 import '../services/api_client.dart';
@@ -24,14 +25,24 @@ class OffersProvider extends ChangeNotifier {
     final branchId = StorageService.selectedBranchId;
     try {
       final response = await ApiClient.get('${ApiConfig.offers}?branchId=$branchId');
+      log("offers response: ${response.body}");
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _offers = data['data'] ?? data ?? [];
+        final decoded = jsonDecode(response.body);
+        if (decoded is List) {
+          _offers = decoded;
+        } else if (decoded is Map && decoded['data'] != null) {
+          _offers = decoded['data'];
+        } else if (decoded is Map) {
+          _offers = decoded['offers'] ??
+              decoded.values.firstWhere((v) => v is List, orElse: () => []);
+        } else {
+          _offers = [];
+        }
       } else {
         _errorMessage = "Failed to load promotional offers";
       }
     } catch (e) {
-      _errorMessage = "Network connection failed";
+      _errorMessage = "Network connection failed: $e";
     }
     _setLoading(false);
   }
@@ -57,6 +68,11 @@ class OffersProvider extends ChangeNotifier {
     required double value,
     required String expiryDate,
     required bool active,
+    double? minOrderAmount,
+    double? maxDiscount,
+    int? usageLimit,
+    String? usageType,
+    String? startDate,
   }) async {
     _setLoading(true);
     final branchId = StorageService.selectedBranchId;
@@ -70,6 +86,11 @@ class OffersProvider extends ChangeNotifier {
       'expiryDate': expiryDate,
       'active': active,
     };
+    if (minOrderAmount != null) body['minOrderAmount'] = minOrderAmount;
+    if (maxDiscount != null) body['maxDiscount'] = maxDiscount;
+    if (usageLimit != null) body['usageLimit'] = usageLimit;
+    if (usageType != null) body['usageType'] = usageType;
+    if (startDate != null) body['startDate'] = startDate;
     if (id == null && branchId.isNotEmpty) {
       body['branchId'] = branchId;
     }

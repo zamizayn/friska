@@ -66,7 +66,7 @@ class ProductsProvider extends ChangeNotifier {
     final tenantId = StorageService.tenantId;
     final role = StorageService.adminRole;
 
-    String url = '${ApiConfig.products}?page=$page&limit=10&branchId=$branchId';
+    String url = '${ApiConfig.products}?page=$page&limit=20&branchId=$branchId';
     if (role == 'superadmin' && tenantId.isNotEmpty) {
       url += '&tenantId=$tenantId';
     }

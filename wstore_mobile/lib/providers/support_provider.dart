@@ -8,13 +8,20 @@ class SupportProvider extends ChangeNotifier {
   bool _isLoading = false;
   String _errorMessage = "";
   List<dynamic> _tickets = [];
+  String _statusFilter = "";
 
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
   List<dynamic> get tickets => _tickets;
+  String get statusFilter => _statusFilter;
 
   void _setLoading(bool val) {
     _isLoading = val;
+    notifyListeners();
+  }
+
+  void setStatusFilter(String status) {
+    _statusFilter = status;
     notifyListeners();
   }
 
@@ -22,8 +29,10 @@ class SupportProvider extends ChangeNotifier {
     _setLoading(true);
     _errorMessage = "";
     final branchId = StorageService.selectedBranchId;
+    String url = '${ApiConfig.supportRequests}?branchId=$branchId';
+    if (_statusFilter.isNotEmpty) url += '&status=$_statusFilter';
     try {
-      final response = await ApiClient.get('${ApiConfig.supportRequests}?branchId=$branchId');
+      final response = await ApiClient.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _tickets = data['data'] ?? data ?? [];

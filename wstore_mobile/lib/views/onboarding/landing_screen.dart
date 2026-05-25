@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wstore_mobile/config/theme_config.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:wstore_mobile/widgets/glass_scaffold.dart';
 import '../auth/login_screen.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -62,8 +62,8 @@ class _LandingScreenState extends State<LandingScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return GlassScaffold(
+      noAppBar: true,
       body: Stack(
         children: [
           Positioned(
@@ -76,7 +76,7 @@ class _LandingScreenState extends State<LandingScreen>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.12),
+                    color: AppColors.accent.withOpacity(0.12),
                     blurRadius: 120,
                     spreadRadius: 80,
                   ),
@@ -94,7 +94,7 @@ class _LandingScreenState extends State<LandingScreen>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFA855F7).withOpacity(0.1),
+                    color: AppColors.accentLight.withOpacity(0.1),
                     blurRadius: 120,
                     spreadRadius: 80,
                   ),
@@ -124,7 +124,8 @@ class _LandingScreenState extends State<LandingScreen>
                         children: [
                           Text(
                             'Friska Admin',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
                               color: AppColors.textPrimary,
@@ -144,11 +145,11 @@ class _LandingScreenState extends State<LandingScreen>
                               height: 80,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withOpacity(0.1),
+                                color: AppColors.accent.withOpacity(0.1),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color:
-                                      const Color(0xFF6366F1).withOpacity(0.2),
+                                      AppColors.accent.withOpacity(0.2),
                                 ),
                               ),
                               child: Text(
@@ -160,7 +161,8 @@ class _LandingScreenState extends State<LandingScreen>
                             Text(
                               _features[_currentFeatureIndex]['title']!,
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textPrimary,
@@ -173,9 +175,10 @@ class _LandingScreenState extends State<LandingScreen>
                               child: Text(
                                 _features[_currentFeatureIndex]['desc']!,
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
                                   fontSize: 14,
-                                  color: const Color(0xFF94A3B8),
+                                  color: AppColors.textSecondary,
                                   height: 1.6,
                                 ),
                               ),
@@ -202,8 +205,8 @@ class _LandingScreenState extends State<LandingScreen>
                               height: 8.0,
                               decoration: BoxDecoration(
                                 color: _currentFeatureIndex == index
-                                    ? const Color(0xFF6366F1)
-                                    : const Color(0xFF94A3B8).withOpacity(0.3),
+                                    ? AppColors.accent
+                                    : AppColors.textSecondary.withOpacity(0.3),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
@@ -211,64 +214,17 @@ class _LandingScreenState extends State<LandingScreen>
                         ),
                       ),
                       const Spacer(),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFFA855F7)],
-                          ),
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const LoginScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            'Access Active Workspace',
-                            style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
+                      GlassButton(
+                        label: 'Access Active Workspace',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()),
+                          );
+                        },
                       ),
                       const SizedBox(height: 14),
-                      // OutlinedButton(
-                      //   onPressed: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(builder: (context) => const WizardScreen()),
-                      //     );
-                      //   },
-                      //   style: OutlinedButton.styleFrom(
-                      //     side: BorderSide(color: AppColors.textPrimary.withOpacity(0.12)),
-                      //     padding: const EdgeInsets.symmetric(vertical: 16),
-                      //     shape: RoundedRectangleBorder(
-                      //       borderRadius: BorderRadius.circular(16),
-                      //     ),
-                      //   ),
-                      //   child: Text(
-                      //     'Register My Business',
-                      //     style: GoogleFonts.outfit(
-                      //       fontSize: 16,
-                      //       fontWeight: FontWeight.w600,
-                      //       color: const Color(0xFF94A3B8),
-                      //     ),
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 20),
                     ],
                   ),
                 ),

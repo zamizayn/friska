@@ -26,7 +26,7 @@ const {
 const { Op } = require('sequelize');
 const moment = require('moment-timezone');
 const notificationService = require('../services/notificationService');
-const orderService = require('../services/orderService');
+const { sequelize } = require('../models');
 const { createPaymentLink } = require('../services/paymentService');
 const aiService = require('../services/aiService');
 
@@ -1200,8 +1200,14 @@ const handleCart = async (from, session, tenant) => {
 // Helper: Stock check before checkout
 // =========================
 const checkCartStock = async (userCart) => {
+    if (userCart.length === 0) return null;
+    const productIds = userCart.map(item => item.id);
+    const products = await Product.findAll({
+        where: { id: { [Op.in]: productIds } }
+    });
+    const productMap = new Map(products.map(p => [p.id, p]));
     for (const item of userCart) {
-        const product = await Product.findByPk(item.id);
+        const product = productMap.get(item.id);
         if (!product) return `❌ Product *${item.name}* is no longer available.`;
         if (product.stock !== null && product.stock < item.quantity) {
             return product.stock <= 0
@@ -1306,23 +1312,12 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
         return await sendButtonMessage(from, '🛒 Your cart is empty.', [{ id: 'menu', title: 'Back to Menu' }], session.config);
     }
 
-    if (!isCatalogOrder) {
-        const stockError = await checkCartStock(userCart);
-        if (stockError) {
-            return await sendButtonMessage(from,
-                `${stockError}\n\nSomeone else just grabbed the last items! Please update your cart.`,
-                [{ id: 'cart', title: '🛒 View Cart' }, { id: 'menu', title: '🏠 Back to Menu' }],
-                session.config);
-        }
-    }
-
     let subtotal = 0;
     if (isCatalogOrder) {
         const match = session.lastCatalogOrder.match(/total amount:?\s*₹?\s*([\d,]+(\.\d+)?)/i);
         const amountStr = match ? match[1].replace(/,/g, '') : '0';
         subtotal = parseFloat(amountStr) || 0;
         userCart[0].price = subtotal;
-        console.log(`[Catalog Order] Extracted amount: ${subtotal}`);
     } else {
         userCart.forEach(item => { subtotal += item.price * item.quantity; });
     }
@@ -1338,34 +1333,89 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
         appliedOfferCode = bestOffer.code;
     }
 
-    // Ensure total is never negative
     total = Math.max(0, total);
 
+    // Atomic order creation with stock check, deduction, and offer tracking
     let savedOrder;
     try {
-        savedOrder = await Order.create({
-            customerPhone: from,
-            address,
-            formattedAddress: session.formattedAddress || null,
-            deliveryLatitude: session.latitude || null,
-            deliveryLongitude: session.longitude || null,
-            items: userCart,
-            total,
-            discountAmount,
-            appliedOfferCode,
-            status: 'pending',
-            branchId: session.branchId,
-            paymentMethod,
-            paymentStatus: 'pending'
+        savedOrder = await sequelize.transaction(async (t) => {
+            if (!isCatalogOrder) {
+                const productIds = userCart.map(item => item.id);
+                const products = await Product.findAll({
+                    where: { id: { [Op.in]: productIds } },
+                    lock: t.LOCK.UPDATE,
+                    transaction: t
+                });
+                const productMap = new Map(products.map(p => [p.id, p]));
+                for (const item of userCart) {
+                    const product = productMap.get(item.id);
+                    if (!product) {
+                        throw new Error(`❌ Product *${item.name}* is no longer available.`);
+                    }
+                    if (product.stock !== null && product.stock < item.quantity) {
+                        throw new Error(
+                            product.stock <= 0
+                                ? `❌ Sorry, *${product.name}* just went out of stock.`
+                                : `❌ Sorry, only *${product.stock}* units of *${product.name}* are available now.`
+                        );
+                    }
+                }
+                for (const item of userCart) {
+                    await Product.decrement('stock', {
+                        by: item.quantity,
+                        where: { id: item.id },
+                        transaction: t
+                    });
+                }
+            }
+
+            const order = await Order.create({
+                customerPhone: from,
+                address,
+                formattedAddress: session.formattedAddress || null,
+                deliveryLatitude: session.latitude || null,
+                deliveryLongitude: session.longitude || null,
+                items: userCart,
+                total,
+                discountAmount,
+                appliedOfferCode,
+                status: 'pending',
+                branchId: session.branchId,
+                paymentMethod,
+                paymentStatus: 'pending'
+            }, { transaction: t });
+
+            if (appliedOfferCode) {
+                await Offer.increment('usageCount', {
+                    by: 1,
+                    where: { code: appliedOfferCode, branchId: session.branchId },
+                    transaction: t
+                });
+                await Offer.decrement('usageLimit', {
+                    by: 1,
+                    where: {
+                        code: appliedOfferCode,
+                        branchId: session.branchId,
+                        usageLimit: { [Op.gt]: 0 }
+                    },
+                    transaction: t
+                });
+            }
+
+            return order;
         });
     } catch (e) {
-        console.error('Order save error:', e.message);
+        console.error('Order transaction failed:', e.message);
+        if (e.message.includes('❌')) {
+            return await sendButtonMessage(from,
+                `${e.message}\n\nSomeone else just grabbed the last items! Please update your cart.`,
+                [{ id: 'cart', title: '🛒 View Cart' }, { id: 'menu', title: '🏠 Back to Menu' }],
+                session.config);
+        }
         return await sendTextMessage(from,
             '⚠️ There was an issue placing your order. Please try again or contact support.',
             session.config);
     }
-
-    if (savedOrder) await orderService.handleOrderSuccess(savedOrder);
 
     // Clear cart & session state
     carts[from] = [];

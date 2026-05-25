@@ -1894,6 +1894,8 @@ const receiveWebhook = async (req, res) => {
 
                     session.address = selected.address;
                     session.formattedAddress = selected.formattedAddress;
+                    session.latitude = lat;
+                    session.longitude = lng;
                     session.state = 'CHECKOUT_PAYMENT';
                     await sendButtonMessage(from,
                         getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),
@@ -1956,6 +1958,8 @@ const receiveWebhook = async (req, res) => {
 
                     session.address = selected.address;
                     session.formattedAddress = selected.formattedAddress;
+                    session.latitude = lat;
+                    session.longitude = lng;
                     session.state = 'CHECKOUT_PAYMENT';
                     await sendButtonMessage(from,
                         getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),

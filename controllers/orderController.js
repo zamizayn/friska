@@ -6,6 +6,17 @@ const { generateInvoice } = require('../services/invoiceService');
 const orderService = require('../services/orderService');
 const fs = require('fs');
 
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 const createOrder = async (req, res) => {
     try {
         await Customer.upsert({
@@ -59,11 +70,27 @@ const getAllOrders = async (req, res) => {
         const { count, rows } = await Order.findAndCountAll({
             where,
             include: [
-                { model: Customer, as: 'customer', attributes: ['name'] }
+                { model: Customer, as: 'customer', attributes: ['name'] },
+                { model: Branch, as: 'branch', attributes: ['id', 'name', 'latitude', 'longitude'] }
             ],
             limit,
             offset,
             order: [['createdAt', 'DESC']]
+        });
+
+        const dataWithDistance = rows.map(order => {
+            const plain = order.get({ plain: true });
+            let distance = null;
+            if (plain.branch?.latitude && plain.branch?.longitude && plain.deliveryLatitude && plain.deliveryLongitude) {
+                distance = calculateDistance(
+                    parseFloat(plain.branch.latitude),
+                    parseFloat(plain.branch.longitude),
+                    parseFloat(plain.deliveryLatitude),
+                    parseFloat(plain.deliveryLongitude)
+                );
+                distance = Math.round(distance * 100) / 100;
+            }
+            return { ...plain, distanceFromBranch: distance };
         });
 
         const stats = {
@@ -74,7 +101,7 @@ const getAllOrders = async (req, res) => {
         };
 
         res.json({
-            data: rows,
+            data: dataWithDistance,
             total: count,
             page,
             totalPages: Math.ceil(count / limit),

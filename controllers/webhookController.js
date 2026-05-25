@@ -1347,6 +1347,8 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
             customerPhone: from,
             address,
             formattedAddress: session.formattedAddress || null,
+            deliveryLatitude: session.latitude || null,
+            deliveryLongitude: session.longitude || null,
             items: userCart,
             total,
             discountAmount,

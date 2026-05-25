@@ -586,6 +586,11 @@ export default function Orders() {
                                 <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                                     📍 {viewingOrder.formattedAddress || viewingOrder.address}
                                 </div>
+                                {viewingOrder.distanceFromBranch != null && (
+                                    <div style={{ marginTop: '8px', color: 'var(--accent)', fontWeight: 700, fontSize: '14px' }}>
+                                        📏 {viewingOrder.distanceFromBranch} km from hub
+                                    </div>
+                                )}
                                 {viewingOrder.address?.startsWith('http') ? (
                                     <div style={{ marginTop: '12px' }}>
                                         <a href={viewingOrder.address} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>

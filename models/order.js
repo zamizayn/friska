@@ -37,7 +37,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     appliedOfferCode: DataTypes.STRING,
     paymentTransactionId: DataTypes.STRING,
-    formattedAddress: DataTypes.TEXT
+    formattedAddress: DataTypes.TEXT,
+    deliveryLatitude: DataTypes.DECIMAL(10, 8),
+    deliveryLongitude: DataTypes.DECIMAL(11, 8)
   }, {
     sequelize,
     modelName: 'Order',

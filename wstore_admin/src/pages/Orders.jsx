@@ -367,7 +367,7 @@ export default function Orders() {
                             <th>Items</th>
                             <th>Total</th>
                             <th>Status</th>
-                            <th>Delivery Status</th>
+                            <th>Delivery Boy</th>
                             <th>Payment</th>
                             <th>Actions</th>
                         </tr>
@@ -394,17 +394,6 @@ export default function Orders() {
                                 <td>{order.items?.length || 0} items</td>
                                 <td style={{ fontWeight: 700 }}>₹{order.total}</td>
                                 <td>
-                                    <div style={{ fontSize: '13px', fontWeight: 600 }}>{order.paymentMethod || 'COD'}</div>
-                                    <div style={{ fontSize: '11px', color: order.paymentStatus === 'paid' ? 'var(--success)' : 'var(--text-muted)' }}>
-                                        {order.paymentStatus === 'paid' ? '● Paid' : '○ Pending'}
-                                    </div>
-                                    {order.paymentTransactionId && (
-                                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'monospace' }}>
-                                            ID: {order.paymentTransactionId}
-                                        </div>
-                                    )}
-                                </td>
-                                <td>
                                     <select
                                         className={`status-pill ${order.status === 'delivered' ? 'success' : order.status === 'pending' ? 'warning' : order.status === 'cancelled' ? 'danger' : 'info'}`}
                                         value={order.status}
@@ -418,15 +407,38 @@ export default function Orders() {
                                     </select>
                                 </td>
                                 <td>
-                                    <select
-                                        className={`status-pill ${order.paymentStatus === 'paid' ? 'success' : 'warning'}`}
-                                        value={order.paymentStatus || 'unpaid'}
-                                        onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
-                                        style={{ border: 'none', appearance: 'none', cursor: 'pointer', textAlign: 'center' }}
-                                    >
-                                        <option value="unpaid">Unpaid</option>
-                                        <option value="paid">Paid</option>
-                                    </select>
+                                    {order.deliveryBoy ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Bike size={14} />
+                                            <div>
+                                                <div style={{ fontSize: '13px', fontWeight: 600 }}>{order.deliveryBoy.name}</div>
+                                                <span className={`status-pill ${order.deliveryBoy.status === 'active' ? 'success' : 'danger'}`} style={{ fontSize: '10px', padding: '2px 6px' }}>
+                                                    {order.deliveryBoy.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>—</span>
+                                    )}
+                                </td>
+                                <td>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <div style={{ fontSize: '13px', fontWeight: 600 }}>{order.paymentMethod || 'COD'}</div>
+                                        <select
+                                            className={`status-pill ${order.paymentStatus === 'paid' ? 'success' : 'warning'}`}
+                                            value={order.paymentStatus || 'unpaid'}
+                                            onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
+                                            style={{ border: 'none', appearance: 'none', cursor: 'pointer', textAlign: 'center', fontSize: '12px', padding: '4px 8px' }}
+                                        >
+                                            <option value="unpaid">Unpaid</option>
+                                            <option value="paid">Paid</option>
+                                        </select>
+                                        {order.paymentTransactionId && (
+                                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                                                ID: {order.paymentTransactionId}
+                                            </div>
+                                        )}
+                                    </div>
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -649,10 +661,15 @@ export default function Orders() {
 
                         <div style={{ marginBottom: '24px' }}>
                             <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Delivery Assignment</h4>
-                            {viewingOrder.deliveryBoyId ? (
-                                <div style={{ padding: '12px 16px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: '#166534' }}>
-                                    <Bike size={18} />
-                                    {deliveryBoys.find(b => b.id === viewingOrder.deliveryBoyId)?.name || 'Delivery Boy #' + viewingOrder.deliveryBoyId}
+                            {viewingOrder.deliveryBoy ? (
+                                <div style={{ padding: '12px 16px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px' }}>
+                                    <Bike size={20} color="#16a34a" />
+                                    <div>
+                                        <div style={{ fontWeight: 700, color: '#166534' }}>{viewingOrder.deliveryBoy.name}</div>
+                                        <div style={{ fontSize: '13px', color: '#166534' }}>
+                                            {viewingOrder.deliveryBoy.phone} — <span className={`status-pill ${viewingOrder.deliveryBoy.status === 'active' ? 'success' : 'danger'}`} style={{ padding: '1px 6px', fontSize: '11px' }}>{viewingOrder.deliveryBoy.status}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : viewingOrder.status === 'pending' ? (
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../main.dart';
 import '../../config/api_config.dart';
 import '../../services/api_client.dart';
 import '../../providers/orders_provider.dart';
@@ -20,6 +21,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Map<String, dynamic>? _order;
   bool _loading = true;
   bool _updating = false;
+
+  static const _statusFlow = ['pending', 'accepted', 'picked_up', 'delivered'];
 
   @override
   void initState() {
@@ -48,24 +51,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
     if (success) {
       await _fetchOrder();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'Status updated to ${status.replaceAll('_', ' ')}',
             style: GoogleFonts.poppins(),
           ),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: AppColors.success,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to update status'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        const SnackBar(
+          content: Text('Failed to update status'),
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -76,20 +76,38 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final lat = _order!['deliveryLatitude'];
     final lng = _order!['deliveryLongitude'];
 
+    Uri? uri;
     if (lat != null && lng != null) {
-      final url = 'https://maps.google.com/?q=$lat,$lng';
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
     } else {
       final address = _order!['formattedAddress'] ?? _order!['address'];
       if (address != null && address.toString().startsWith('http')) {
-        final uri = Uri.parse(address);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
+        uri = Uri.parse(address);
       }
+    }
+
+    if (uri == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No location data available', style: GoogleFonts.poppins()),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open maps: $e', style: GoogleFonts.poppins()),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -97,25 +115,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final phone = _order?['customer']?['phone'];
     if (phone == null) return;
     final uri = Uri.parse('tel:$phone');
-    if (await canLaunchUrl(uri)) {
+
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not make a call', style: GoogleFonts.poppins()),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
   Color _statusColor(String status) {
     switch (status) {
       case 'pending':
-        return const Color(0xFFF97316);
+        return AppColors.pending;
       case 'accepted':
-        return const Color(0xFF3B82F6);
+        return AppColors.accepted;
       case 'picked_up':
-        return const Color(0xFF8B5CF6);
+        return AppColors.pickedUp;
       case 'delivered':
-        return const Color(0xFF10B981);
+        return AppColors.delivered;
       case 'cancelled':
-        return const Color(0xFFEF4444);
+        return AppColors.cancelled;
       default:
-        return Colors.grey;
+        return AppColors.textTertiary;
     }
   }
 
@@ -136,40 +163,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  IconData _statusIcon(String status) {
-    switch (status) {
-      case 'pending':
-        return Icons.schedule;
-      case 'accepted':
-        return Icons.check_circle_outline;
-      case 'picked_up':
-        return Icons.delivery_dining;
-      case 'delivered':
-        return Icons.check_circle;
-      case 'cancelled':
-        return Icons.cancel;
-      default:
-        return Icons.help_outline;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Order #${widget.orderId}',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 18),
-        ),
-        backgroundColor: const Color(0xFFF97316),
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: Text('Order #${widget.orderId}'),
         actions: [
-          if (_order != null)
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: _fetchOrder,
-            ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _fetchOrder,
+          ),
         ],
       ),
       body: _loading
@@ -186,21 +189,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(24),
+              color: AppColors.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(22),
             ),
-            child: Icon(Icons.search_off_rounded,
-                size: 40, color: Colors.orange.shade300),
+            child: const Icon(Icons.search_off_rounded,
+                size: 32, color: AppColors.warning),
           ),
           const SizedBox(height: 20),
           Text(
             'Order not found',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: Colors.grey.shade500,
+              color: AppColors.textTertiary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -212,177 +215,300 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildContent() {
     final o = _order!;
     final status = o['status'] ?? 'pending';
-    final dateStr = o['createdAt'] != null
-        ? DateFormat('dd MMMM yyyy, hh:mm a')
-            .format(DateTime.parse(o['createdAt']))
-        : '';
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       children: [
-        _buildStatusHeader(status, dateStr, o),
+        _buildStatusTimeline(status, o),
         const SizedBox(height: 20),
         _buildCustomerCard(o),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         _buildAddressCard(o),
-        if (o['items'] != null && (o['items'] as List).isNotEmpty) ...[
-          const SizedBox(height: 16),
-          _buildItemsCard(o),
-        ],
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        if (o['items'] != null && (o['items'] as List).isNotEmpty)
+          _buildItemsCard(o['items'] as List),
+        const SizedBox(height: 12),
         _buildPaymentCard(o),
         const SizedBox(height: 24),
         _buildActionButtons(status),
+        const SizedBox(height: 32),
       ],
     );
   }
 
-  Widget _buildStatusHeader(String status, String dateStr, Map<String, dynamic> o) {
+  Widget _buildStatusTimeline(String status, Map<String, dynamic> o) {
+    final currentIdx = _statusFlow.indexOf(status);
+    final isCancelled = status == 'cancelled';
+    final dateStr = o['createdAt'] != null
+        ? DateFormat('dd MMM yyyy, hh:mm a')
+            .format(DateTime.parse(o['createdAt']))
+        : '';
+
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            _statusColor(status).withOpacity(0.1),
-            _statusColor(status).withOpacity(0.05),
-          ],
-        ),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: _statusColor(status).withOpacity(0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: _statusColor(status).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              _statusIcon(status),
-              size: 28,
-              color: _statusColor(status),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _statusLabel(status),
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: _statusColor(status),
-                  ),
-                ),
-                if (dateStr.isNotEmpty)
-                  Text(
-                    dateStr,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (o['distanceFromBranch'] != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: _statusColor('pending').withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '${(o['distanceFromBranch'] as num).toStringAsFixed(1)}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFFF97316),
-                    ),
-                  ),
-                  Text(
-                    'km',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFF97316),
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCustomerCard(Map<String, dynamic> o) {
-    final customer = o['customer'];
-    return _sectionCard(
-      'Customer',
-      [
-        if (customer != null) ...[
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             children: [
               Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF97316).withOpacity(0.1),
+                  color: _statusColor(status).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.person_rounded,
-                    size: 22, color: Color(0xFFF97316)),
+                child: Center(
+                  child: Icon(
+                    isCancelled
+                        ? Icons.cancel_rounded
+                        : currentIdx >= 3
+                            ? Icons.check_circle_rounded
+                            : Icons.schedule_rounded,
+                    size: 24,
+                    color: _statusColor(status),
+                  ),
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      customer['name'] ?? 'N/A',
+                      isCancelled ? 'Cancelled' : _statusLabel(status),
                       style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: _statusColor(status),
                       ),
                     ),
-                    Text(
-                      customer['phone'] ?? '',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: Colors.grey.shade500,
+                    if (dateStr.isNotEmpty)
+                      Text(
+                        dateStr,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: AppColors.textTertiary,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
-              if (customer['phone'] != null)
+              if (o['distanceFromBranch'] != null)
                 Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.phone_rounded,
-                        size: 20, color: Color(0xFF10B981)),
-                    onPressed: _callCustomer,
+                  child: Column(
+                    children: [
+                      Text(
+                        (o['distanceFromBranch'] as num).toStringAsFixed(1),
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Text(
+                        'km',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],
           ),
+          if (!isCancelled) ...[
+            const SizedBox(height: 20),
+            _buildStepper(currentIdx),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildStepper(int currentIdx) {
+    final stepLabels = ['New', 'Accepted', 'Picked Up', 'Delivered'];
+    final stepIcons = [
+      Icons.schedule_rounded,
+      Icons.check_circle_outline_rounded,
+      Icons.delivery_dining_rounded,
+      Icons.check_circle_rounded,
+    ];
+
+    return Column(
+      children: [
+        Row(
+          children: List.generate(stepLabels.length, (i) {
+            final isCompleted = i <= currentIdx && currentIdx >= 0;
+            return Expanded(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      if (i > 0)
+                        Expanded(
+                          child: Container(
+                            height: 3,
+                            color: isCompleted
+                                ? _statusColor(_statusFlow[i])
+                                : AppColors.border,
+                          ),
+                        ),
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: isCompleted
+                              ? _statusColor(_statusFlow[i])
+                              : AppColors.border.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: isCompleted
+                              ? (i == currentIdx
+                                  ? Icon(stepIcons[i],
+                                      size: 16, color: Colors.white)
+                                  : const Icon(Icons.check_rounded,
+                                      size: 16, color: Colors.white))
+                              : Icon(stepIcons[i],
+                                  size: 16,
+                                  color: AppColors.textTertiary),
+                        ),
+                      ),
+                      if (i < stepLabels.length - 1)
+                        Expanded(
+                          child: Container(
+                            height: 3,
+                            color: isCompleted
+                                ? _statusColor(_statusFlow[i])
+                                : AppColors.border,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    stepLabels[i],
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight:
+                          i == currentIdx ? FontWeight.w600 : FontWeight.w500,
+                      color: i == currentIdx
+                          ? _statusColor(_statusFlow[i])
+                          : AppColors.textTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
       ],
+    );
+  }
+
+  Widget _buildCustomerCard(Map<String, dynamic> o) {
+    final customer = o['customer'];
+    final name = customer?['name'] ?? 'N/A';
+    final phone = customer?['phone'] ?? '';
+    final initials = name != 'N/A' && name.isNotEmpty
+        ? name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
+        : '?';
+
+    return _sectionCard(
+      [
+        Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.8),
+                    AppColors.primaryDark,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Customer',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textTertiary,
+                        letterSpacing: 0.5,
+                      )),
+                  const SizedBox(height: 2),
+                  Text(
+                    name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (phone.isNotEmpty)
+                    Text(
+                      phone,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (phone.isNotEmpty)
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.phone_rounded,
+                      size: 22, color: AppColors.success),
+                  onPressed: _callCustomer,
+                ),
+              ),
+          ],
+        ),
+      ],
+      showTitle: false,
     );
   }
 
@@ -391,20 +517,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final rawAddress = o['address'];
 
     return _sectionCard(
-      'Delivery Address',
       [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(14),
+                color: AppColors.info.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.location_on_rounded,
-                  size: 22, color: Color(0xFF3B82F6)),
+                  size: 22, color: AppColors.info),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -416,6 +541,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   if (rawAddress != null && rawAddress != address)
@@ -425,7 +551,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         rawAddress,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.grey.shade500,
+                          color: AppColors.textTertiary,
                         ),
                       ),
                     ),
@@ -434,7 +560,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
@@ -445,44 +571,46 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF3B82F6),
-              side: BorderSide(color: const Color(0xFF3B82F6).withOpacity(0.3)),
+              foregroundColor: AppColors.info,
+              side: BorderSide(color: AppColors.info.withOpacity(0.3)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),
       ],
+      title: 'Delivery Address',
     );
   }
 
-  Widget _buildItemsCard(Map<String, dynamic> o) {
-    final items = o['items'] as List;
+  Widget _buildItemsCard(List items) {
     return _sectionCard(
-      'Items (${items.length})',
       items.asMap().entries.map<Widget>((entry) {
         final item = entry.value;
         final isLast = entry.key == items.length - 1;
+        final qty = item['quantity'] ?? 1;
+        final price = item['price'] ?? 0;
+        final name = item['name'] ?? 'Item';
         return Column(
           children: [
             Row(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: AppColors.border.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
                     child: Text(
-                      '${item['quantity'] ?? 1}x',
+                      '${qty}x',
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Colors.grey.shade600,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -490,18 +618,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    item['name'] ?? 'Item',
+                    name,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
                 Text(
-                  '₹${((item['price'] ?? 0) * (item['quantity'] ?? 1)).toStringAsFixed(0)}',
+                  '₹${(price * qty).toStringAsFixed(0)}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -510,16 +640,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ],
         );
       }).toList(),
+      title: 'Items (${items.length})',
     );
   }
 
   Widget _buildPaymentCard(Map<String, dynamic> o) {
     return _sectionCard(
-      'Payment',
       [
-        _paymentRow('Method', o['paymentMethod'] ?? 'N/A', Icons.payment),
+        _paymentRow('Method', o['paymentMethod'] ?? 'N/A'),
         const SizedBox(height: 10),
-        _paymentRow('Status', o['paymentStatus'] ?? 'N/A', Icons.account_balance_wallet),
+        _paymentRow('Payment Status', o['paymentStatus'] ?? 'N/A'),
         const Divider(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -529,7 +659,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+                color: AppColors.textPrimary,
               ),
             ),
             Text(
@@ -537,22 +667,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Colors.grey.shade900,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
         ),
         if ((o['discountAmount'] ?? 0) > 0) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.discount, size: 14, color: const Color(0xFF10B981)),
+              const Icon(Icons.discount_rounded,
+                  size: 16, color: AppColors.success),
               const SizedBox(width: 6),
               Text(
                 'Discount',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: AppColors.textSecondary,
                 ),
               ),
               const Spacer(),
@@ -561,44 +692,54 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF10B981),
+                  color: AppColors.success,
                 ),
               ),
             ],
           ),
         ],
         if (o['appliedOfferCode'] != null) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF97316).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Text(
-              'Offer: ${o['appliedOfferCode']}',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFFF97316),
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.local_offer_rounded,
+                    size: 14, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Text(
+                  'Offer: ${o['appliedOfferCode']}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ],
+      title: 'Payment',
     );
   }
 
-  Widget _paymentRow(String label, String value, IconData icon) {
+  Widget _paymentRow(String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey.shade400),
+        const Icon(Icons.circle_rounded, size: 6, color: AppColors.textTertiary),
         const SizedBox(width: 8),
         Text(
           '$label: ',
           style: GoogleFonts.poppins(
             fontSize: 13,
-            color: Colors.grey.shade600,
+            color: AppColors.textSecondary,
           ),
         ),
         Text(
@@ -606,41 +747,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
           ),
         ),
       ],
     );
   }
 
-  Widget _sectionCard(String title, List<Widget> children) {
+  Widget _sectionCard(List<Widget> children, {String? title, bool showTitle = true}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade100),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey.shade500,
-              letterSpacing: 0.5,
+          if (title != null && showTitle) ...[
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textTertiary,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 14),
+            const SizedBox(height: 12),
+          ],
           ...children,
         ],
       ),
@@ -648,15 +791,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget _buildActionButtons(String status) {
+    if (status == 'cancelled' || status == 'delivered') {
+      return const SizedBox.shrink();
+    }
+
     final List<Widget> buttons = [];
 
     if (status == 'pending') {
       buttons.add(_actionButton(
         'Accept Order',
         Icons.check_circle_rounded,
-        const Color(0xFF10B981),
+        AppColors.success,
         () => _updateStatus('accepted'),
-        description: 'Start preparing for delivery',
+        'Start preparing for delivery',
       ));
     }
 
@@ -664,17 +811,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       buttons.add(_actionButton(
         'Mark as Picked Up',
         Icons.delivery_dining_rounded,
-        const Color(0xFF8B5CF6),
+        AppColors.pickedUp,
         () => _updateStatus('picked_up'),
-        description: 'Order has been collected from store',
+        'Order collected from store',
       ));
       buttons.add(const SizedBox(height: 10));
       buttons.add(_actionButton(
         'Cancel Order',
         Icons.cancel_rounded,
-        const Color(0xFFEF4444),
+        AppColors.cancelled,
         () => _updateStatus('cancelled'),
-        description: 'This cannot be undone',
+        'This cannot be undone',
         outlined: true,
       ));
     }
@@ -683,13 +830,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       buttons.add(_actionButton(
         'Mark as Delivered',
         Icons.check_circle_rounded,
-        const Color(0xFF10B981),
+        AppColors.success,
         () => _updateStatus('delivered'),
-        description: 'Confirm customer received the order',
+        'Confirm customer received the order',
       ));
     }
-
-    if (buttons.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,9 +842,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Text(
           'Actions',
           style: GoogleFonts.poppins(
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: Colors.grey.shade500,
+            color: AppColors.textTertiary,
             letterSpacing: 0.5,
           ),
         ),
@@ -713,8 +858,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     String label,
     IconData icon,
     Color color,
-    VoidCallback onPressed, {
-    String? description,
+    VoidCallback onPressed,
+    String description, {
     bool outlined = false,
   }) {
     return SizedBox(
@@ -745,9 +890,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           color: outlined ? color : Colors.white,
                         ),
                       )
-                    : Icon(icon,
-                        size: 24,
-                        color: outlined ? color : Colors.white),
+                    : Icon(icon, size: 24, color: outlined ? color : Colors.white),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -761,16 +904,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           color: outlined ? color : Colors.white,
                         ),
                       ),
-                      if (description != null)
-                        Text(
-                          description,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            color: outlined
-                                ? color.withOpacity(0.7)
-                                : Colors.white70,
-                          ),
+                      Text(
+                        description,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          color: outlined
+                              ? color.withOpacity(0.7)
+                              : Colors.white70,
                         ),
+                      ),
                     ],
                   ),
                 ),

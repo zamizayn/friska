@@ -1,4 +1,4 @@
-const { Order, Customer, Product, Branch, Tenant } = require('../models');
+const { Order, Customer, Product, Branch, Tenant, DeliveryBoy } = require('../models');
 const { Op } = require('sequelize');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
@@ -71,7 +71,8 @@ const getAllOrders = async (req, res) => {
             where,
             include: [
                 { model: Customer, as: 'customer', attributes: ['name'] },
-                { model: Branch, as: 'branch', attributes: ['id', 'name', 'latitude', 'longitude'] }
+                { model: Branch, as: 'branch', attributes: ['id', 'name', 'latitude', 'longitude'] },
+                { model: DeliveryBoy, as: 'deliveryBoy', attributes: ['id', 'name', 'phone', 'status'] }
             ],
             limit,
             offset,

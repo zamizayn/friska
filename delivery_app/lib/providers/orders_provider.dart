@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import '../config/api_config.dart';
 import '../services/api_client.dart';
@@ -103,8 +102,8 @@ class OrdersProvider extends ChangeNotifier {
       }
     } catch (e, stack) {
       _error = 'Connection error: ${e.toString()}';
-      print('[OrdersProvider] Fetch error: $e');
-      print('[OrdersProvider] Stack: $stack');
+      debugPrint('[OrdersProvider] Fetch error: $e');
+      debugPrint('[OrdersProvider] Stack: $stack');
     }
 
     _loading = false;

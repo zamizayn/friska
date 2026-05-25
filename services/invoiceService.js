@@ -112,11 +112,26 @@ const generateInvoice = async (order, tenant, branch) => {
             doc.moveTo(50, currentY + 10).lineTo(545, currentY + 10).strokeColor(borderColor).stroke();
             currentY += 30;
 
+            const gstRate = order.gstRate || 0;
+            const gstAmount = order.gstAmount || 0;
+            const subtotal = order.subtotalBeforeTax || order.total;
             const totalLabelX = 350;
+
             doc.fillColor(secondaryColor).fontSize(10).text('SUBTOTAL', totalLabelX, currentY);
-            doc.fillColor(primaryColor).text(`₹${order.total.toLocaleString('en-IN')}`, 480, currentY, { align: 'right' });
+            doc.fillColor(primaryColor).text(`₹${subtotal.toLocaleString('en-IN')}`, 480, currentY, { align: 'right' });
 
             currentY += 20;
+            if (gstRate > 0) {
+                doc.fillColor(secondaryColor).fontSize(10).text(`GST (${gstRate}%)`, totalLabelX, currentY);
+                doc.fillColor(primaryColor).text(`₹${gstAmount.toLocaleString('en-IN')}`, 480, currentY, { align: 'right' });
+                currentY += 20;
+            }
+            if (order.discountAmount > 0) {
+                doc.fillColor(secondaryColor).fontSize(10).text('DISCOUNT', totalLabelX, currentY);
+                doc.fillColor('#dc2626').text(`-₹${order.discountAmount.toLocaleString('en-IN')}`, 480, currentY, { align: 'right' });
+                currentY += 20;
+            }
+
             doc.fillColor(secondaryColor).fontSize(10).text('TAX (INCLUDED)', totalLabelX, currentY);
             doc.fillColor(primaryColor).text('₹0.00', 480, currentY, { align: 'right' });
 

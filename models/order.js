@@ -44,7 +44,19 @@ module.exports = (sequelize, DataTypes) => {
     formattedAddress: DataTypes.TEXT,
     deliveryLatitude: DataTypes.DECIMAL(10, 8),
     deliveryLongitude: DataTypes.DECIMAL(11, 8),
-    deliveryBoyId: DataTypes.INTEGER
+    deliveryBoyId: DataTypes.INTEGER,
+    gstRate: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
+    gstAmount: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
+    subtotalBeforeTax: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    }
   }, {
     sequelize,
     modelName: 'Order',

@@ -22,7 +22,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   Category.init({
     name: DataTypes.STRING,
-    branchId: DataTypes.INTEGER
+    branchId: DataTypes.INTEGER,
+    gstRate: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    }
   }, {
     sequelize,
     modelName: 'Category',

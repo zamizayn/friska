@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
-const { DeliveryBoy, Order, Customer, Branch, FcmToken } = require('../models');
+const { DeliveryBoy, Order, Customer, Branch, FcmToken, Tenant } = require('../models');
 const { JWT_SECRET } = require('../middleware/auth');
 const { Op } = require('sequelize');
 const { sendToTenant } = require('../services/notificationService');
+const { sendTextMessage } = require('../services/whatsappService');
 
 const login = async (req, res) => {
     try {
@@ -133,7 +134,10 @@ const updateOrderStatus = async (req, res) => {
 
         const order = await Order.findOne({
             where: { id: req.params.id, deliveryBoyId: req.user.id },
-            include: [{ model: Branch, as: 'branch', attributes: ['tenantId'] }]
+            include: [
+                { model: Branch, as: 'branch', attributes: ['tenantId'] },
+                { model: DeliveryBoy, as: 'deliveryBoy', attributes: ['name', 'phone'] }
+            ]
         });
 
         if (!order) return res.status(404).json({ error: 'Order not found' });
@@ -158,10 +162,43 @@ const updateOrderStatus = async (req, res) => {
             ).catch(() => {});
         }
 
+        // Notify customer when picked up
+        if (status === 'picked_up') {
+            sendDeliveryUpdate(order).catch(e =>
+                console.error('Delivery update error:', e.message)
+            );
+        }
+
         res.json(order);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+};
+
+const sendDeliveryUpdate = async (order) => {
+    const tenantId = order.branch?.tenantId;
+    if (!tenantId) return;
+
+    const tenant = await Tenant.findByPk(tenantId);
+    if (!tenant) return;
+
+    const config = {
+        phoneNumberId: tenant.phoneNumberId,
+        whatsappToken: tenant.whatsappToken
+    };
+
+    const deliveryBoy = order.deliveryBoy;
+    const estimatedMinutes = 30;
+
+    const msg =
+        `🛵 *Delivery Update — Order #${order.id}*\n\n` +
+        `Your order has been picked up and is on its way! 🎉\n\n` +
+        `👤 *Delivery Boy:* ${deliveryBoy?.name || 'N/A'}\n` +
+        `📞 *Phone:* ${deliveryBoy?.phone || 'N/A'}\n` +
+        `⏱ *Estimated Delivery:* ${estimatedMinutes} minutes\n\n` +
+        `Thank you for choosing ${tenant.name}! 🙏`;
+
+    await sendTextMessage(order.customerPhone, msg, config);
 };
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {

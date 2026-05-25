@@ -113,6 +113,16 @@ const getAllOrders = async (req, res) => {
     }
 };
 
+const sendDeliveryInvoice = async (order, config) => {
+    const tenant = await Tenant.findByPk(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
+    const branch = order.branchId ? await Branch.findByPk(order.branchId) : null;
+
+    const pdfPath = await generateInvoice(order, tenant, branch);
+    const mediaId = await uploadMedia(pdfPath, 'application/pdf', config);
+    await sendDocumentMessage(order.customerPhone, mediaId, `Invoice_${order.id}.pdf`, config);
+    fs.unlinkSync(pdfPath);
+};
+
 const updateOrderStatus = async (req, res) => {
     try {
         const order = await Order.findByPk(req.params.id);
@@ -135,22 +145,16 @@ const updateOrderStatus = async (req, res) => {
             msg = `🔄 *Update on your Order #${order.id}*\n\nYour order status is now: *${order.status.toUpperCase()}*.`;
         }
 
+        res.json(order);
+
+        // Fire-and-forget: notifications, invoice, and WhatsApp messages (non-blocking)
         try {
             const config = await getTenantConfig(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
 
             if (order.status === 'delivered') {
-                try {
-                    const tenant = await Tenant.findByPk(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
-                    const branch = order.branchId ? await Branch.findByPk(order.branchId) : null;
-
-                    const pdfPath = await generateInvoice(order, tenant, branch);
-                    const mediaId = await uploadMedia(pdfPath, 'application/pdf', config);
-                    await sendDocumentMessage(order.customerPhone, mediaId, `Invoice_${order.id}.pdf`, config);
-
-                    fs.unlinkSync(pdfPath);
-                } catch (invError) {
-                    console.error("Invoice Automation Failed:", invError.message);
-                }
+                sendDeliveryInvoice(order, config).catch(e =>
+                    console.error("Invoice Automation Failed:", e.message)
+                );
 
                 await sendButtonMessage(order.customerPhone, msg, [
                     { id: `rate_${order.id}`, title: 'Rate Order ⭐' },
@@ -162,8 +166,6 @@ const updateOrderStatus = async (req, res) => {
         } catch (e) {
             console.error("WhatsApp notification error:", e.message);
         }
-
-        res.json(order);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -182,10 +184,74 @@ const updatePaymentStatus = async (req, res) => {
     }
 };
 
+const bulkUpdateOrderStatus = async (req, res) => {
+    try {
+        const { ids, status } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'ids must be a non-empty array' });
+        }
+        if (!status) {
+            return res.status(400).json({ error: 'status is required' });
+        }
+
+        const validStatuses = ['pending', 'shipped', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: `Invalid status: ${status}` });
+        }
+
+        const [count] = await Order.update(
+            { status },
+            { where: { id: { [Op.in]: ids } } }
+        );
+
+        // Fire-and-forget notifications
+        const orders = await Order.findAll({
+            where: { id: { [Op.in]: ids } }
+        });
+        for (const order of orders) {
+            trySendStatusNotification(order, status);
+        }
+
+        res.json({ updated: count });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+const trySendStatusNotification = async (order, status) => {
+    try {
+        const config = await getTenantConfig(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
+        let msg = '';
+        if (status === 'shipped') {
+            msg = `🚚 *Update on your Order #${order.id}*\n\nGreat news! Your order has been shipped and is on its way to you!`;
+        } else if (status === 'delivered') {
+            msg = `✅ *Update on your Order #${order.id}*\n\nYour order has been successfully delivered! Thank you for shopping with Friska!`;
+
+            sendDeliveryInvoice(order, config).catch(e =>
+                console.error("Invoice Automation Failed:", e.message)
+            );
+
+            await sendButtonMessage(order.customerPhone, msg, [
+                { id: `rate_${order.id}`, title: 'Rate Order ⭐' },
+                { id: 'menu', title: 'Main Menu' }
+            ], config);
+            return;
+        } else if (status === 'cancelled') {
+            msg = `❌ *Update on your Order #${order.id}*\n\nYour order has been cancelled.`;
+        } else {
+            msg = `🔄 *Update on your Order #${order.id}*\n\nYour order status is now: *${status.toUpperCase()}*.`;
+        }
+        await sendTextMessage(order.customerPhone, msg, config);
+    } catch (e) {
+        console.error(`Notification error for order #${order.id}:`, e.message);
+    }
+};
+
 module.exports = {
     createOrder,
     getOrderById,
     getAllOrders,
     updateOrderStatus,
-    updatePaymentStatus
+    updatePaymentStatus,
+    bulkUpdateOrderStatus
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Trash2, Plus, Type, Tag } from 'lucide-react';
+import { Edit2, Trash2, Plus, Type, Tag, Percent } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
@@ -8,7 +8,7 @@ export default function Categories() {
     const [categories, setCategories] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
     const [modalOpen, setModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, name: '' });
+    const [formData, setFormData] = useState({ id: null, name: '', gstRate: 0 });
     const navigate = useNavigate();
 
     const fetchCategories = async (page = 1) => {
@@ -33,7 +33,7 @@ export default function Categories() {
         const url = formData.id ? `${API_ENDPOINTS.CATEGORIES}/${formData.id}` : API_ENDPOINTS.CATEGORIES;
         const method = formData.id ? 'PUT' : 'POST';
 
-        const body = { name: formData.name };
+        const body = { name: formData.name, gstRate: parseFloat(formData.gstRate) || 0 };
         const branchId = localStorage.getItem('selectedBranchId');
         if (!formData.id && branchId) body.branchId = branchId;
 
@@ -64,7 +64,7 @@ export default function Categories() {
                     <h1>Product Categories</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Organize your products into easy-to-find groups</p>
                 </div>
-                <button className="btn-primary" onClick={() => { setFormData({ id: null, name: '' }); setModalOpen(true); }}>
+                <button className="btn-primary" onClick={() => { setFormData({ id: null, name: '', gstRate: 0 }); setModalOpen(true); }}>
                     <Plus size={18} /> Add Category
                 </button>
             </header>
@@ -75,6 +75,7 @@ export default function Categories() {
                         <tr>
                             <th style={{ width: '100px' }}>ID</th>
                             <th>Category Name</th>
+                            <th>GST Rate</th>
                             <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
                     </thead>
@@ -91,8 +92,13 @@ export default function Categories() {
                                     </div>
                                 </td>
                                 <td>
+                                    <span style={{ fontWeight: 600, color: cat.gstRate > 0 ? 'var(--accent)' : 'var(--text-muted)' }}>
+                                        {cat.gstRate > 0 ? `${cat.gstRate}%` : 'N/A'}
+                                    </span>
+                                </td>
+                                <td>
                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                        <button className="btn-outline" style={{ padding: '8px' }} onClick={() => { setFormData({ id: cat.id, name: cat.name }); setModalOpen(true); }}>
+                                        <button className="btn-outline" style={{ padding: '8px' }} onClick={() => { setFormData({ id: cat.id, name: cat.name, gstRate: cat.gstRate ?? 0 }); setModalOpen(true); }}>
                                             <Edit2 size={16} />
                                         </button>
                                         <button className="btn-outline" style={{ padding: '8px', color: 'var(--danger)' }} onClick={() => handleDelete(cat.id)}>
@@ -138,6 +144,18 @@ export default function Categories() {
                                     onChange={e => setFormData({ ...formData, name: e.target.value })} 
                                     required 
                                     autoFocus
+                                />
+                            </div>
+                            <div className="input-group" style={{ marginTop: '16px' }}>
+                                <label>GST Rate (%)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.1"
+                                    min="0"
+                                    max="100"
+                                    placeholder="e.g. 18" 
+                                    value={formData.gstRate} 
+                                    onChange={e => setFormData({ ...formData, gstRate: e.target.value })} 
                                 />
                             </div>
                             <div className="modal-actions" style={{ marginTop: '32px', gap: '12px' }}>

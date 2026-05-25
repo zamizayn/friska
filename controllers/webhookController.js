@@ -1335,14 +1335,19 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 
     total = Math.max(0, total);
 
-    // Atomic order creation with stock check, deduction, and offer tracking
+    // Atomic order creation with stock check, GST, deduction, and offer tracking
     let savedOrder;
     try {
         savedOrder = await sequelize.transaction(async (t) => {
+            let subtotalBeforeTax = 0;
+            let gstAmount = 0;
+            const itemsWithGst = [];
+
             if (!isCatalogOrder) {
                 const productIds = userCart.map(item => item.id);
                 const products = await Product.findAll({
                     where: { id: { [Op.in]: productIds } },
+                    include: [{ model: Category, as: 'category', attributes: ['gstRate'] }],
                     lock: t.LOCK.UPDATE,
                     transaction: t
                 });
@@ -1359,6 +1364,19 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                                 : `❌ Sorry, only *${product.stock}* units of *${product.name}* are available now.`
                         );
                     }
+
+                    const itemSubtotal = item.price * item.quantity;
+                    const itemGstRate = product.category?.gstRate || 0;
+                    const itemGst = Math.round(itemSubtotal * itemGstRate / 100 * 100) / 100;
+
+                    subtotalBeforeTax += itemSubtotal;
+                    gstAmount += itemGst;
+
+                    itemsWithGst.push({
+                        ...item,
+                        gstRate: itemGstRate,
+                        gstAmount: itemGst
+                    });
                 }
                 for (const item of userCart) {
                     await Product.decrement('stock', {
@@ -1367,7 +1385,12 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                         transaction: t
                     });
                 }
+            } else {
+                itemsWithGst.push(...userCart);
+                subtotalBeforeTax = subtotal;
             }
+
+            const gstInclusiveTotal = Math.max(0, subtotalBeforeTax + gstAmount - discountAmount);
 
             const order = await Order.create({
                 customerPhone: from,
@@ -1375,14 +1398,16 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                 formattedAddress: session.formattedAddress || null,
                 deliveryLatitude: session.latitude || null,
                 deliveryLongitude: session.longitude || null,
-                items: userCart,
-                total,
+                items: itemsWithGst,
+                total: gstInclusiveTotal,
                 discountAmount,
                 appliedOfferCode,
                 status: 'pending',
                 branchId: session.branchId,
                 paymentMethod,
-                paymentStatus: 'pending'
+                paymentStatus: 'pending',
+                gstAmount,
+                subtotalBeforeTax
             }, { transaction: t });
 
             if (appliedOfferCode) {
@@ -1404,6 +1429,9 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 
             return order;
         });
+
+        // Update total to GST-inclusive for downstream messages
+        total = savedOrder.total;
     } catch (e) {
         console.error('Order transaction failed:', e.message);
         if (e.message.includes('❌')) {
@@ -1454,10 +1482,12 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
             { payment_method: paymentMethod, order_id: savedOrder?.id });
 
         if (!msg.includes('₹')) {
-            const subtotalDisplay = (savedOrder.total + savedOrder.discountAmount).toFixed(2);
+            const subtotalDisplay = (savedOrder.subtotalBeforeTax || savedOrder.total + savedOrder.discountAmount).toFixed(2);
+            const gstLine = savedOrder.gstAmount > 0
+                ? `GST: +₹${savedOrder.gstAmount.toFixed(2)}\n` : '';
             const offerLine = savedOrder.appliedOfferCode
                 ? `Offer (${savedOrder.appliedOfferCode}): -₹${savedOrder.discountAmount.toFixed(2)}\n` : '';
-            msg += `\n\n💰 *Order Summary:*\nSubtotal: ₹${subtotalDisplay}\n${offerLine}*Final Total: ₹${savedOrder.total.toFixed(2)}*`;
+            msg += `\n\n💰 *Order Summary:*\nSubtotal: ₹${subtotalDisplay}\n${gstLine}${offerLine}*Final Total: ₹${savedOrder.total.toFixed(2)}*`;
         }
 
         await sendTextMessage(from, msg, session.config);

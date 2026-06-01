@@ -235,8 +235,9 @@ export default function Orders() {
         const address = order.formattedAddress || order.address;
         const mapLink = order.address?.startsWith('http') ? order.address : '';
         const paymentMethod = order.paymentMethod || 'COD';
-        const paymentStatus = order.paymentStatus || 'unpaid';
-        const amountToCollect = paymentStatus === 'unpaid' ? order.total : 0;
+        
+        const paymentStatus = String(order.paymentStatus || '').toLowerCase();
+        const amountToCollect = paymentStatus !== 'paid' ? (order.total || 0) : 0;
 
         let itemsList = '';
         if (order.items && order.items.length > 0) {

@@ -234,8 +234,16 @@ export default function Orders() {
         const customerPhone = order.customerPhone;
         const address = order.formattedAddress || order.address;
         const mapLink = order.address?.startsWith('http') ? order.address : '';
+        const paymentMethod = order.paymentMethod || 'COD';
+        const paymentStatus = order.paymentStatus || 'unpaid';
+        const amountToCollect = paymentStatus === 'unpaid' ? order.total : 0;
 
-        const text = `🚚 *New Delivery Assignment*\n\n*Order ID:* #${orderId}\n*Customer:* ${customerName}\n*Phone:* ${customerPhone}\n*Address:* ${address}${mapLink ? `\n\n*Map Link:* ${mapLink}` : ''}\n\n*Please deliver as soon as possible!* 🛵`;
+        let itemsList = '';
+        if (order.items && order.items.length > 0) {
+            itemsList = '\n\n*Items:*\n' + order.items.map(item => `- ${item.name} (x${item.quantity})`).join('\n');
+        }
+
+        const text = `🚚 *New Delivery Assignment*\n\n*Order ID:* #${orderId}\n*Customer:* ${customerName}\n*Phone:* ${customerPhone}\n*Address:* ${address}${mapLink ? `\n*Map Link:* ${mapLink}` : ''}${itemsList}\n\n*Payment Mode:* ${paymentMethod}\n*To Collect:* ₹${amountToCollect}\n\n*Please deliver as soon as possible!* 🛵`;
 
         const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
         window.open(waUrl, '_blank');

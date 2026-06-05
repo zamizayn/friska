@@ -7,6 +7,41 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
+const parseCatalogDescription = (description) => {
+    if (!description) return [];
+    const lines = description.split('\n');
+    const items = [];
+    
+    for (let line of lines) {
+        line = line.trim();
+        if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+            const cleanLine = line.substring(1).trim();
+            // Matches formats like "Chocolate Milkshake x2 - ₹240" or "Item Name x 1 - 150" or "Item Name x3"
+            const regex = /(.+?)\s+x\s*(\d+)(?:\s*-\s*₹?\s*([\d,]+(?:\.\d+)?))?$/i;
+            const match = cleanLine.match(regex);
+            if (match) {
+                const name = match[1].trim();
+                const quantity = parseInt(match[2], 10);
+                const price = match[3] ? match[3].replace(/,/g, '') : '';
+                items.push({
+                    name,
+                    quantity,
+                    price: price ? parseFloat(price) : 0,
+                    isCatalog: true
+                });
+            } else {
+                items.push({
+                    name: cleanLine,
+                    quantity: 1,
+                    price: 0,
+                    isCatalog: true
+                });
+            }
+        }
+    }
+    return items;
+};
+
 export default function Orders() {
     const [orders, setOrders] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
@@ -241,7 +276,22 @@ export default function Orders() {
 
         let itemsList = '';
         if (order.items && order.items.length > 0) {
-            itemsList = '\n\n*Items:*\n' + order.items.map(item => `- ${item.name} (x${item.quantity})`).join('\n');
+            const list = [];
+            order.items.forEach(item => {
+                if (item.isCatalog && item.description) {
+                    const parsed = parseCatalogDescription(item.description);
+                    if (parsed.length > 0) {
+                        parsed.forEach(p => {
+                            list.push(`- ${p.name} (x${p.quantity})`);
+                        });
+                    } else {
+                        list.push(`- ${item.name} (x${item.quantity})`);
+                    }
+                } else {
+                    list.push(`- ${item.name} (x${item.quantity})`);
+                }
+            });
+            itemsList = '\n\n*Items:*\n' + list.join('\n');
         }
 
         const text = `🚚 *New Delivery Assignment*\n\n*Order ID:* #${orderId}\n*Customer:* ${customerName}\n*Phone:* ${customerPhone}\n*Address:* ${address}${mapLink ? `\n*Map Link:* ${mapLink}` : ''}${itemsList}\n\n*Payment Mode:* ${paymentMethod}\n*To Collect:* ₹${amountToCollect}\n\n*Please deliver as soon as possible!* 🛵`;
@@ -400,7 +450,17 @@ export default function Orders() {
                                         {format(new Date(order.createdAt), 'hh:mm a')}
                                     </div>
                                 </td>
-                                <td>{order.items?.length || 0} items</td>
+                                <td>
+                                    {order.items?.some(item => item.isCatalog) ? (
+                                        (() => {
+                                            const catalogItem = order.items.find(item => item.isCatalog);
+                                            const parsed = parseCatalogDescription(catalogItem?.description);
+                                            return parsed.length || 1;
+                                        })()
+                                    ) : (
+                                        order.items?.length || 0
+                                    )} items
+                                </td>
                                 <td style={{ fontWeight: 700 }}>₹{order.total}</td>
                                 <td>
                                     <select
@@ -719,13 +779,27 @@ export default function Orders() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {viewingOrder.items?.map((item, i) => (
-                                        <tr key={i}>
-                                            <td style={{ padding: '12px 20px', border: 'none' }}>{item.name}</td>
-                                            <td style={{ padding: '12px 20px', border: 'none' }}>{item.quantity}</td>
-                                            <td style={{ padding: '12px 20px', border: 'none' }}>₹{item.price}</td>
-                                        </tr>
-                                    ))}
+                                    {viewingOrder.items?.flatMap((item, i) => {
+                                        if (item.isCatalog && item.description) {
+                                            const parsed = parseCatalogDescription(item.description);
+                                            if (parsed.length > 0) {
+                                                return parsed.map((p, pi) => (
+                                                    <tr key={`${i}-${pi}`}>
+                                                        <td style={{ padding: '12px 20px', border: 'none' }}>{p.name}</td>
+                                                        <td style={{ padding: '12px 20px', border: 'none' }}>{p.quantity}</td>
+                                                        <td style={{ padding: '12px 20px', border: 'none' }}>₹{p.price}</td>
+                                                    </tr>
+                                                ));
+                                            }
+                                        }
+                                        return (
+                                            <tr key={i}>
+                                                <td style={{ padding: '12px 20px', border: 'none' }}>{item.name}</td>
+                                                <td style={{ padding: '12px 20px', border: 'none' }}>{item.quantity}</td>
+                                                <td style={{ padding: '12px 20px', border: 'none' }}>₹{item.price}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                                 <tfoot style={{ background: 'var(--bg-app)', fontWeight: 800 }}>
                                     {viewingOrder.discountAmount > 0 && (

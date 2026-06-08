@@ -1317,7 +1317,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 
     let subtotal = 0;
     if (isCatalogOrder) {
-        const match = session.lastCatalogOrder.match(/total amount:?\s*₹?\s*([\d,]+(\.\d+)?)/i);
+        const match = session.lastCatalogOrder.match(/(?:total|grand total|order total|amount)\s*(?:amount)?:?\s*₹?\s*([\d,]+(\.\d+)?)/i);
         const amountStr = match ? match[1].replace(/,/g, '') : '0';
         subtotal = parseFloat(amountStr) || 0;
         userCart[0].price = subtotal;
@@ -1743,6 +1743,9 @@ const receiveWebhook = async (req, res) => {
         if (text.includes('new order from visual catalog')) {
             if (!await validateShopOpen(from, session)) return;
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT', { type: 'visual_catalog' });
+
+            // Clear any existing cart so handlePaymentSelection enters catalog order path
+            carts[from] = [];
             session.lastCatalogOrder = text;
 
             await sendAddressSelectionOrRequest(from, session, tenant, {
@@ -1781,11 +1784,19 @@ const receiveWebhook = async (req, res) => {
                 }
             }
 
-            if (!session.branchId && lat != null && lng != null) {
+            // Resolve branch from coordinates if available; fall back to first tenant branch
+            if (lat != null && lng != null) {
                 const nearest = await findNearestBranch(tenant.id, lat, lng);
                 if (nearest) {
                     session.branchId = nearest.id;
                     console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+                }
+            }
+            if (!session.branchId) {
+                const firstBranch = await Branch.findOne({ where: { tenantId: tenant.id } });
+                if (firstBranch) {
+                    session.branchId = firstBranch.id;
+                    console.log(`[CatalogOrder] Resolved session.branchId to first branch #${firstBranch.id} (${firstBranch.name})`);
                 }
             }
 
@@ -2034,11 +2045,19 @@ const receiveWebhook = async (req, res) => {
                         }
                     }
 
-                    if (!session.branchId && lat != null && lng != null) {
+                    // Always resolve branch from coordinates if available
+                    if (lat != null && lng != null) {
                         const nearest = await findNearestBranch(tenant.id, lat, lng);
                         if (nearest) {
                             session.branchId = nearest.id;
                             console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+                        }
+                    }
+                    if (!session.branchId) {
+                        const firstBranch = await Branch.findOne({ where: { tenantId: tenant.id } });
+                        if (firstBranch) {
+                            session.branchId = firstBranch.id;
+                            console.log(`[CatalogOrder] Resolved session.branchId to first branch #${firstBranch.id} (${firstBranch.name})`);
                         }
                     }
 
@@ -2082,11 +2101,19 @@ const receiveWebhook = async (req, res) => {
                     }
                 }
 
-                if (!session.branchId && lat != null && lng != null) {
+                // Always resolve branch from coordinates if available; fall back to first tenant branch
+                if (lat != null && lng != null) {
                     const nearest = await findNearestBranch(tenant.id, lat, lng);
                     if (nearest) {
                         session.branchId = nearest.id;
                         console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
+                    }
+                }
+                if (!session.branchId) {
+                    const firstBranch = await Branch.findOne({ where: { tenantId: tenant.id } });
+                    if (firstBranch) {
+                        session.branchId = firstBranch.id;
+                        console.log(`[CatalogOrder] Resolved session.branchId to first branch #${firstBranch.id} (${firstBranch.name})`);
                     }
                 }
 

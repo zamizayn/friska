@@ -768,6 +768,8 @@ const handleShop = async (from, text, session, tenant, customer) => {
         session.page = 1;
     }
 
+    if (!await validateShopOpen(from, session)) return;
+
     // If a category is already scoped in session, show its products directly
     if (session.categoryId) {
         const category = await Category.findByPk(session.categoryId);
@@ -1090,6 +1092,7 @@ const handleProductSelection = async (from, text, session, tenant) => {
 // =========================
 const handleAddToCart = async (from, text, session) => {
     console.log(`[Flow] Add to cart for ${from}: ${text}`);
+    if (!await validateShopOpen(from, session)) return;
     const isBuy = text.startsWith('buy_');
     const productId = isBuy ? text.replace('buy_', '') : text.replace('add_', '');
     const product = await Product.findByPk(productId);
@@ -1511,6 +1514,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 // Handler: Native WhatsApp Catalog Order
 // =========================
 const handleNativeOrder = async (from, message, session, tenant) => {
+    if (!await validateShopOpen(from, session)) return;
     const productItems = message.order?.product_items;
     if (!productItems || productItems.length === 0) return;
 
@@ -1737,6 +1741,7 @@ const receiveWebhook = async (req, res) => {
 
         // ── Visual Catalog Order ──────────────────────────────────────
         if (text.includes('new order from visual catalog')) {
+            if (!await validateShopOpen(from, session)) return;
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT', { type: 'visual_catalog' });
             session.lastCatalogOrder = text;
 
@@ -1843,7 +1848,10 @@ const receiveWebhook = async (req, res) => {
         if (text.startsWith('view_order_')) return await handleViewOrder(from, text, session);
         if (text.startsWith('rate_')) return await handleRating(from, text, session);
         if (session.state === 'COLLECTING_FEEDBACK') return await handleCollectingFeedback(from, text, session);
-        if (text === 'search_mode') return await handleSearchMode(from, session, tenant);
+        if (text === 'search_mode') {
+            if (!await validateShopOpen(from, session)) return;
+            return await handleSearchMode(from, session, tenant);
+        }
         if (session.state === 'SEARCHING') {
             const reroute = await handleSearching(from, text, session, tenant);
             if (reroute === 'RE_ROUTE') return await handleHomeMenu(from, session, tenant, customer);
@@ -1930,6 +1938,7 @@ const receiveWebhook = async (req, res) => {
             return await handleCart(from, session, tenant);
         }
         if (text === 'checkout') {
+            if (!await validateShopOpen(from, session)) return;
             await logCustomerActivity(from, tenant.id, session.branchId, 'CHECKOUT_STARTED');
             return await handleCheckout(from, session, tenant);
         }

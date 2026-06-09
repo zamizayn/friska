@@ -247,6 +247,41 @@ export default function Dashboard() {
                 </div>
             </section>
 
+            {/* Low Stock Alerts — moved to top */}
+            {analytics.lowStock && analytics.lowStock.length > 0 && (
+                <div className="white-card" style={{ marginTop: '24px' }}>
+                    <div className="card-header">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '40px', height: '40px', background: '#fef2f2', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
+                                <AlertCircle size={20} />
+                            </div>
+                            <div>
+                                <h3>Inventory Warnings</h3>
+                                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>{analytics.lowStock.length} items running low</p>
+                            </div>
+                        </div>
+                        <button className="btn-outline" style={{ fontSize: '12px' }} onClick={() => navigate('/admin/inventory')}>Manage Stock</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+                        {analytics.lowStock.slice(0, 8).map(item => (
+                            <div key={item.id} style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                padding: '14px 16px', background: 'var(--bg-app)', borderRadius: '12px',
+                                border: `1px solid ${item.stock === 0 ? '#fee2e2' : 'var(--border-color)'}`
+                            }}>
+                                <span style={{ fontWeight: 600, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>{item.name}</span>
+                                <span style={{
+                                    fontWeight: 800, fontSize: '13px',
+                                    color: item.stock === 0 ? '#ef4444' : '#f59e0b',
+                                    background: item.stock === 0 ? '#fef2f2' : '#fefce8',
+                                    padding: '4px 10px', borderRadius: '8px'
+                                }}>{item.stock === 0 ? 'OUT' : item.stock}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="dashboard-grid">
                 <div className="main-stats">
                     {/* Revenue Trend */}
@@ -455,41 +490,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-
-            {/* Low Stock Alerts */}
-            {analytics.lowStock && analytics.lowStock.length > 0 && (
-                <div className="white-card" style={{ marginTop: '32px' }}>
-                    <div className="card-header">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ width: '40px', height: '40px', background: '#fef2f2', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
-                                <AlertCircle size={20} />
-                            </div>
-                            <div>
-                                <h3>Inventory Warnings</h3>
-                                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>{analytics.lowStock.length} items running low</p>
-                            </div>
-                        </div>
-                        <button className="btn-outline" style={{ fontSize: '12px' }} onClick={() => navigate('/admin/inventory')}>Manage Stock</button>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-                        {analytics.lowStock.slice(0, 8).map(item => (
-                            <div key={item.id} style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                padding: '14px 16px', background: 'var(--bg-app)', borderRadius: '12px',
-                                border: `1px solid ${item.stock === 0 ? '#fee2e2' : 'var(--border-color)'}`
-                            }}>
-                                <span style={{ fontWeight: 600, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>{item.name}</span>
-                                <span style={{
-                                    fontWeight: 800, fontSize: '13px',
-                                    color: item.stock === 0 ? '#ef4444' : '#f59e0b',
-                                    background: item.stock === 0 ? '#fef2f2' : '#fefce8',
-                                    padding: '4px 10px', borderRadius: '8px'
-                                }}>{item.stock === 0 ? 'OUT' : item.stock}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             {/* WhatsApp Configuration & Status - Tenant only */}
             {tenant && localStorage.getItem('adminRole') === 'tenant' && (

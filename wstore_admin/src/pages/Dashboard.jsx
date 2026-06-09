@@ -249,7 +249,7 @@ export default function Dashboard() {
 
             {/* Low Stock Alerts — moved to top */}
             {analytics.lowStock && analytics.lowStock.length > 0 && (
-                <div className="white-card" style={{ marginTop: '24px' }}>
+                <div className="white-card" style={{ marginTop: '24px', marginBottom: '32px' }}>
                     <div className="card-header">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ width: '40px', height: '40px', background: '#fef2f2', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>

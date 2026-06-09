@@ -30,6 +30,30 @@ export const API_ENDPOINTS = {
 
 export const getHeaders = () => {
   const token = localStorage.getItem('adminToken');
+
+  // Check if token is expired or missing — redirect to login immediately
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminName');
+        localStorage.removeItem('adminRole');
+        location.href = '/admin/login';
+        return {};
+      }
+    } catch {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminName');
+      localStorage.removeItem('adminRole');
+      location.href = '/admin/login';
+      return {};
+    }
+  } else {
+    location.href = '/admin/login';
+    return {};
+  }
+
   return {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`

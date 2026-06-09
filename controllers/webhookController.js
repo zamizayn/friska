@@ -1954,6 +1954,17 @@ const receiveWebhook = async (req, res) => {
             return await handleCheckout(from, session, tenant);
         }
 
+        // ── Abandoned Cart Responses ───────────────────────────────────
+        if (text === 'abandoned_yes') {
+            if (!await validateShopOpen(from, session)) return;
+            return await handleCart(from, session, tenant);
+        }
+        if (text === 'abandoned_no' || session.state === 'ABANDONED_PROMPT') {
+            session.state = 'START';
+            await sendTextMessage(from, 'No problem! Your cart is saved. Browse whenever you\'re ready 🛍️', session.config);
+            return;
+        }
+
         // ── Address Selection Flows ────────────────────────────────────
         if (session.state === 'CHECKOUT_ADDRESS_SELECT') {
             if (text === 'address_new') {
@@ -2266,7 +2277,11 @@ const checkAbandonedCarts = async () => {
             console.log(`[AbandonedCart] Sending reminder to ${phone}`);
             const msg = getTenantMessage(tenant, 'abandonedCartMessage',
                 '👋 Hey! You have items waiting in your cart. Ready to complete your order? 🛒');
-            await sendTextMessage(phone, msg, session.config);
+            session.state = 'ABANDONED_PROMPT';
+            await sendButtonMessage(phone, msg, [
+                { id: 'abandoned_yes', title: '✅ Yes, Checkout' },
+                { id: 'abandoned_no', title: '❌ Not Now' }
+            ], session.config);
             session.abandonedNotified = true;
         } catch (e) {
             console.error(`[AbandonedCart] Failed for ${phone}:`, e.message);

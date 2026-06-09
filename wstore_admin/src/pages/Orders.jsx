@@ -63,7 +63,8 @@ export default function Orders() {
         address: '',
         items: [],
         status: 'pending',
-        paymentMethod: 'Cash on Delivery'
+        paymentMethod: 'Cash on Delivery',
+        discountAmount: ''
     });
 
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -229,15 +230,17 @@ export default function Orders() {
         e.preventDefault();
         if (formData.items.length === 0) return alert('Please add at least one product');
 
-        const total = calculateTotal();
+        const subtotal = calculateTotal();
+        const discountAmount = parseFloat(formData.discountAmount) || 0;
+        const total = Math.max(0, subtotal - discountAmount);
         await fetch(API_ENDPOINTS.ORDERS, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ ...formData, total })
+            body: JSON.stringify({ ...formData, subtotalBeforeTax: subtotal, total })
         });
 
         setModalOpen(false);
-        setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery' });
+        setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '' });
         fetchOrders();
     };
 
@@ -569,6 +572,10 @@ export default function Orders() {
                                         </select>
                                     </div>
                                     <div className="input-group">
+                                        <label>Discount Amount (₹)</label>
+                                        <input type="number" min="0" step="0.01" placeholder="0" value={formData.discountAmount} onChange={e => setFormData({ ...formData, discountAmount: e.target.value })} />
+                                    </div>
+                                    <div className="input-group">
                                         <label>Add Product</label>
                                         <select onChange={(e) => { if (e.target.value) addItem(e.target.value); e.target.value = ''; }}>
                                             <option value="">Search Products...</option>
@@ -599,9 +606,21 @@ export default function Orders() {
                                         ))}
                                     </div>
                                     <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '16px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 800 }}>
-                                            <span>Total Amount</span>
-                                            <span>₹{calculateTotal()}</span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--text-muted)' }}>
+                                                <span>Subtotal</span>
+                                                <span>₹{calculateTotal()}</span>
+                                            </div>
+                                            {parseFloat(formData.discountAmount) > 0 && (
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--success)' }}>
+                                                    <span>Discount</span>
+                                                    <span>-₹{parseFloat(formData.discountAmount).toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 800 }}>
+                                                <span>Total Amount</span>
+                                                <span>₹{Math.max(0, calculateTotal() - (parseFloat(formData.discountAmount) || 0))}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

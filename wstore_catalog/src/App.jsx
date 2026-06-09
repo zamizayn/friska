@@ -99,6 +99,9 @@ function App() {
     const phoneNumber = data.tenant.whatsappSettings?.phone || '917012738756';
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+
+    setCart([]);
+    setIsCartOpen(false);
   };
 
   if (loading) return (

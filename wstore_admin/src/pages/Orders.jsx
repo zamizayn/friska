@@ -317,7 +317,7 @@ export default function Orders() {
                     <h1>Orders Log</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Track and manage your store's transactions</p>
                 </div>
-                <button className="btn-primary" onClick={() => setModalOpen(true)}>
+                <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '' }); setModalOpen(true); }}>
                     <Plus size={18} /> Manual Order
                 </button>
             </header>

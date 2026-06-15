@@ -5,16 +5,16 @@ const path = require('path');
 const generateInvoice = async (order, tenant, branch) => {
     return new Promise((resolve, reject) => {
         try {
-            const doc = new PDFDocument({ 
+            const doc = new PDFDocument({
                 margin: 50,
                 size: 'A4',
-                bufferPages: true 
+                bufferPages: true
             });
-            
+
             const filename = `invoice_${order.id}_${Date.now()}.pdf`;
             const tempDir = path.join(__dirname, '../temp');
             const filePath = path.join(tempDir, filename);
-            
+
             if (!fs.existsSync(tempDir)) {
                 fs.mkdirSync(tempDir, { recursive: true });
             }
@@ -33,12 +33,26 @@ const generateInvoice = async (order, tenant, branch) => {
             // Top Accent Bar
             doc.rect(0, 0, doc.page.width, 12).fill(accentColor);
 
-            // Tenant Name & Branch Info
-            doc.font('Helvetica-Bold').fillColor(primaryColor).fontSize(26).text(tenant.name.toUpperCase(), 50, 45);
+            // Tenant Name / Logo & Branch Info
+            const logoPath = path.join(__dirname, '../wstore_admin/src/assets/logo.png');
+            let logoExists = false;
+            try {
+                if (fs.existsSync(logoPath)) {
+                    logoExists = true;
+                }
+            } catch (e) { }
+
+            let branchY = 75;
+            if (logoExists) {
+                // Add logo
+                doc.image(logoPath, 50, 35, { height: 40 });
+                branchY = 85;
+            } else {
+                doc.font('Helvetica-Bold').fillColor(primaryColor).fontSize(26).text(tenant.name.toUpperCase(), 50, 45);
+            }
 
             doc.font('Helvetica').fontSize(10).fillColor(secondaryColor);
             if (branch) {
-                let branchY = 75;
                 doc.font('Helvetica-Bold').text(branch.name, 50, branchY);
                 if (branch.address) {
                     doc.font('Helvetica').text(branch.address, 50, branchY + 14, { width: 250, lineGap: 2 });
@@ -70,7 +84,7 @@ const generateInvoice = async (order, tenant, branch) => {
             let detailY = infoY;
 
             doc.font('Helvetica-Bold').fillColor(secondaryColor).fontSize(10).text('ORDER DETAILS', detailX, detailY);
-            
+
             detailY += 18;
             doc.font('Helvetica').fillColor(secondaryColor).fontSize(10).text('Date:', detailX, detailY);
             const formattedDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
@@ -120,7 +134,7 @@ const generateInvoice = async (order, tenant, branch) => {
 
             items.forEach((item, index) => {
                 doc.font('Helvetica').fillColor(primaryColor).fontSize(10);
-                
+
                 const itemName = item.name || 'Item';
                 const qty = item.quantity ? item.quantity.toString() : '1';
                 const priceStr = `Rs. ${parseFloat(item.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
@@ -135,7 +149,7 @@ const generateInvoice = async (order, tenant, branch) => {
                 doc.text(totalStr, 460, currentY, { width: 70, align: 'right' });
 
                 currentY += nameHeight + 15;
-                
+
                 // Add a faint line between items
                 if (index < items.length - 1) {
                     doc.moveTo(50, currentY - 7).lineTo(545, currentY - 7).lineWidth(0.5).strokeColor(borderColor).stroke();
@@ -186,15 +200,15 @@ const generateInvoice = async (order, tenant, branch) => {
             // Total Amount box
             doc.rect(totalLabelX - 15, currentY, 200, 36).fill(lightBg);
             doc.moveTo(totalLabelX - 15, currentY).lineTo(545, currentY).lineWidth(2).strokeColor(primaryColor).stroke();
-            
+
             doc.font('Helvetica-Bold').fillColor(primaryColor).fontSize(12).text('TOTAL AMOUNT', totalLabelX, currentY + 12);
             doc.font('Helvetica-Bold').fillColor(accentColor).fontSize(14).text(`Rs. ${order.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, totalValueX, currentY + 11, { align: 'right', width: 100 });
 
             // --- 5. Footer ---
             const footerY = doc.page.height - 80;
-            
+
             doc.moveTo(50, footerY - 15).lineTo(545, footerY - 15).lineWidth(1).strokeColor(borderColor).stroke();
-            
+
             doc.font('Helvetica-Bold').fillColor(primaryColor).fontSize(10).text('Thank you for your business!', 50, footerY, { align: 'center' });
             doc.font('Helvetica').fillColor(secondaryColor).fontSize(9).text(`${tenant.name} | Automated Invoice`, 50, footerY + 15, { align: 'center' });
 

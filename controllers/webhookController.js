@@ -1338,6 +1338,9 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 
     total = Math.max(0, total);
 
+    // Check if this is a first-time customer
+    const existingCustomer = await Customer.findOne({ where: { phone: from } });
+
     // Atomic order creation with stock check, GST, deduction, and offer tracking
     let savedOrder;
     try {
@@ -1419,7 +1422,8 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                 paymentMethod,
                 paymentStatus: 'pending',
                 gstAmount,
-                subtotalBeforeTax
+                subtotalBeforeTax,
+                isNewCustomer: !existingCustomer
             }, { transaction: t });
 
             if (appliedOfferCode) {

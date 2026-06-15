@@ -188,7 +188,21 @@ export default function Customers() {
                                             {cust.name ? cust.name[0].toUpperCase() : 'A'}
                                         </div>
                                         <div>
-                                            <div style={{ fontWeight: 700, fontSize: '15px' }}>{cust.name || 'Anonymous User'}</div>
+                                            <div style={{ fontWeight: 700, fontSize: '15px' }}>
+                                                {cust.name || 'Anonymous User'}
+                                                {cust.orderCount <= 1 && (
+                                                    <span style={{
+                                                        backgroundColor: '#22c55e',
+                                                        color: 'white',
+                                                        fontSize: '10px',
+                                                        fontWeight: 600,
+                                                        padding: '2px 6px',
+                                                        borderRadius: '4px',
+                                                        marginLeft: '8px',
+                                                        verticalAlign: 'middle'
+                                                    }}>New</span>
+                                                )}
+                                            </div>
                                             <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>+{cust.phone}</div>
                                         </div>
                                     </div>

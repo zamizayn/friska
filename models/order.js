@@ -56,6 +56,10 @@ module.exports = (sequelize, DataTypes) => {
     subtotalBeforeTax: {
       type: DataTypes.FLOAT,
       defaultValue: 0
+    },
+    isNewCustomer: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   }, {
     sequelize,

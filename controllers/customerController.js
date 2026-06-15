@@ -1,4 +1,4 @@
-const { Customer, Order, CustomerLog, Category, Product } = require('../models');
+const { Customer, Order, CustomerLog, Category, Product, sequelize } = require('../models');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage } = require('../services/whatsappService');
 
@@ -8,8 +8,21 @@ const getAllCustomers = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
 
+        const where = await req.getScope();
+
         const { count, rows } = await Customer.findAndCountAll({
-            where: await req.getScope(),
+            where,
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*) FROM "Orders"
+                            WHERE "Orders"."customerPhone" = "Customer"."phone"
+                        )`),
+                        'orderCount'
+                    ]
+                ]
+            },
             limit,
             offset,
             order: [['lastInteraction', 'DESC']]

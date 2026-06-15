@@ -19,13 +19,20 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 const createOrder = async (req, res) => {
     try {
+        const existingCustomer = await Customer.findOne({
+            where: { phone: req.body.customerPhone }
+        });
+
         await Customer.upsert({
             phone: req.body.customerPhone,
             name: req.body.customerName || '',
             lastInteraction: new Date()
         });
 
-        const order = await Order.create(req.body);
+        const order = await Order.create({
+            ...req.body,
+            isNewCustomer: !existingCustomer
+        });
 
         // Centralized post-order logic (Stock deduction, Offer tracking)
         await orderService.handleOrderSuccess(order);
@@ -116,6 +123,11 @@ const getAllOrders = async (req, res) => {
 const sendDeliveryInvoice = async (order, config) => {
     const tenant = await Tenant.findByPk(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
     const branch = order.branchId ? await Branch.findByPk(order.branchId) : null;
+
+    const customer = await Customer.findOne({ where: { phone: order.customerPhone } });
+    if (customer) {
+        order.customerName = customer.name;
+    }
 
     const pdfPath = await generateInvoice(order, tenant, branch);
     const mediaId = await uploadMedia(pdfPath, 'application/pdf', config);

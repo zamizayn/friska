@@ -439,7 +439,21 @@ export default function Orders() {
                             <tr key={order.id}>
                                 <td style={{ fontWeight: 700 }}>#{order.id}</td>
                                 <td>
-                                    <div style={{ fontWeight: 700, fontSize: '15px' }}>{order.customer?.name || 'Guest Customer'}</div>
+                                    <div style={{ fontWeight: 700, fontSize: '15px' }}>
+                                        {order.customer?.name || 'Guest Customer'}
+                                        {order.isNewCustomer && (
+                                            <span style={{
+                                                backgroundColor: '#22c55e',
+                                                color: 'white',
+                                                fontSize: '10px',
+                                                fontWeight: 600,
+                                                padding: '2px 6px',
+                                                borderRadius: '4px',
+                                                marginLeft: '8px',
+                                                verticalAlign: 'middle'
+                                            }}>New</span>
+                                        )}
+                                    </div>
                                     <div style={{ fontSize: '13px', color: 'var(--text-main)', marginTop: '2px' }}>{order.customerPhone}</div>
                                     {(order.formattedAddress || order.address) && (
                                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.formattedAddress || order.address}>
@@ -699,7 +713,7 @@ export default function Orders() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
                             <div>
                                 <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Customer Info</h4>
-                                <p style={{ fontWeight: 700 }}>{viewingOrder.customerName || 'N/A'}</p>
+                                <p style={{ fontWeight: 700 }}>{viewingOrder.customer?.name || 'N/A'}</p>
                                 <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{viewingOrder.customerPhone}</p>
                             </div>
                             <div>

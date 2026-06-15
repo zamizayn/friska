@@ -40,7 +40,7 @@ const getPublicCatalog = async (req, res) => {
                 as: 'category', 
                 attributes: ['name'] 
             }],
-            order: [['priority', 'DESC'], ['name', 'ASC']]
+            order: [['priority', 'ASC'], ['name', 'ASC']]
         });
 
         // 5. Build response

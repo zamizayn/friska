@@ -45,8 +45,8 @@ const generateInvoice = async (order, tenant, branch) => {
             let branchY = 75;
             if (logoExists) {
                 // Add logo
-                doc.image(logoPath, 50, 35, { height: 40 });
-                branchY = 85;
+                doc.image(logoPath, 50, 30, { height: 60 });
+                branchY = 100;
             } else {
                 doc.font('Helvetica-Bold').fillColor(primaryColor).fontSize(26).text(tenant.name.toUpperCase(), 50, 45);
             }
@@ -105,9 +105,9 @@ const generateInvoice = async (order, tenant, branch) => {
             }
 
             // Payment Status Column (Right Aligned)
-            const statusX = 460;
-            doc.font('Helvetica-Bold').fillColor(secondaryColor).fontSize(10).text('PAYMENT STATUS', statusX, infoY, { align: 'right', width: 85 });
-            doc.font('Helvetica-Bold').fillColor(accentColor).fontSize(12).text('PAID', statusX, infoY + 18, { align: 'right', width: 85 });
+            const statusX = 425;
+            doc.font('Helvetica-Bold').fillColor(secondaryColor).fontSize(10).text('PAYMENT STATUS', statusX, infoY, { align: 'right', width: 120 });
+            doc.font('Helvetica-Bold').fillColor(accentColor).fontSize(12).text('PAID', statusX, infoY + 16, { align: 'right', width: 120 });
 
             // --- 3. Items Table ---
             const hasAddress = !!(order.formattedAddress || order.address);

@@ -1222,6 +1222,62 @@ const checkCartStock = async (userCart) => {
 };
 
 // =========================
+// Helper: Parse Visual Catalog Order Items
+// =========================
+const parseVisualCatalogItems = (messageText) => {
+    if (!messageText) return [];
+    const items = [];
+    // Pattern: [optional bullet/text] name x{quantity} - ₹{price}
+    // Anchors on "x{digits}" followed by a dash to avoid matching 'x' in product names
+    const quantityRegex = /x(\d+)\s*[-–—]/;
+    for (const line of messageText.split('\n')) {
+        const match = line.match(quantityRegex);
+        if (!match) continue;
+        const xIndex = line.indexOf('x');
+        if (xIndex === -1) continue;
+        // Everything before "x{digits}" is the product name
+        let name = line.substring(0, xIndex).trim();
+        // Strip leading bullets, invisible Unicode, emoji, punctuation
+        name = name.replace(/^[\s•\u200B\u200C\u200D\u2060\uFEFF🔹🔸▪️🛍️📦]+/g, '').trim();
+        // Normalize internal whitespace
+        name = name.replace(/\s+/g, ' ');
+        // Clean spaces inside parentheses: "750g )" -> "750g)"
+        name = name.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+        const quantity = parseInt(match[1], 10);
+        if (name && quantity > 0) items.push({ name, quantity });
+    }
+    return items;
+};
+
+// =========================
+// Helper: Match catalog item to DB product
+// =========================
+const matchCatalogProduct = async (itemName, branchId, options = {}) => {
+    const findOpts = { transaction: options.transaction || null };
+    // 1. Exact match (case-insensitive)
+    let product = await Product.findOne({
+        where: { name: { [Op.iLike]: itemName }, branchId },
+        ...findOpts
+    });
+    if (product) return product;
+    // 2. Without trailing parenthetical weight/size info
+    const stripped = itemName.replace(/\([^)]*\)/g, '').trim().replace(/\s+/g, ' ');
+    if (stripped !== itemName) {
+        product = await Product.findOne({
+            where: { name: { [Op.iLike]: stripped }, branchId },
+            ...findOpts
+        });
+        if (product) return product;
+    }
+    // 3. Starts-with (handles DB names that are more complete)
+    product = await Product.findOne({
+        where: { name: { [Op.iLike]: `${itemName}%` }, branchId },
+        ...findOpts
+    });
+    return product || null;
+};
+
+// =========================
 // Handler: Checkout
 // =========================
 const handleCheckout = async (from, session, tenant) => {
@@ -1401,8 +1457,41 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                     });
                 }
             } else {
+                // Parse visual catalog items and validate stock
+                const catalogItems = parseVisualCatalogItems(session.lastCatalogOrder);
+                let resolvedItems = [];
+
+                if (catalogItems.length > 0 && session.branchId) {
+                    for (const item of catalogItems) {
+                        const product = await matchCatalogProduct(item.name, session.branchId, { transaction: t });
+                        if (product) {
+                            if (product.stock !== null && product.stock < item.quantity) {
+                                throw new Error(
+                                    product.stock <= 0
+                                        ? `❌ Sorry, *${product.name}* just went out of stock.`
+                                        : `❌ Sorry, only *${product.stock}* units of *${product.name}* are available now.`
+                                );
+                            }
+                            resolvedItems.push({
+                                id: product.id,
+                                name: product.name,
+                                price: product.price,
+                                quantity: item.quantity,
+                                isCatalog: true
+                            });
+                        } else {
+                            console.warn(`[Catalog] No product match for: "${item.name}"`);
+                        }
+                    }
+                }
+
+                if (resolvedItems.length > 0) {
+                    userCart = resolvedItems;
+                    subtotalBeforeTax = resolvedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+                } else {
+                    subtotalBeforeTax = subtotal;
+                }
                 itemsWithGst.push(...userCart);
-                subtotalBeforeTax = subtotal;
             }
 
             const gstInclusiveTotal = Math.max(0, subtotalBeforeTax + gstAmount - discountAmount);

@@ -1239,9 +1239,6 @@ const parseVisualCatalogItems = (messageText) => {
         let name = line.substring(0, xIndex).trim();
         // Strip leading bullets, invisible Unicode, emoji, punctuation
         name = name.replace(/^[\s•\u200B\u200C\u200D\u2060\uFEFF🔹🔸▪️🛍️📦]+/g, '').trim();
-        // Normalize internal whitespace
-        name = name.replace(/\s+/g, ' ');
-        // Keep original spacing — DB may have spaces inside parentheses
         const quantity = parseInt(match[1], 10);
         if (name && quantity > 0) items.push({ name, quantity });
     }

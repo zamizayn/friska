@@ -1663,8 +1663,10 @@ const handleNativeOrder = async (from, message, session, tenant) => {
 
     const newCart = [];
     const missingItems = [];
+    const outOfStockItems = [];
 
     for (const item of productItems) {
+        const qty = parseInt(item.quantity, 10);
         const product = await Product.findOne({
             where: {
                 retailerId: item.product_retailer_id,
@@ -1672,12 +1674,16 @@ const handleNativeOrder = async (from, message, session, tenant) => {
             }
         });
         if (product) {
-            newCart.push({
-                id: product.id,
-                name: product.name,
-                price: parseFloat(item.item_price),
-                quantity: parseInt(item.quantity, 10)
-            });
+            if (product.stock < qty) {
+                outOfStockItems.push(`${product.name} (requested ${qty}, available ${product.stock})`);
+            } else {
+                newCart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: parseFloat(item.item_price),
+                    quantity: qty
+                });
+            }
         } else {
             missingItems.push(item.product_retailer_id);
         }
@@ -1687,12 +1693,20 @@ const handleNativeOrder = async (from, message, session, tenant) => {
         console.warn(`[NativeOrder] Could not resolve retailer IDs: ${missingItems.join(', ')}`);
     }
 
+    if (outOfStockItems.length > 0) {
+        await sendTextMessage(from,
+            `❌ Some items are out of stock:\n${outOfStockItems.join('\n')}\n\nPlease adjust your order and try again.`,
+            session.config);
+        return;
+    }
+
     if (newCart.length > 0) {
         carts[from] = newCart;
-        session.state = 'CHECKOUT_ADDRESS';
-        await sendLocationRequest(from,
-            '📍 We received your cart! Please share your delivery address to confirm your order.',
-            session.config);
+        await sendAddressSelectionOrRequest(from, session, tenant, {
+            addressIdPrefix: 'address_',
+            newAddressId: 'address_new',
+            nextState: 'CHECKOUT_ADDRESS'
+        });
     } else {
         await sendTextMessage(from,
             '❌ There was an error processing your cart. Products may be out of stock or unavailable.',

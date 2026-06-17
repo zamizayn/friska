@@ -146,6 +146,18 @@ const updateOrderStatus = async (req, res) => {
         order.status = req.body.status;
         await order.save();
 
+        // Restock if cancelled
+        if (order.status === 'cancelled' && Array.isArray(order.items)) {
+            for (const item of order.items) {
+                if (item.id) {
+                    await Product.increment('stock', {
+                        by: item.quantity,
+                        where: { id: item.id }
+                    }).catch(e => console.error(`[Restock Error] Product ${item.id}:`, e.message));
+                }
+            }
+        }
+
         let msg = '';
         if (order.status === 'shipped') {
             msg = `🚚 *Update on your Order #${order.id}*\n\nGreat news! Your order has been shipped and is on its way to you!`;
@@ -222,6 +234,17 @@ const bulkUpdateOrderStatus = async (req, res) => {
         });
         for (const order of orders) {
             trySendStatusNotification(order, status);
+            // Restock if cancelled
+            if (status === 'cancelled' && Array.isArray(order.items)) {
+                for (const item of order.items) {
+                    if (item.id) {
+                        await Product.increment('stock', {
+                            by: item.quantity,
+                            where: { id: item.id }
+                        }).catch(e => console.error(`[Restock Error] Product ${item.id}:`, e.message));
+                    }
+                }
+            }
         }
 
         res.json({ updated: count });

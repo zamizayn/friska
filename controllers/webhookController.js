@@ -1241,8 +1241,7 @@ const parseVisualCatalogItems = (messageText) => {
         name = name.replace(/^[\s•\u200B\u200C\u200D\u2060\uFEFF🔹🔸▪️🛍️📦]+/g, '').trim();
         // Normalize internal whitespace
         name = name.replace(/\s+/g, ' ');
-        // Clean spaces inside parentheses: "750g )" -> "750g)"
-        name = name.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+        // Keep original spacing — DB may have spaces inside parentheses
         const quantity = parseInt(match[1], 10);
         if (name && quantity > 0) items.push({ name, quantity });
     }
@@ -1274,6 +1273,16 @@ const matchCatalogProduct = async (itemName, branchId, options = {}) => {
         where: { name: { [Op.iLike]: `${itemName}%` }, branchId },
         ...findOpts
     });
+    if (product) return product;
+    // 4. Normalize spaces inside parentheses (handles "(750g )" vs "(750g)" mismatches)
+    const normalizedParens = itemName.replace(/\(\s*([^)]*?)\s*\)/g, '($1)');
+    if (normalizedParens !== itemName) {
+        product = await Product.findOne({
+            where: { name: { [Op.iLike]: `${normalizedParens}%` }, branchId },
+            ...findOpts
+        });
+        if (product) return product;
+    }
     return product || null;
 };
 

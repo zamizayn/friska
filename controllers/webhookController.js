@@ -1287,6 +1287,37 @@ const matchCatalogProduct = async (itemName, branchId, options = {}) => {
 };
 
 // =========================
+// Helper: Match catalog item across ALL tenant branches
+// =========================
+const findCatalogProductByTenant = async (itemName, tenantId) => {
+    const branches = await Branch.findAll({ where: { tenantId }, attributes: ['id'] });
+    const branchIds = branches.map(b => b.id);
+    if (branchIds.length === 0) return null;
+    // 1. Exact match (case-insensitive)
+    let product = await Product.findOne({
+        where: { name: { [Op.iLike]: itemName }, branchId: branchIds }
+    });
+    if (product) return product;
+    // 2. Without trailing parenthetical weight/size info
+    const stripped = itemName.replace(/\([^)]*\)/g, '').trim().replace(/\s+/g, ' ');
+    if (stripped !== itemName) {
+        product = await Product.findOne({
+            where: { name: { [Op.iLike]: stripped }, branchId: branchIds }
+        });
+        if (product) return product;
+    }
+    // 3. Normalize spaces inside parentheses
+    const normalizedParens = itemName.replace(/\(\s*([^)]*?)\s*\)/g, '($1)');
+    if (normalizedParens !== itemName) {
+        product = await Product.findOne({
+            where: { name: { [Op.iLike]: `${normalizedParens}%` }, branchId: branchIds }
+        });
+        if (product) return product;
+    }
+    return null;
+};
+
+// =========================
 // Handler: Checkout
 // =========================
 const handleCheckout = async (from, session, tenant) => {
@@ -1505,7 +1536,12 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                             transaction: t
                         });
                     }
+                } else if (catalogItems.length > 0) {
+                    // Items were parsed but none resolved — block the order
+                    console.warn(`[Catalog] All ${catalogItems.length} items failed to match. Blocking order.`);
+                    throw new Error('❌ Unable to verify product availability. Please contact support.');
                 } else {
+                    // No items parsed (unrecognized format) — fall through
                     subtotalBeforeTax = subtotal;
                 }
                 itemsWithGst.push(...userCart);
@@ -1857,6 +1893,33 @@ const receiveWebhook = async (req, res) => {
             // Clear any existing cart so handlePaymentSelection enters catalog order path
             carts[from] = [];
             session.lastCatalogOrder = text;
+
+            // NEW: Early stock check (before asking for address)
+            const catalogItems = parseVisualCatalogItems(text);
+            if (catalogItems.length > 0) {
+                let hasError = false;
+                for (const item of catalogItems) {
+                    const product = await findCatalogProductByTenant(item.name, tenant.id);
+                    if (product && product.stock !== null && product.stock < item.quantity) {
+                        hasError = true;
+                        await sendTextMessage(from,
+                            product.stock <= 0
+                                ? `❌ Sorry, *${product.name}* is currently out of stock.`
+                                : `❌ Sorry, only *${product.stock}* units of *${product.name}* are available. You requested *${item.quantity}*.`,
+                            session.config);
+                        break;
+                    }
+                }
+                if (hasError) {
+                    notificationService.sendToTenant(
+                        tenant.id, '❌ Catalog Order Blocked',
+                        `From +${from}: Order blocked due to insufficient stock.`,
+                        'new_order',
+                        { customerPhone: from, type: 'visual_catalog_blocked', branchId: session.branchId }
+                    ).catch(err => console.error('[FCM error]', err.message));
+                    return;
+                }
+            }
 
             await sendAddressSelectionOrRequest(from, session, tenant, {
                 addressIdPrefix: 'cataddress_',

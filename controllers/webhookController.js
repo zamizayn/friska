@@ -1488,6 +1488,14 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                 if (resolvedItems.length > 0) {
                     userCart = resolvedItems;
                     subtotalBeforeTax = resolvedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+                    // Deduct stock for resolved catalog products
+                    for (const item of resolvedItems) {
+                        await Product.decrement('stock', {
+                            by: item.quantity,
+                            where: { id: item.id },
+                            transaction: t
+                        });
+                    }
                 } else {
                     subtotalBeforeTax = subtotal;
                 }

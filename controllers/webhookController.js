@@ -225,10 +225,24 @@ const buildPaymentButtons = (tenant) => {
 };
 
 // =========================
+// Helper: Check Launch Status
+// When LAUNCHED=false, sends the configured message and blocks checkout flows.
+// =========================
+const checkLaunchStatus = async (from, config) => {
+    if (process.env.LAUNCHED === 'false') {
+        const msg = process.env.LAUNCHED_MESSAGE || 'We\'re currently preparing for launch! 🚀 Orders are not yet available. Please check back with us soon!';
+        await sendTextMessage(from, msg, config);
+        return false;
+    }
+    return true;
+};
+
+// =========================
 // Helper: Address Selection Flow
 // Shared between normal checkout and catalog checkout.
 // =========================
 const sendAddressSelectionOrRequest = async (from, session, tenant, { addressIdPrefix, newAddressId, nextState }) => {
+    if (!await checkLaunchStatus(from, session.config)) return;
     const addresses = await CustomerAddress.findAll({ where: { customerPhone: from } });
 
     if (addresses.length > 0) {
@@ -1158,6 +1172,7 @@ const handleQuantitySelection = async (from, text, session) => {
             { id: 'checkout', title: 'Checkout' }
         ], session.config);
     } else {
+        if (!await checkLaunchStatus(from, session.config)) return;
         // Buy Now — replace cart, skip to address
         carts[from] = [{ id: product.id, name: product.name, price: product.price, quantity: qty }];
         session.state = 'CHECKOUT_ADDRESS';

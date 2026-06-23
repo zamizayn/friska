@@ -30,6 +30,7 @@ function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showLaunchMessage, setShowLaunchMessage] = useState(false);
 
   const username = window.location.pathname.split('/').pop() || 'friska';
 
@@ -88,6 +89,11 @@ function App() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+
+    if (data && !data.launched) {
+      setShowLaunchMessage(true);
+      return;
+    }
 
     let message = `*New Order from Visual Catalog* 🛍️\n\n`;
     message += `📦 *Items:*\n`;
@@ -297,6 +303,31 @@ function App() {
                   Add to Cart — ₹{selectedProduct.price}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLaunchMessage && (
+        <div className="modal-overlay" onClick={() => setShowLaunchMessage(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Coming Soon 🚀</h2>
+              <button className="close-btn" onClick={() => setShowLaunchMessage(false)}>
+                <X size={24} strokeWidth={2.5} />
+              </button>
+            </div>
+            <div style={{ padding: '1rem 0', textAlign: 'center' }}>
+              <p style={{ fontSize: '1.125rem', lineHeight: '1.7', color: 'var(--text-muted)', marginBottom: '2rem' }}>
+                {data?.launchedMessage || "We're currently preparing for launch! 🚀"}
+              </p>
+              <button
+                className="whatsapp-btn"
+                style={{ background: 'var(--text)', boxShadow: '0 10px 20px rgba(15,23,42,0.2)' }}
+                onClick={() => setShowLaunchMessage(false)}
+              >
+                Got it
+              </button>
             </div>
           </div>
         </div>

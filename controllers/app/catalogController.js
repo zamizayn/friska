@@ -45,6 +45,8 @@ const getPublicCatalog = async (req, res) => {
 
         // 5. Build response
         res.json({
+            launched: process.env.LAUNCHED !== 'false',
+            launchedMessage: process.env.LAUNCHED_MESSAGE || null,
             tenant: {
                 name: tenant.name,
                 username: tenant.username,

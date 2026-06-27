@@ -27,10 +27,11 @@ const getDashboardAnalytics = async (req, res) => {
 
         // Stats Section: Revenue, Orders, Customers, AOV
         if (shouldInclude('stats')) {
+            const statsWhere = { ...scopedWhere, status: { [Op.ne]: 'cancelled' } };
             const [totalOrders, statsRows, totalCustomers] = await Promise.all([
-                Order.count({ where: scopedWhere }),
+                Order.count({ where: statsWhere }),
                 Order.findAll({
-                    where: scopedWhere,
+                    where: statsWhere,
                     attributes: [
                         [fn('SUM', col('total')), 'revenue'],
                         [fn('AVG', col('total')), 'aov']
@@ -38,7 +39,7 @@ const getDashboardAnalytics = async (req, res) => {
                     raw: true
                 }),
                 Order.count({
-                    where: scopedWhere,
+                    where: statsWhere,
                     distinct: true,
                     col: 'customerPhone'
                 })

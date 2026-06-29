@@ -1359,6 +1359,7 @@ const handleCheckout = async (from, session, tenant) => {
 // Handler: Address Collection
 // =========================
 const handleAddressCollection = async (from, text, session, tenant) => {
+    if (!await validateShopOpen(from, session)) return;
     let lat = session.latitude;
     let lng = session.longitude;
     let formattedAddress = session.formattedAddress;
@@ -2175,6 +2176,7 @@ const receiveWebhook = async (req, res) => {
                 const addressId = parseInt(text.split('_')[1], 10);
                 const selected = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
                 if (selected) {
+                    if (!await validateShopOpen(from, session)) return;
                     let lat = selected.latitude;
                     let lng = selected.longitude;
                     if (lat == null || lng == null) {
@@ -2239,6 +2241,7 @@ const receiveWebhook = async (req, res) => {
                 const addressId = parseInt(text.split('_')[1], 10);
                 const selected = await CustomerAddress.findOne({ where: { id: addressId, customerPhone: from } });
                 if (selected) {
+                    if (!await validateShopOpen(from, session)) return;
                     let lat = selected.latitude;
                     let lng = selected.longitude;
                     if (lat == null || lng == null) {
@@ -2296,6 +2299,7 @@ const receiveWebhook = async (req, res) => {
                 }
             } else {
                 // Free-text address typed by the user
+                if (!await validateShopOpen(from, session)) return;
                 await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
                 
                 let lat = session.latitude;

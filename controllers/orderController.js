@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
 const { generateInvoice } = require('../services/invoiceService');
+const { generateOrdersReport } = require('../services/orderExportService');
 const orderService = require('../services/orderService');
 const fs = require('fs');
 
@@ -115,6 +116,50 @@ const getAllOrders = async (req, res) => {
             totalPages: Math.ceil(count / limit),
             summary: stats
         });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+const exportOrdersPdf = async (req, res) => {
+    try {
+        const { status, branchId, search, startDate, endDate } = req.query;
+        const where = await req.getScope();
+
+        if (status) where.status = status;
+        if (branchId) where.branchId = branchId;
+        if (search) {
+            where[Op.or] = [
+                { id: isNaN(search) ? -1 : parseInt(search) },
+                { customerPhone: { [Op.iLike]: `%${search}%` } }
+            ];
+        }
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) where.createdAt[Op.gte] = new Date(startDate);
+            if (endDate) where.createdAt[Op.lte] = new Date(new Date(endDate).setHours(23, 59, 59, 999));
+        }
+
+        const orders = await Order.findAll({
+            where,
+            include: [
+                { model: Customer, as: 'customer', attributes: ['name'] },
+                { model: Branch, as: 'branch', attributes: ['id', 'name', 'latitude', 'longitude'] }
+            ],
+            order: [['createdAt', 'DESC']],
+            limit: 500
+        });
+
+        const plainOrders = orders.map(o => o.get({ plain: true }));
+        const branch = branchId ? await Branch.findByPk(branchId, { attributes: ['name', 'address'] }) : null;
+
+        const pdfPath = await generateOrdersReport(plainOrders, { status, startDate, endDate }, branch);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=orders_report.pdf`);
+        const readStream = fs.createReadStream(pdfPath);
+        readStream.pipe(res);
+        readStream.on('end', () => fs.unlinkSync(pdfPath));
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -288,5 +333,6 @@ module.exports = {
     getAllOrders,
     updateOrderStatus,
     updatePaymentStatus,
-    bulkUpdateOrderStatus
+    bulkUpdateOrderStatus,
+    exportOrdersPdf
 };

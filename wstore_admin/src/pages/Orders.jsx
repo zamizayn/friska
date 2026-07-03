@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike } from 'lucide-react';
+import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike, FileText } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import DatePicker from 'react-datepicker';
@@ -130,6 +130,31 @@ export default function Orders() {
 
     const handlePageChange = (newPage) => {
         fetchOrders(newPage);
+    };
+
+    const handleExportPdf = async () => {
+        const branchId = localStorage.getItem('selectedBranchId') || '';
+        let url = `${API_ENDPOINTS.ORDERS}/export/pdf?branchId=${branchId}`;
+        if (filters.status) url += `&status=${filters.status}`;
+        if (filters.search) url += `&search=${filters.search}`;
+        if (filters.startDate) url += `&startDate=${filters.startDate}`;
+        if (filters.endDate) url += `&endDate=${filters.endDate}`;
+
+        try {
+            const res = await fetch(url, { headers: getHeaders() });
+            if (res.status === 401) return navigate('/login');
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `orders_report_${filters.startDate || 'all'}_${filters.endDate || 'all'}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+        } catch (e) {
+            console.error('PDF export failed:', e);
+        }
     };
 
     const clearFilters = () => {
@@ -317,9 +342,14 @@ export default function Orders() {
                     <h1>Orders Log</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Track and manage your store's transactions</p>
                 </div>
-                <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '' }); setModalOpen(true); }}>
-                    <Plus size={18} /> Manual Order
-                </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button className="btn-outline" onClick={handleExportPdf}>
+                        <FileText size={18} /> Export PDF
+                    </button>
+                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '' }); setModalOpen(true); }}>
+                        <Plus size={18} /> Manual Order
+                    </button>
+                </div>
             </header>
 
             {/* Summary Stats Cards */}

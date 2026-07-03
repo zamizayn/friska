@@ -4,6 +4,7 @@ const orderController = require('../../controllers/orderController');
 
 router.get('/', orderController.getAllOrders);
 router.put('/bulk-status', orderController.bulkUpdateOrderStatus);
+router.get('/export/pdf', orderController.exportOrdersPdf);
 router.get('/:id', orderController.getOrderById);
 router.post('/', orderController.createOrder);
 router.put('/:id/status', orderController.updateOrderStatus);

@@ -177,8 +177,8 @@ const generateOrdersReport = async (orders, filters, branch) => {
 
             let tableTop = summaryY + boxH + 25;
 
-            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Amount', 'Mode', 'Payment', 'Date & Time'];
-            const colWidths = [30, 65, 60, 70, 55, 45, 50, 120];
+            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Amount', 'Payment', 'Date & Time'];
+            const colWidths = [30, 65, 60, 115, 55, 50, 120];
             const colStarts = [];
             let curX = 50;
             colWidths.forEach((w) => {
@@ -265,21 +265,16 @@ const generateOrdersReport = async (orders, filters, branch) => {
                 doc.fontSize(8).fillColor(primaryColor);
                 doc.text(total, colStarts[4] + 2, currentY, { width: colWidths[4] - 4, align: 'center' });
 
-                // Mode
-                pickFont(doc, 'regular', paymentMethod);
-                doc.fontSize(7).fillColor(secondaryColor);
-                doc.text(paymentMethod, colStarts[5] + 4, currentY, { width: colWidths[5] - 8 });
-
                 // Payment status
                 const pmtColor = paymentStatus === 'paid' ? successColor : warningColor;
                 pickFont(doc, 'bold', paymentStatus);
                 doc.fontSize(7).fillColor(pmtColor);
-                doc.text(paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1), colStarts[6] + 2, currentY, { width: colWidths[6] - 4, align: 'center' });
+                doc.text(paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1), colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
 
                 // Date & Time
                 pickFont(doc, 'regular', dateStr);
                 doc.fontSize(6.5).fillColor(secondaryColor);
-                doc.text(dateStr, colStarts[7] + 2, currentY, { width: colWidths[7] - 4, align: 'center' });
+                doc.text(dateStr, colStarts[6] + 2, currentY, { width: colWidths[6] - 4, align: 'center' });
 
                 currentY += rowH;
             });

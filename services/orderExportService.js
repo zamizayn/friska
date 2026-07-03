@@ -35,6 +35,30 @@ const formatDate = (dateStr) => {
     return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
 };
 
+const getItemLines = (order) => {
+    const lines = [];
+    const items = order.items || [];
+    for (const item of items) {
+        if (item.isCatalog && item.description) {
+            const descLines = item.description.split('\n');
+            for (const line of descLines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+                const regex = /(.+?)\s+x\s*(\d+)/i;
+                const match = trimmed.match(regex);
+                if (match) {
+                    const name = match[1].replace(/^[•\-*]\s*/, '').trim();
+                    const qty = parseInt(match[2], 10);
+                    lines.push(`${name} x${qty}`);
+                }
+            }
+        } else {
+            lines.push(`${item.name || 'Item'} x${item.quantity || 1}`);
+        }
+    }
+    return lines;
+};
+
 const generateOrdersReport = async (orders, filters, branch) => {
     return new Promise((resolve, reject) => {
         try {
@@ -153,8 +177,8 @@ const generateOrdersReport = async (orders, filters, branch) => {
 
             let tableTop = summaryY + boxH + 25;
 
-            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Amount', 'Discount', 'Mode', 'Payment', 'Date & Time'];
-            const colWidths = [30, 65, 60, 30, 55, 45, 45, 50, 115];
+            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Amount', 'Mode', 'Payment', 'Date & Time'];
+            const colWidths = [30, 65, 60, 70, 55, 45, 50, 120];
             const colStarts = [];
             let curX = 50;
             colWidths.forEach((w) => {
@@ -169,7 +193,7 @@ const generateOrdersReport = async (orders, filters, branch) => {
                 pickFont(doc, 'bold', '');
                 doc.fontSize(8).fillColor('#ffffff');
                 tableHeader.forEach((h, i) => {
-                    const align = i === 0 || i === 3 || i === 4 || i === 5 ? 'center' : 'left';
+                    const align = i === 0 || i === 3 || i === 4 ? 'center' : 'left';
                     doc.text(h, colStarts[i] + 4, yPos + 7, { width: colWidths[i] - 8, align });
                 });
             };
@@ -188,18 +212,33 @@ const generateOrdersReport = async (orders, filters, branch) => {
 
                 const customerName = order.customer?.name || order.customerName || 'Guest';
                 const phone = order.customerPhone || '-';
-                const itemCount = order.items?.length || 0;
                 const total = parseFloat(order.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-                const status = order.status || '-';
                 const paymentMethod = order.paymentMethod || '-';
                 const paymentStatus = order.paymentStatus || 'unpaid';
-                const discountAmount = parseFloat(order.discountAmount || 0);
-                const discountStr = discountAmount > 0 ? `-₹${discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—';
                 const dateStr = order.createdAt ? formatDate(order.createdAt) : '-';
 
-                if (index % 2 === 0) {
-                    doc.rect(50, currentY - 4, 495, 22).fill('#fafafa');
+                const itemLines = getItemLines(order);
+                const displayItems = itemLines.slice(0, 3);
+                if (itemLines.length > 3) {
+                    displayItems.push(`+${itemLines.length - 3} more`);
                 }
+                const itemsText = displayItems.join('\n');
+
+                const rowH = Math.max(22, itemLines.length * 10 + 2);
+
+                if (currentY + rowH > 720) {
+                    doc.addPage();
+                    currentY = 50;
+                    drawTableHeader(currentY);
+                    currentY += 32;
+                }
+
+                if (index % 2 === 0) {
+                    doc.rect(50, currentY - 4, 495, rowH).fill('#fafafa');
+                }
+
+                // Row border
+                doc.moveTo(50, currentY + rowH - 4).lineTo(545, currentY + rowH - 4).lineWidth(0.5).strokeColor(borderColor).stroke();
 
                 // Order ID
                 pickFont(doc, 'regular', '#');
@@ -216,36 +255,33 @@ const generateOrdersReport = async (orders, filters, branch) => {
                 doc.fontSize(7).fillColor(secondaryColor);
                 doc.text(phone, colStarts[2] + 4, currentY, { width: colWidths[2] - 8 });
 
-                // Items count
+                // Items
+                pickFont(doc, 'regular', itemsText);
+                doc.fontSize(6.5).fillColor(primaryColor);
+                doc.text(itemsText, colStarts[3] + 4, currentY, { width: colWidths[3] - 8, lineGap: 1 });
+
+                // Amount
                 pickFont(doc, 'bold', '');
                 doc.fontSize(8).fillColor(primaryColor);
-                doc.text(itemCount.toString(), colStarts[3] + 2, currentY, { width: colWidths[3] - 4, align: 'center' });
-
-                // Total amount
                 doc.text(total, colStarts[4] + 2, currentY, { width: colWidths[4] - 4, align: 'center' });
 
-                // Discount
-                pickFont(doc, 'regular', discountStr);
-                doc.fontSize(7).fillColor(discountAmount > 0 ? dangerColor : secondaryColor);
-                doc.text(discountStr, colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
-
-                // Payment method
+                // Mode
                 pickFont(doc, 'regular', paymentMethod);
                 doc.fontSize(7).fillColor(secondaryColor);
-                doc.text(paymentMethod, colStarts[6] + 4, currentY, { width: colWidths[6] - 8 });
+                doc.text(paymentMethod, colStarts[5] + 4, currentY, { width: colWidths[5] - 8 });
 
                 // Payment status
                 const pmtColor = paymentStatus === 'paid' ? successColor : warningColor;
                 pickFont(doc, 'bold', paymentStatus);
                 doc.fontSize(7).fillColor(pmtColor);
-                doc.text(paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1), colStarts[7] + 2, currentY, { width: colWidths[7] - 4, align: 'center' });
+                doc.text(paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1), colStarts[6] + 2, currentY, { width: colWidths[6] - 4, align: 'center' });
 
                 // Date & Time
                 pickFont(doc, 'regular', dateStr);
                 doc.fontSize(6.5).fillColor(secondaryColor);
-                doc.text(dateStr, colStarts[8] + 2, currentY, { width: colWidths[8] - 4, align: 'center' });
+                doc.text(dateStr, colStarts[7] + 2, currentY, { width: colWidths[7] - 4, align: 'center' });
 
-                currentY += 22;
+                currentY += rowH;
             });
 
             if (orders.length > 0) {

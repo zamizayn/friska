@@ -153,7 +153,14 @@ const exportOrdersPdf = async (req, res) => {
         const plainOrders = orders.map(o => o.get({ plain: true }));
         const branch = branchId ? await Branch.findByPk(branchId, { attributes: ['name', 'address'] }) : null;
 
-        const pdfPath = await generateOrdersReport(plainOrders, { status, startDate, endDate }, branch);
+        const summary = {
+            completed: await Order.count({ where: { ...where, status: 'delivered' } }),
+            pending: await Order.count({ where: { ...where, status: { [Op.in]: ['pending', 'shipped'] } } }),
+            collected: await Order.sum('total', { where: { ...where, paymentStatus: 'paid' } }) || 0,
+            pendingCollection: await Order.sum('total', { where: { ...where, status: where.status || { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
+        };
+
+        const pdfPath = await generateOrdersReport(plainOrders, { status, startDate, endDate }, branch, summary);
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=orders_report.pdf`);

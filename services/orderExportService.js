@@ -59,7 +59,7 @@ const getItemLines = (order) => {
     return lines;
 };
 
-const generateOrdersReport = async (orders, filters, branch) => {
+const generateOrdersReport = async (orders, filters, branch, summary) => {
     return new Promise((resolve, reject) => {
         try {
             const doc = new PDFDocument({
@@ -93,12 +93,13 @@ const generateOrdersReport = async (orders, filters, branch) => {
             const borderColor = '#e2e8f0';
             const lightBg = '#f8fafc';
 
-            const completed = orders.filter(o => o.status === 'delivered').length;
-            const pending = orders.filter(o => o.status === 'pending' || o.status === 'shipped').length;
-            const collected = orders
+            summary = summary || {};
+            const completed = summary.completed ?? orders.filter(o => o.status === 'delivered').length;
+            const pending = summary.pending ?? orders.filter(o => o.status === 'pending' || o.status === 'shipped').length;
+            const collected = summary.collected ?? orders
                 .filter(o => o.paymentStatus === 'paid')
                 .reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
-            const pendingCollection = orders
+            const pendingCollection = summary.pendingCollection ?? orders
                 .filter(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid')
                 .reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
 

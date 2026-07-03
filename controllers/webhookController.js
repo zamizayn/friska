@@ -252,13 +252,13 @@ const sendAddressSelectionOrRequest = async (from, session, tenant, { addressIdP
             title: addr.label || 'Saved Address',
             description: (addr.formattedAddress || addr.address).substring(0, 72)
         }));
-        rows.push({ id: newAddressId, title: '➕ Add New Address', description: 'Send location or type a new address' });
+        rows.push({ id: newAddressId, title: '📍 Share Location', description: 'Share your current location via WhatsApp' });
 
         const msgText = getTenantMessage(tenant, 'selectAddressMessage', 'Where should we deliver? Select a saved address or add a new one.');
         await sendListMessage(from, msgText, 'View Addresses', [{ title: 'Saved Addresses', rows }], session.config);
     } else {
         session.state = nextState;
-        const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please share your location or type your delivery address');
+        const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please share your location for delivery');
         await sendLocationRequest(from, msg, session.config);
     }
 };
@@ -1365,12 +1365,8 @@ const handleAddressCollection = async (from, text, session, tenant) => {
     let formattedAddress = session.formattedAddress;
 
     if (lat == null || lng == null) {
-        const geo = await getCoordsFromAddress(text, tenant.googleMapsApiKey);
-        if (geo) {
-            lat = geo.latitude;
-            lng = geo.longitude;
-            formattedAddress = geo.formattedAddress;
-        }
+        await sendTextMessage(from, '📍 Please share your GPS location using WhatsApp\'s location sharing button instead of typing.', session.config);
+        return;
     }
 
     if (!session.branchId && lat != null && lng != null) {
@@ -1976,12 +1972,8 @@ const receiveWebhook = async (req, res) => {
             let formattedAddress = session.formattedAddress;
 
             if (lat == null || lng == null) {
-                const geo = await getCoordsFromAddress(text, tenant.googleMapsApiKey);
-                if (geo) {
-                    lat = geo.latitude;
-                    lng = geo.longitude;
-                    formattedAddress = geo.formattedAddress;
-                }
+                await sendTextMessage(from, '📍 Please share your GPS location using WhatsApp\'s location sharing button instead of typing.', session.config);
+                return;
             }
 
             // Resolve branch from coordinates if available; fall back to first tenant branch
@@ -2170,7 +2162,7 @@ const receiveWebhook = async (req, res) => {
             if (text === 'address_new') {
                 session.state = 'CHECKOUT_ADDRESS';
                 await sendLocationRequest(from,
-                    getTenantMessage(tenant, 'enterAddressMessage', '📍 Please send your location or type your new delivery address'),
+                    getTenantMessage(tenant, 'enterAddressMessage', '📍 Please share your location for delivery'),
                     session.config);
             } else if (text.startsWith('address_')) {
                 const addressId = parseInt(text.split('_')[1], 10);
@@ -2225,7 +2217,7 @@ const receiveWebhook = async (req, res) => {
                     await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
                 }
             } else {
-                await handleAddressCollection(from, text, session, tenant);
+                await sendTextMessage(from, '📍 Please select a saved address from the list, or tap "Share Location" to share your current GPS location.', session.config);
             }
             return;
         }
@@ -2235,7 +2227,7 @@ const receiveWebhook = async (req, res) => {
                 session.state = 'CATALOG_ORDER_ADDRESS';
                 await sendLocationRequest(from,
                     getTenantMessage(tenant, 'catalogOrderReceived',
-                        "✅ *Order Received!*\n\nPlease share your *Current Location* 📍 or type your *Delivery Address* below so we can process it immediately! 🛵"),
+                        "✅ *Order Received!*\n\nPlease share your *Current Location* 📍 below so we can process it immediately! 🛵"),
                     session.config);
             } else if (text.startsWith('cataddress_')) {
                 const addressId = parseInt(text.split('_')[1], 10);
@@ -2298,67 +2290,8 @@ const receiveWebhook = async (req, res) => {
                     await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
                 }
             } else {
-                // Free-text address typed by the user
                 if (!await validateShopOpen(from, session)) return;
-                await logCustomerActivity(from, tenant.id, session.branchId, 'ADDRESS_PROVIDED', { address: text });
-                
-                let lat = session.latitude;
-                let lng = session.longitude;
-                let formattedAddress = session.formattedAddress;
-
-                if (lat == null || lng == null) {
-                    const geo = await getCoordsFromAddress(text, tenant.googleMapsApiKey);
-                    if (geo) {
-                        lat = geo.latitude;
-                        lng = geo.longitude;
-                        formattedAddress = geo.formattedAddress;
-                    }
-                }
-
-                // Always resolve branch from coordinates if available; fall back to first tenant branch
-                if (lat != null && lng != null) {
-                    const nearest = await findNearestBranch(tenant.id, lat, lng);
-                    if (nearest) {
-                        session.branchId = nearest.id;
-                        console.log(`[Geofencing] Resolved session.branchId to nearest branch #${nearest.id} (${nearest.name})`);
-                    }
-                }
-                if (!session.branchId) {
-                    const firstBranch = await Branch.findOne({ where: { tenantId: tenant.id } });
-                    if (firstBranch) {
-                        session.branchId = firstBranch.id;
-                        console.log(`[CatalogOrder] Resolved session.branchId to first branch #${firstBranch.id} (${firstBranch.name})`);
-                    }
-                }
-
-                const availability = await checkDeliveryAvailability(session, lat, lng);
-                if (!availability.available) {
-                    const limitKm = availability.deliveryRadius;
-                    await sendTextMessage(from, `❌ Sorry, we do not deliver to this location as it is outside our delivery radius of ${limitKm} km. Please select another address or add a new one.`, session.config);
-                    await sendAddressSelectionOrRequest(from, session, tenant, {
-                        addressIdPrefix: 'cataddress_',
-                        newAddressId: 'cataddress_new',
-                        nextState: 'CATALOG_ORDER_ADDRESS'
-                    });
-                    return;
-                }
-
-                session.latitude = lat;
-                session.longitude = lng;
-                session.formattedAddress = formattedAddress;
-                session.address = text;
-
-                await saveCustomerAddress(from, text, formattedAddress, lat, lng);
-
-                notificationService.sendToTenant(tenant.id, '📍 Address Received',
-                    `Customer (+${from}) address: ${text}`, 'address_update',
-                    { customerPhone: from, address: text, branchId: session.branchId }
-                ).catch(err => console.error('[FCM error]', err.message));
-                
-                session.state = 'CHECKOUT_PAYMENT';
-                await sendButtonMessage(from,
-                    getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),
-                    buildPaymentButtons(tenant), session.config);
+                await sendTextMessage(from, '📍 Please select a saved address from the list, or tap "Share Location" to share your current GPS location.', session.config);
             }
             return;
         }

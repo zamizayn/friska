@@ -22,6 +22,19 @@ const pickFont = (doc, weight, text) => {
     return clean;
 };
 
+const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
+};
+
 const generateOrdersReport = async (orders, filters, branch) => {
     return new Promise((resolve, reject) => {
         try {
@@ -110,7 +123,8 @@ const generateOrdersReport = async (orders, filters, branch) => {
             const rightColY = 45;
             pickFont(doc, 'regular', '');
             doc.fontSize(10).fillColor(secondaryColor);
-            doc.text(`Generated: ${new Date().toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 300, rightColY, { align: 'right', width: 245 });
+            const genDate = formatDate(new Date().toISOString());
+            doc.text(`Generated: ${genDate}`, 300, rightColY, { align: 'right', width: 245 });
             doc.text(`Total Orders: ${orders.length}`, 300, rightColY + 14, { align: 'right', width: 245 });
 
             doc.moveTo(50, 140).lineTo(545, 140).lineWidth(1).strokeColor(borderColor).stroke();
@@ -139,8 +153,8 @@ const generateOrdersReport = async (orders, filters, branch) => {
 
             let tableTop = summaryY + boxH + 25;
 
-            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Total (Rs.)', 'Status', 'Payment', 'Date'];
-            const colWidths = [35, 75, 80, 40, 65, 60, 60, 60];
+            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Amount', 'Discount', 'Mode', 'Payment', 'Date & Time'];
+            const colWidths = [30, 65, 60, 30, 55, 45, 45, 50, 115];
             const colStarts = [];
             let curX = 50;
             colWidths.forEach((w) => {
@@ -149,14 +163,13 @@ const generateOrdersReport = async (orders, filters, branch) => {
             });
 
             const drawTableHeader = (yPos) => {
-                doc.rect(50, yPos, 495, 24).fill(lightBg);
-                doc.moveTo(50, yPos).lineTo(545, yPos).lineWidth(1).strokeColor(borderColor).stroke();
-                doc.moveTo(50, yPos + 24).lineTo(545, yPos + 24).lineWidth(1).strokeColor(borderColor).stroke();
+                doc.roundedRect(50, yPos, 495, 24, 4).fill(accentColor);
+                doc.moveTo(50, yPos + 24).lineTo(545, yPos + 24).lineWidth(1).strokeColor(accentColor).stroke();
 
                 pickFont(doc, 'bold', '');
-                doc.fontSize(8).fillColor(primaryColor);
+                doc.fontSize(8).fillColor('#ffffff');
                 tableHeader.forEach((h, i) => {
-                    const align = i === 0 || i === 3 || i === 4 ? 'center' : 'left';
+                    const align = i === 0 || i === 3 || i === 4 || i === 5 ? 'center' : 'left';
                     doc.text(h, colStarts[i] + 4, yPos + 7, { width: colWidths[i] - 8, align });
                 });
             };
@@ -178,53 +191,61 @@ const generateOrdersReport = async (orders, filters, branch) => {
                 const itemCount = order.items?.length || 0;
                 const total = parseFloat(order.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
                 const status = order.status || '-';
-                const paymentStr = `${order.paymentMethod || '-'}/${order.paymentStatus || '-'}`.substring(0, 14);
-
-                const dateStr = order.createdAt
-                    ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
-                    : '-';
+                const paymentMethod = order.paymentMethod || '-';
+                const paymentStatus = order.paymentStatus || 'unpaid';
+                const discountAmount = parseFloat(order.discountAmount || 0);
+                const discountStr = discountAmount > 0 ? `-₹${discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—';
+                const dateStr = order.createdAt ? formatDate(order.createdAt) : '-';
 
                 if (index % 2 === 0) {
-                    doc.rect(50, currentY - 4, 495, 20).fill('#fafafa');
+                    doc.rect(50, currentY - 4, 495, 22).fill('#fafafa');
                 }
 
+                // Order ID
                 pickFont(doc, 'regular', '#');
                 doc.fontSize(8).fillColor(primaryColor);
                 doc.text(`#${order.id}`, colStarts[0] + 2, currentY, { width: colWidths[0] - 4, align: 'center' });
 
+                // Customer
                 const safeName = pickFont(doc, 'bold', customerName);
                 doc.fontSize(7.5);
-                doc.text(safeName.substring(0, 18), colStarts[1] + 4, currentY, { width: colWidths[1] - 8 });
+                doc.text(safeName.substring(0, 16), colStarts[1] + 4, currentY, { width: colWidths[1] - 8 });
 
+                // Phone
                 pickFont(doc, 'regular', phone);
-                doc.fontSize(7.5).fillColor(secondaryColor);
+                doc.fontSize(7).fillColor(secondaryColor);
                 doc.text(phone, colStarts[2] + 4, currentY, { width: colWidths[2] - 8 });
 
+                // Items count
                 pickFont(doc, 'bold', '');
                 doc.fontSize(8).fillColor(primaryColor);
                 doc.text(itemCount.toString(), colStarts[3] + 2, currentY, { width: colWidths[3] - 4, align: 'center' });
 
+                // Total amount
                 doc.text(total, colStarts[4] + 2, currentY, { width: colWidths[4] - 4, align: 'center' });
 
-                let statusColor = primaryColor;
-                if (status === 'delivered') statusColor = successColor;
-                else if (status === 'pending' || status === 'shipped') statusColor = warningColor;
-                else if (status === 'cancelled') statusColor = dangerColor;
+                // Discount
+                pickFont(doc, 'regular', discountStr);
+                doc.fontSize(7).fillColor(discountAmount > 0 ? dangerColor : secondaryColor);
+                doc.text(discountStr, colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
 
-                pickFont(doc, 'bold', status);
-                doc.fontSize(7.5).fillColor(statusColor);
-                const capStatus = status.charAt(0).toUpperCase() + status.slice(1);
-                doc.text(capStatus, colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
-
-                pickFont(doc, 'regular', paymentStr);
+                // Payment method
+                pickFont(doc, 'regular', paymentMethod);
                 doc.fontSize(7).fillColor(secondaryColor);
-                doc.text(paymentStr, colStarts[6] + 2, currentY, { width: colWidths[6] - 4, align: 'center' });
+                doc.text(paymentMethod, colStarts[6] + 4, currentY, { width: colWidths[6] - 8 });
 
+                // Payment status
+                const pmtColor = paymentStatus === 'paid' ? successColor : warningColor;
+                pickFont(doc, 'bold', paymentStatus);
+                doc.fontSize(7).fillColor(pmtColor);
+                doc.text(paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1), colStarts[7] + 2, currentY, { width: colWidths[7] - 4, align: 'center' });
+
+                // Date & Time
                 pickFont(doc, 'regular', dateStr);
-                doc.fontSize(7.5).fillColor(secondaryColor);
-                doc.text(dateStr, colStarts[7] + 2, currentY, { width: colWidths[7] - 4, align: 'center' });
+                doc.fontSize(6.5).fillColor(secondaryColor);
+                doc.text(dateStr, colStarts[8] + 2, currentY, { width: colWidths[8] - 4, align: 'center' });
 
-                currentY += 20;
+                currentY += 22;
             });
 
             if (orders.length > 0) {
@@ -235,7 +256,7 @@ const generateOrdersReport = async (orders, filters, branch) => {
             doc.moveTo(50, footerY - 10).lineTo(545, footerY - 10).lineWidth(1).strokeColor(borderColor).stroke();
             pickFont(doc, 'regular', '');
             doc.fillColor(secondaryColor).fontSize(8).text('Friska - Automated Orders Report', 50, footerY, { align: 'center' });
-            doc.fontSize(7).text(`Generated on ${new Date().toLocaleString('en-IN')} | ${orders.length} orders`, 50, footerY + 12, { align: 'center' });
+            doc.fontSize(7).text(`Generated on ${formatDate(new Date().toISOString())} | ${orders.length} orders`, 50, footerY + 12, { align: 'center' });
 
             doc.end();
 

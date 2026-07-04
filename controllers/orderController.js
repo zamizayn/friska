@@ -126,7 +126,7 @@ const exportOrdersPdf = async (req, res) => {
         const { status, branchId, search, startDate, endDate } = req.query;
         const where = await req.getScope();
 
-        if (status) where.status = status;
+        if (status && status !== 'cancelled') where.status = status;
         if (branchId) where.branchId = branchId;
         if (search) {
             where[Op.or] = [
@@ -139,6 +139,11 @@ const exportOrdersPdf = async (req, res) => {
             if (startDate) where.createdAt[Op.gte] = new Date(startDate);
             if (endDate) where.createdAt[Op.lte] = new Date(new Date(endDate).setHours(23, 59, 59, 999));
         }
+
+        where.status = {
+            ...(where.status ? { [Op.eq]: where.status } : {}),
+            [Op.ne]: 'cancelled'
+        };
 
         const orders = await Order.findAll({
             where,

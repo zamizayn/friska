@@ -117,6 +117,8 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             pickFont(doc, 'bold', titleLine);
             doc.fillColor(primaryColor).fontSize(20).text(titleLine, 50, headerY);
 
+            let subtitleY = headerY + 25;
+
             const dateParts = [];
             if (filters.startDate) dateParts.push(`From: ${filters.startDate}`);
             if (filters.endDate) dateParts.push(`To: ${filters.endDate}`);

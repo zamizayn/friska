@@ -151,7 +151,8 @@ const exportOrdersPdf = async (req, res) => {
         });
 
         const plainOrders = orders.map(o => o.get({ plain: true }));
-        const branch = branchId ? await Branch.findByPk(branchId, { attributes: ['name', 'address'] }) : null;
+        const branchIdToLookup = branchId || req.user?.branchId;
+        const branch = branchIdToLookup ? await Branch.findByPk(branchIdToLookup, { attributes: ['name', 'address'] }) : null;
 
         const offerApplied = await Order.sum('discountAmount', { where: { ...where, status: { [Op.ne]: 'cancelled' } } }) || 0;
         const totalSalesNet = await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' } } }) || 0;

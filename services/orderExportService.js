@@ -35,6 +35,21 @@ const formatDate = (dateStr) => {
     return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
 };
 
+const formatISTDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const ist = new Date(d.getTime() + istOffset);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const day = ist.getUTCDate();
+    const month = months[ist.getUTCMonth()];
+    const year = ist.getUTCFullYear();
+    let hours = ist.getUTCHours();
+    const minutes = ist.getUTCMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
+};
+
 const getItemLines = (order) => {
     const lines = [];
     const items = order.items || [];
@@ -135,7 +150,7 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             const rightColY = 45;
             pickFont(doc, 'regular', '');
             doc.fontSize(10).fillColor(secondaryColor);
-            const genDate = formatDate(new Date().toISOString());
+            const genDate = formatISTDate(new Date().toISOString());
             doc.text(`Generated: ${genDate}`, 300, rightColY, { align: 'right', width: 245 });
             doc.text(`Total Orders: ${orders.length}`, 300, rightColY + 14, { align: 'right', width: 245 });
 
@@ -275,7 +290,7 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             doc.moveTo(50, footerY - 10).lineTo(545, footerY - 10).lineWidth(1).strokeColor(borderColor).stroke();
             pickFont(doc, 'regular', '');
             doc.fillColor(secondaryColor).fontSize(8).text('Friska - Automated Orders Report', 50, footerY, { align: 'center' });
-            doc.fontSize(7).text(`Generated on ${formatDate(new Date().toISOString())} | ${orders.length} orders`, 50, footerY + 12, { align: 'center' });
+            doc.fontSize(7).text(`Generated on ${formatISTDate(new Date().toISOString())} | ${orders.length} orders`, 50, footerY + 12, { align: 'center' });
 
             doc.end();
 

@@ -158,7 +158,7 @@ const exportOrdersPdf = async (req, res) => {
         const summary = {
             totalSales: totalSalesNet + offerApplied,
             offerApplied,
-            balanceInHand: totalSalesNet,
+            balanceInHand: await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' }, paymentStatus: 'paid' } }) || 0,
             pendingPayment: await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
         };
 

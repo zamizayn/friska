@@ -94,14 +94,10 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             const lightBg = '#f8fafc';
 
             summary = summary || {};
-            const completed = summary.completed ?? orders.filter(o => o.status === 'delivered').length;
-            const pending = summary.pending ?? orders.filter(o => o.status === 'pending' || o.status === 'shipped').length;
-            const collected = summary.collected ?? orders
-                .filter(o => o.paymentStatus === 'paid')
-                .reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
-            const pendingCollection = summary.pendingCollection ?? orders
-                .filter(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid')
-                .reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+            const totalSales = summary.totalSales ?? 0;
+            const offerApplied = summary.offerApplied ?? 0;
+            const balanceInHand = summary.balanceInHand ?? 0;
+            const pendingPayment = summary.pendingPayment ?? 0;
 
             doc.rect(0, 0, doc.page.width, 12).fill(accentColor);
 
@@ -115,22 +111,11 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             if (logoExists) {
                 doc.image(logoPath, 50, 30, { height: 50 });
                 headerY = 95;
-            } else {
-                pickFont(doc, 'bold', 'ORDERS REPORT');
-                doc.fillColor(primaryColor).fontSize(22).text('ORDERS REPORT', 50, 45);
             }
 
-            let subtitleY = headerY;
-            if (branch) {
-                pickFont(doc, 'bold', branch.name);
-                doc.fontSize(12).fillColor(primaryColor).text(branch.name, 50, subtitleY);
-                subtitleY += 18;
-                if (branch.address) {
-                    const addr = pickFont(doc, 'regular', branch.address);
-                    doc.fontSize(10).fillColor(secondaryColor).text(addr, 50, subtitleY, { width: 250, lineGap: 2 });
-                    subtitleY += 16;
-                }
-            }
+            const titleLine = branch ? `ORDERS REPORT — ${branch.name}` : 'ORDERS REPORT';
+            pickFont(doc, 'bold', titleLine);
+            doc.fillColor(primaryColor).fontSize(20).text(titleLine, 50, headerY);
 
             const dateParts = [];
             if (filters.startDate) dateParts.push(`From: ${filters.startDate}`);
@@ -161,10 +146,10 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             const startX = 50;
 
             const summaryData = [
-                { label: 'Completed', value: completed.toString(), color: successColor, bg: '#dcfce7' },
-                { label: 'Pending', value: pending.toString(), color: warningColor, bg: '#fef3c7' },
-                { label: 'Collected', value: `Rs. ${collected.toLocaleString('en-IN')}`, color: accentColor, bg: '#e0e7ff' },
-                { label: 'Pending Coll.', value: `Rs. ${pendingCollection.toLocaleString('en-IN')}`, color: dangerColor, bg: '#fee2e2' }
+                { label: 'Total Sales', value: `Rs. ${totalSales.toLocaleString('en-IN')}`, color: accentColor, bg: '#e0e7ff' },
+                { label: 'Offer Applied', value: `Rs. ${offerApplied.toLocaleString('en-IN')}`, color: warningColor, bg: '#fef3c7' },
+                { label: 'Balance in Hand', value: `Rs. ${balanceInHand.toLocaleString('en-IN')}`, color: successColor, bg: '#dcfce7' },
+                { label: 'Pending Payment', value: `Rs. ${pendingPayment.toLocaleString('en-IN')}`, color: dangerColor, bg: '#fee2e2' }
             ];
 
             summaryData.forEach((item, i) => {

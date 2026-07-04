@@ -153,11 +153,13 @@ const exportOrdersPdf = async (req, res) => {
         const plainOrders = orders.map(o => o.get({ plain: true }));
         const branch = branchId ? await Branch.findByPk(branchId, { attributes: ['name', 'address'] }) : null;
 
+        const offerApplied = await Order.sum('discountAmount', { where: { ...where, status: { [Op.ne]: 'cancelled' } } }) || 0;
+        const totalSalesNet = await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' } } }) || 0;
         const summary = {
-            completed: await Order.count({ where: { ...where, status: 'delivered' } }),
-            pending: await Order.count({ where: { ...where, status: { [Op.in]: ['pending', 'shipped'] } } }),
-            collected: await Order.sum('total', { where: { ...where, paymentStatus: 'paid' } }) || 0,
-            pendingCollection: await Order.sum('total', { where: { ...where, status: where.status || { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
+            totalSales: totalSalesNet + offerApplied,
+            offerApplied,
+            balanceInHand: totalSalesNet,
+            pendingPayment: await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
         };
 
         const pdfPath = await generateOrdersReport(plainOrders, { status, startDate, endDate }, branch, summary);

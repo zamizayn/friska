@@ -13,8 +13,9 @@ export default function ProductSales() {
     const [selectedProductId, setSelectedProductId] = useState('all');
     const [selectedTenantId, setSelectedTenantId] = useState('');
     const [selectedBranchId, setSelectedBranchId] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const today = new Date().toLocaleDateString('en-CA');
+    const [startDate, setStartDate] = useState(today);
+    const [endDate, setEndDate] = useState(today);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     

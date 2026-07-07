@@ -215,23 +215,29 @@ const getProductSales = async (req, res) => {
 
         const orders = await Order.findAll({
             where: orderWhere,
-            attributes: ['items'],
+            attributes: ['items', 'discountAmount', 'subtotalBeforeTax'],
             raw: true
         });
 
         const salesMap = {};
         orders.forEach(order => {
             const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
-            if (Array.isArray(items)) {
-                items.forEach(item => {
-                    const id = item.id;
-                    if (id) {
-                        if (!salesMap[id]) salesMap[id] = { totalQuantity: 0, totalRevenue: 0 };
-                        salesMap[id].totalQuantity += (item.quantity || 0);
-                        salesMap[id].totalRevenue += (item.quantity || 0) * (item.price || 0);
-                    }
-                });
-            }
+            if (!Array.isArray(items)) return;
+
+            const subtotal = order.subtotalBeforeTax ||
+                items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+            const discountRatio = order.discountAmount > 0 && subtotal > 0
+                ? Math.min(order.discountAmount / subtotal, 1)
+                : 0;
+
+            items.forEach(item => {
+                const id = item.id;
+                if (!id) return;
+                if (!salesMap[id]) salesMap[id] = { totalQuantity: 0, totalRevenue: 0 };
+                const itemRevenue = (item.quantity || 0) * (item.price || 0);
+                salesMap[id].totalQuantity += (item.quantity || 0);
+                salesMap[id].totalRevenue += itemRevenue * (1 - discountRatio);
+            });
         });
 
         const result = allProducts.map(p => ({

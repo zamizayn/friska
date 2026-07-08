@@ -2,19 +2,19 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBP94pNT2vKPuo6eeqfux_cDBF5jyJ20nc",
-    authDomain: "wstore-7fc7c.firebaseapp.com",
-    projectId: "wstore-7fc7c",
-    storageBucket: "wstore-7fc7c.firebasestorage.app",
-    messagingSenderId: "603302167646",
-    appId: "1:603302167646:web:77f7e443bb3831cfc6a0cf",
-    measurementId: "G-9HWPKG5489"
+    apiKey: "AIzaSyC2OnpWf_xS742P-gPllcsFnIQxUsM9se0",
+    authDomain: "friska-206d4.firebaseapp.com",
+    projectId: "friska-206d4",
+    storageBucket: "friska-206d4.firebasestorage.app",
+    messagingSenderId: "356893104172",
+    appId: "1:356893104172:web:f6acf50f5f7761dddc1989",
+    measurementId: "G-QZKQJFLCV1"
 };
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-const VAPID_KEY = 'BP9khI5G_0PWV33BCnbd1RxosC9vM90_l1lVP2q2KOrMPbjrvAaHq8-G4VeWTwF1IYtEo8gOTnZ2_2P-9ipIfMc';
+const VAPID_KEY = 'BK9ireKy-MBIM_0s3hug5Kfz1MHZMBRVXp7kt0LUe5NgoeAotVAv0S5gOJ68OPynSsNMVf0C3hSXDf3-HgFQ0LE';
 
 /**
  * Request notification permission and get FCM token

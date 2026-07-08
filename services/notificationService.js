@@ -1,9 +1,19 @@
 const admin = require('firebase-admin');
 const path = require('path');
+const fs = require('fs');
 const { FcmToken, Notification } = require('../models');
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require(path.join(__dirname, '../config/firebase-service-account.json'));
+let serviceAccount;
+const serviceAccountPath = path.join(__dirname, '../config/firebase-service-account.json');
+
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString());
+} else if (fs.existsSync(serviceAccountPath)) {
+    serviceAccount = require(serviceAccountPath);
+} else {
+    throw new Error('Firebase service account not found. Set FIREBASE_SERVICE_ACCOUNT env var or place config/firebase-service-account.json');
+}
 
 if (!admin.apps.length) {
     admin.initializeApp({

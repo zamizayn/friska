@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 uploads/*
+
+# Firebase service account (secret — use FIREBASE_SERVICE_ACCOUNT env var in production)
+config/firebase-service-account.json

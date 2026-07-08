@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike, FileText } from 'lucide-react';
 import Pagination from '../components/Pagination';
@@ -59,6 +59,9 @@ export default function Orders() {
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [orderToMarkPaid, setOrderToMarkPaid] = useState(null);
     const [paymentModalMode, setPaymentModalMode] = useState('mark-paid');
+    const [customerSearchResults, setCustomerSearchResults] = useState([]);
+    const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
+    const searchTimeoutRef = useRef(null);
     const [products, setProducts] = useState([]);
     const [formData, setFormData] = useState({
         customerPhone: '',
@@ -216,6 +219,34 @@ export default function Orders() {
         setOrderToMarkPaid(id);
         setPaymentModalMode('update-via');
         setPaymentModalOpen(true);
+    };
+
+    const handlePhoneSearch = (phone) => {
+        setFormData({ ...formData, customerPhone: phone, customerName: '' });
+
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+        if (phone.length >= 3) {
+            searchTimeoutRef.current = setTimeout(async () => {
+                try {
+                    const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?search=${encodeURIComponent(phone)}&limit=5`);
+                    const data = await res.json();
+                    setCustomerSearchResults(data.data || []);
+                    setCustomerSearchOpen(true);
+                } catch {
+                    setCustomerSearchResults([]);
+                    setCustomerSearchOpen(false);
+                }
+            }, 300);
+        } else {
+            setCustomerSearchResults([]);
+            setCustomerSearchOpen(false);
+        }
+    };
+
+    const selectCustomer = (customer) => {
+        setFormData({ ...formData, customerPhone: customer.phone, customerName: customer.name });
+        setCustomerSearchOpen(false);
     };
 
     const confirmCancellation = async () => {
@@ -642,9 +673,19 @@ export default function Orders() {
                         <form onSubmit={handleSubmit}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                                 <div>
-                                    <div className="input-group">
+                                    <div className="input-group" style={{ position: 'relative' }}>
                                         <label>Customer Phone (WhatsApp)</label>
-                                        <input type="text" placeholder="919876543210" value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} required />
+                                        <input type="text" placeholder="Start typing phone number..." value={formData.customerPhone} onChange={e => handlePhoneSearch(e.target.value)} onBlur={() => setTimeout(() => setCustomerSearchOpen(false), 200)} required />
+                                        {customerSearchOpen && customerSearchResults.length > 0 && (
+                                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid var(--border-color)', borderRadius: '8px', zIndex: 100, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                                                {customerSearchResults.map(c => (
+                                                    <div key={c.phone} onClick={() => selectCustomer(c)} style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{ fontWeight: 600, fontSize: '13px' }}>{c.name}</span>
+                                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>+{c.phone}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="input-group">
                                         <label>Customer Name</label>

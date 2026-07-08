@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Customer, Order, CustomerLog, Category, Product, sequelize } = require('../models');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage } = require('../services/whatsappService');
@@ -9,6 +10,13 @@ const getAllCustomers = async (req, res) => {
         const offset = (page - 1) * limit;
 
         const where = await req.getScope();
+
+        if (req.query.search) {
+            where[Op.or] = [
+                { phone: { [Op.iLike]: `%${req.query.search}%` } },
+                { name: { [Op.iLike]: `%${req.query.search}%` } }
+            ];
+        }
 
         const { count, rows } = await Customer.findAndCountAll({
             where,

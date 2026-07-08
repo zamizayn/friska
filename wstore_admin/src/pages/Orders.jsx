@@ -229,7 +229,7 @@ export default function Orders() {
         if (phone.length >= 3) {
             searchTimeoutRef.current = setTimeout(async () => {
                 try {
-                    const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?search=${encodeURIComponent(phone)}&limit=5`);
+                    const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?search=${encodeURIComponent(phone)}&limit=5`, { headers: getHeaders() });
                     const data = await res.json();
                     setCustomerSearchResults(data.data || []);
                     setCustomerSearchOpen(true);

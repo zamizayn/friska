@@ -545,11 +545,11 @@ export default function Products() {
                                 </div>
                                 <div className="input-group">
                                     <label>Price (INR)</label>
-                                    <input type="number" placeholder="0.00" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} required />
+                                    <input type="number" placeholder="0.00" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} onWheel={e => e.target.blur()} required />
                                 </div>
                                 <div className="input-group">
                                     <label>Initial Stock Level</label>
-                                    <input type="number" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} required />
+                                    <input type="number" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} onWheel={e => e.target.blur()} required />
                                 </div>
                             </div>
 
@@ -633,7 +633,7 @@ export default function Products() {
                                 </div>
                                 <div className="input-group" style={{ marginBottom: 0, marginTop: '16px' }}>
                                     <label>Priority (1 shows first, then 2, 3...)</label>
-                                    <input type="number" placeholder="e.g. 1" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })} />
+                                    <input type="number" placeholder="e.g. 1" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })} onWheel={e => e.target.blur()} />
                                     <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>Products with lower priority numbers will appear first in the WhatsApp catalog.</p>
                                 </div>
                             </div>

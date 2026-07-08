@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike, History } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -25,8 +25,9 @@ const ALL_PAGES = [
 
 export default function DashboardLayout() {
     const navigate = useNavigate();
+    const getActiveBranchId = () => localStorage.getItem('selectedBranchId') || localStorage.getItem('branchId') || '';
     const [branches, setBranches] = useState([]);
-    const [selectedBranchId, setSelectedBranchId] = useState(localStorage.getItem('selectedBranchId') || '');
+    const [selectedBranchId, setSelectedBranchId] = useState(getActiveBranchId());
     const [isHubOpen, setIsHubOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +47,8 @@ export default function DashboardLayout() {
     const [reopenTime, setReopenTime] = useState('');
     const [branchLogs, setBranchLogs] = useState([]);
     const [logsModalOpen, setLogsModalOpen] = useState(false);
+    const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
+    const shopDropdownRef = useRef(null);
 
     const role = localStorage.getItem('adminRole');
 
@@ -133,7 +136,7 @@ export default function DashboardLayout() {
 
     // Fetch branch shop status
     useEffect(() => {
-        const branchId = localStorage.getItem('selectedBranchId');
+        const branchId = getActiveBranchId();
         if (branchId) {
             fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, { headers: getHeaders() })
                 .then(res => res.json())
@@ -143,7 +146,7 @@ export default function DashboardLayout() {
     }, [localStorage.getItem('selectedBranchId')]);
 
     const closeShop = async () => {
-        const branchId = localStorage.getItem('selectedBranchId');
+        const branchId = getActiveBranchId();
         if (!branchId) return;
         await fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, {
             method: 'PUT',
@@ -157,7 +160,7 @@ export default function DashboardLayout() {
     };
 
     const openShop = async () => {
-        const branchId = localStorage.getItem('selectedBranchId');
+        const branchId = getActiveBranchId();
         if (!branchId) return;
         await fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, {
             method: 'PUT',
@@ -169,7 +172,7 @@ export default function DashboardLayout() {
     };
 
     const fetchBranchLogs = async () => {
-        const branchId = localStorage.getItem('selectedBranchId');
+        const branchId = getActiveBranchId();
         if (!branchId) return;
         const res = await fetch(API_ENDPOINTS.BRANCH_LOGS(branchId), { headers: getHeaders() });
         const data = await res.json();
@@ -428,15 +431,36 @@ export default function DashboardLayout() {
                             </div>
                         )}
 
-                        {selectedBranchId && (
-                            <button
-                                className="btn-outline"
-                                style={{ padding: '6px 12px', fontSize: '12px', border: shopOpen ? '1px solid var(--success)' : '1px solid var(--danger)', color: shopOpen ? 'var(--success)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '6px' }}
-                                onClick={() => setShopModalOpen(true)}
-                            >
-                                {shopOpen ? 'Open' : 'Closed'}
-                                <History size={12} style={{ cursor: 'pointer', opacity: 0.6 }} onClick={(e) => { e.stopPropagation(); fetchBranchLogs(); }} />
-                            </button>
+                        {getActiveBranchId() && (
+                            <div ref={shopDropdownRef} style={{ position: 'relative' }}>
+                                <button
+                                    className="btn-outline"
+                                    style={{ padding: '6px 12px', fontSize: '12px', border: shopOpen ? '1px solid var(--success)' : '1px solid var(--danger)', color: shopOpen ? 'var(--success)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                                    onClick={() => setShopDropdownOpen(!shopDropdownOpen)}
+                                >
+                                    {shopOpen ? 'Open' : 'Closed'}
+                                    <ChevronDown size={12} />
+                                </button>
+                                {shopDropdownOpen && (
+                                    <>
+                                        <div style={{ position: 'fixed', inset: 0, zIndex: 150 }} onClick={() => setShopDropdownOpen(false)}></div>
+                                        <div style={{ position: 'absolute', top: '110%', right: 0, minWidth: '180px', background: 'white', border: '1px solid var(--border-color)', borderRadius: '12px', zIndex: 200, boxShadow: 'var(--shadow-lg)', overflow: 'hidden' }}>
+                                            <div
+                                                style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)' }}
+                                                onClick={() => { setShopDropdownOpen(false); setShopModalOpen(true); }}
+                                            >
+                                                <span style={{ fontWeight: 600 }}>{shopOpen ? 'Close Shop' : 'Open Shop'}</span>
+                                            </div>
+                                            <div
+                                                style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                                onClick={() => { setShopDropdownOpen(false); fetchBranchLogs(); }}
+                                            >
+                                                <span>View Logs</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         )}
 
                         {/* Notification Bell */}

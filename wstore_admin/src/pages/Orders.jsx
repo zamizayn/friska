@@ -56,6 +56,9 @@ export default function Orders() {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
     const [orderToCancel, setOrderToCancel] = useState(null);
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [orderToMarkPaid, setOrderToMarkPaid] = useState(null);
+    const [paymentModalMode, setPaymentModalMode] = useState('mark-paid');
     const [products, setProducts] = useState([]);
     const [formData, setFormData] = useState({
         customerPhone: '',
@@ -177,6 +180,13 @@ export default function Orders() {
     };
 
     const updatePaymentStatus = async (id, newPaymentStatus) => {
+        if (newPaymentStatus === 'paid') {
+            setOrderToMarkPaid(id);
+            setPaymentModalMode('mark-paid');
+            setPaymentModalOpen(true);
+            return;
+        }
+
         await fetch(`${API_ENDPOINTS.ORDERS}/${id}/payment-status`, {
             method: 'PUT',
             headers: getHeaders(),
@@ -186,6 +196,26 @@ export default function Orders() {
         if (viewingOrder && viewingOrder.id === id) {
             setViewingOrder({ ...viewingOrder, paymentStatus: newPaymentStatus });
         }
+    };
+
+    const confirmPaid = async (collectedVia) => {
+        await fetch(`${API_ENDPOINTS.ORDERS}/${orderToMarkPaid}/payment-status`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ paymentStatus: 'paid', collectedVia })
+        });
+        setPaymentModalOpen(false);
+        setOrderToMarkPaid(null);
+        fetchOrders(pagination.page);
+        if (viewingOrder && viewingOrder.id === orderToMarkPaid) {
+            setViewingOrder({ ...viewingOrder, paymentStatus: 'paid', collectedVia });
+        }
+    };
+
+    const openPaymentViaEditor = (id) => {
+        setOrderToMarkPaid(id);
+        setPaymentModalMode('update-via');
+        setPaymentModalOpen(true);
     };
 
     const confirmCancellation = async () => {
@@ -549,6 +579,12 @@ export default function Orders() {
                                             <option value="unpaid">Unpaid</option>
                                             <option value="paid">Paid</option>
                                         </select>
+                                        {order.paymentStatus === 'paid' && (
+                                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                {order.collectedVia ? `via ${order.collectedVia}` : 'via —'}
+                                                <button onClick={() => openPaymentViaEditor(order.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '11px', color: 'var(--accent)', textDecoration: 'underline' }}>edit</button>
+                                            </div>
+                                        )}
                                         {order.paymentTransactionId && (
                                             <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                                                 ID: {order.paymentTransactionId}
@@ -908,6 +944,23 @@ export default function Orders() {
                         <div className="modal-actions" style={{ marginTop: '24px' }}>
                             <button className="btn-outline" style={{ flex: 1 }} onClick={() => { setCancelModalOpen(false); setOrderToCancel(null); }}>Keep Order</button>
                             <button className="btn-primary" style={{ flex: 1, background: 'var(--danger)', boxShadow: 'none' }} onClick={confirmCancellation}>Confirm Cancellation</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Payment Modal */}
+            {paymentModalOpen && (
+                <div className="modal-overlay active">
+                    <div className="modal" style={{ maxWidth: '400px' }}>
+                        <h3>{paymentModalMode === 'mark-paid' ? 'Mark as Paid' : 'Update Payment Mode'}</h3>
+                        <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '12px 0 24px' }}>
+                            {paymentModalMode === 'mark-paid' ? 'How was the payment collected?' : 'Select the payment mode'}
+                        </p>
+                        <div className="modal-actions" style={{ marginTop: '8px' }}>
+                            <button className="btn-outline" style={{ flex: 1 }} onClick={() => { setPaymentModalOpen(false); setOrderToMarkPaid(null); }}>Cancel</button>
+                            <button className="btn-primary" style={{ flex: 1 }} onClick={() => confirmPaid('cash')}>Cash</button>
+                            <button className="btn-primary" style={{ flex: 1, background: 'var(--accent)' }} onClick={() => confirmPaid('account')}>Account</button>
                         </div>
                     </div>
                 </div>

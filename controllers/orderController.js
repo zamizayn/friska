@@ -260,7 +260,8 @@ const updatePaymentStatus = async (req, res) => {
         const order = await Order.findByPk(req.params.id);
         if (!order) return res.status(404).json({ error: 'Order not found' });
 
-        order.paymentStatus = req.body.paymentStatus;
+        if (req.body.paymentStatus !== undefined) order.paymentStatus = req.body.paymentStatus;
+        if (req.body.collectedVia !== undefined) order.collectedVia = req.body.collectedVia;
         await order.save();
         res.json(order);
     } catch (e) {

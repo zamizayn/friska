@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       Branch.hasMany(models.Order, { foreignKey: 'branchId' });
       Branch.hasMany(models.Customer, { foreignKey: 'branchId' });
       Branch.hasMany(models.Offer, { foreignKey: 'branchId' });
+      Branch.hasMany(models.BranchLog, { foreignKey: 'branchId' });
     }
   }
   Branch.init({
@@ -28,7 +29,12 @@ module.exports = (sequelize, DataTypes) => {
     latitude: DataTypes.DECIMAL(10, 8),
     longitude: DataTypes.DECIMAL(11, 8),
     deliveryRadius: DataTypes.FLOAT,
-    address: DataTypes.TEXT
+    address: DataTypes.TEXT,
+    isOpen: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    closedUntil: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Branch',

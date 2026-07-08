@@ -1,4 +1,4 @@
-const { Branch, Tenant } = require('../models');
+const { Branch, Tenant, BranchLog } = require('../models');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middleware/auth');
 
@@ -70,6 +70,20 @@ const updateBranch = async (req, res) => {
         if (!updateData.password) {
             delete updateData.password;
         }
+        delete updateData.closeReason;
+
+        const prevIsOpen = branch.isOpen;
+        const newIsOpen = req.body.isOpen;
+
+        if (newIsOpen !== undefined && newIsOpen !== prevIsOpen) {
+            await BranchLog.create({
+                branchId: branch.id,
+                adminId: req.user.username || `branch_${req.user.branchId}` || `tenant_${req.user.tenantId}` || 'unknown',
+                actionType: newIsOpen ? 'SHOP_OPENED' : 'SHOP_CLOSED',
+                reason: req.body.closeReason || null,
+                closedUntil: req.body.closedUntil || null
+            });
+        }
 
         await branch.update(updateData);
         res.json(branch);
@@ -97,9 +111,39 @@ const deleteBranch = async (req, res) => {
     }
 };
 
+const getBranchLogs = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = (page - 1) * limit;
+
+        const branch = await Branch.findByPk(req.params.id);
+        if (!branch) return res.status(404).json({ error: 'Branch not found' });
+
+        if (req.user.role === 'tenant' && branch.tenantId !== req.user.tenantId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+        if (req.user.role === 'branch' && branch.id !== req.user.branchId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const { count, rows } = await BranchLog.findAndCountAll({
+            where: { branchId: req.params.id },
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
+        });
+
+        res.json({ data: rows, total: count, page, totalPages: Math.ceil(count / limit) });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 module.exports = {
     getAllBranches,
     createBranch,
     updateBranch,
-    deleteBranch
+    deleteBranch,
+    getBranchLogs
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike, History } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -39,6 +39,13 @@ export default function DashboardLayout() {
     const [bellOpen, setBellOpen] = useState(false);
     const [toast, setToast] = useState(null);
     const bellRef = useRef(null);
+
+    const [shopModalOpen, setShopModalOpen] = useState(false);
+    const [shopOpen, setShopOpen] = useState(true);
+    const [closeReason, setCloseReason] = useState('');
+    const [reopenTime, setReopenTime] = useState('');
+    const [branchLogs, setBranchLogs] = useState([]);
+    const [logsModalOpen, setLogsModalOpen] = useState(false);
 
     const role = localStorage.getItem('adminRole');
 
@@ -123,6 +130,52 @@ export default function DashboardLayout() {
                 .catch(err => console.error(err));
         }
     }, [role]);
+
+    // Fetch branch shop status
+    useEffect(() => {
+        const branchId = localStorage.getItem('selectedBranchId');
+        if (branchId) {
+            fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, { headers: getHeaders() })
+                .then(res => res.json())
+                .then(data => setShopOpen(data.isOpen !== false))
+                .catch(() => {});
+        }
+    }, [localStorage.getItem('selectedBranchId')]);
+
+    const closeShop = async () => {
+        const branchId = localStorage.getItem('selectedBranchId');
+        if (!branchId) return;
+        await fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ isOpen: false, closeReason, closedUntil: reopenTime || null })
+        });
+        setShopOpen(false);
+        setShopModalOpen(false);
+        setCloseReason('');
+        setReopenTime('');
+    };
+
+    const openShop = async () => {
+        const branchId = localStorage.getItem('selectedBranchId');
+        if (!branchId) return;
+        await fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ isOpen: true })
+        });
+        setShopOpen(true);
+        setShopModalOpen(false);
+    };
+
+    const fetchBranchLogs = async () => {
+        const branchId = localStorage.getItem('selectedBranchId');
+        if (!branchId) return;
+        const res = await fetch(API_ENDPOINTS.BRANCH_LOGS(branchId), { headers: getHeaders() });
+        const data = await res.json();
+        setBranchLogs(data.data || []);
+        setLogsModalOpen(true);
+    };
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -375,6 +428,17 @@ export default function DashboardLayout() {
                             </div>
                         )}
 
+                        {selectedBranchId && (
+                            <button
+                                className="btn-outline"
+                                style={{ padding: '6px 12px', fontSize: '12px', border: shopOpen ? '1px solid var(--success)' : '1px solid var(--danger)', color: shopOpen ? 'var(--success)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                onClick={() => setShopModalOpen(true)}
+                            >
+                                {shopOpen ? 'Open' : 'Closed'}
+                                <History size={12} style={{ cursor: 'pointer', opacity: 0.6 }} onClick={(e) => { e.stopPropagation(); fetchBranchLogs(); }} />
+                            </button>
+                        )}
+
                         {/* Notification Bell */}
                         <div ref={bellRef} style={{ position: 'relative' }}>
                             <button
@@ -468,6 +532,81 @@ export default function DashboardLayout() {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Shop Status Modal */}
+            {shopModalOpen && (
+                <div className="modal-overlay active">
+                    <div className="modal" style={{ maxWidth: '420px' }}>
+                        <h3>{shopOpen ? 'Close Shop' : 'Open Shop'}</h3>
+
+                        {shopOpen ? (
+                            <>
+                                <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '12px 0 24px' }}>Provide a reason and expected reopening time.</p>
+                                <div className="input-group">
+                                    <label>Reason for closing</label>
+                                    <input type="text" placeholder="e.g. Holiday, Maintenance..." value={closeReason} onChange={e => setCloseReason(e.target.value)} />
+                                </div>
+                                <div className="input-group">
+                                    <label>Expected Reopen Time</label>
+                                    <input type="time" value={reopenTime} onChange={e => setReopenTime(e.target.value)} />
+                                </div>
+                                <div className="modal-actions" style={{ marginTop: '24px' }}>
+                                    <button className="btn-outline" style={{ flex: 1 }} onClick={() => setShopModalOpen(false)}>Cancel</button>
+                                    <button className="btn-primary" style={{ flex: 1, background: 'var(--danger)', boxShadow: 'none' }} onClick={closeShop}>Close Shop</button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '12px 0 24px' }}>The shop is currently closed. Open it to start accepting orders again.</p>
+                                <div className="modal-actions" style={{ marginTop: '8px' }}>
+                                    <button className="btn-outline" style={{ flex: 1 }} onClick={() => setShopModalOpen(false)}>Cancel</button>
+                                    <button className="btn-primary" style={{ flex: 1 }} onClick={openShop}>Open Now</button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Shop Logs Modal */}
+            {logsModalOpen && (
+                <div className="modal-overlay active">
+                    <div className="modal" style={{ maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h3>Shop Logs</h3>
+                            <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setLogsModalOpen(false)}>✕</button>
+                        </div>
+                        {branchLogs.length === 0 ? (
+                            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No logs yet.</p>
+                        ) : (
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                        <th style={{ padding: '8px', textAlign: 'left' }}>Action</th>
+                                        <th style={{ padding: '8px', textAlign: 'left' }}>Reason</th>
+                                        <th style={{ padding: '8px', textAlign: 'left' }}>Reopen</th>
+                                        <th style={{ padding: '8px', textAlign: 'left' }}>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {branchLogs.map(log => (
+                                        <tr key={log.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                            <td style={{ padding: '8px' }}>
+                                                <span style={{ fontWeight: 600, color: log.actionType === 'SHOP_CLOSED' ? 'var(--danger)' : 'var(--success)' }}>
+                                                    {log.actionType === 'SHOP_CLOSED' ? 'Closed' : 'Opened'}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{log.reason || '—'}</td>
+                                            <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{log.closedUntil || '—'}</td>
+                                            <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '12px' }}>{new Date(log.createdAt).toLocaleString('en-IN')}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

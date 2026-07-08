@@ -6,5 +6,6 @@ router.get('/', branchController.getAllBranches);
 router.post('/', branchController.createBranch); // Note: Used in onboarding without token
 router.put('/:id', branchController.updateBranch);
 router.delete('/:id', branchController.deleteBranch);
+router.get('/:id/logs', branchController.getBranchLogs);
 
 module.exports = router;

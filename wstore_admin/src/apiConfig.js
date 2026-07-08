@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
   REGISTRATION_PAYMENT: '/api/payments/registration', // Note: This is not under /api/admin
   REGISTRATION_STATUS: (id) => `${BASE_URL}/tenants/${id}/registration-status`,
   DELIVERY_BOYS: `${BASE_URL}/delivery-boys`,
+  BRANCH_LOGS: (id) => `${BASE_URL}/branches/${id}/logs`,
 };
 
 export const getHeaders = () => {

@@ -764,9 +764,19 @@ const handleChangeBranch = async (from, session, tenant) => {
 const validateShopOpen = async (from, session) => {
     if (!session.branchId) return true;
     const branch = await Branch.findByPk(session.branchId);
-    if (branch && !isBranchOpen(branch)) {
+    if (!branch) return true;
+    if (!isBranchOpen(branch)) {
         await sendTextMessage(from,
             `Hi! 👋 Our shop is currently closed. We're open from *${format12Hour(branch.openingTime)}* to *${format12Hour(branch.closingTime)}*. Please visit us during working hours!`,
+            session.config);
+        return false;
+    }
+    if (branch.isOpen === false) {
+        const reopenMsg = branch.closedUntil
+            ? `We will be back by *${branch.closedUntil}*.`
+            : 'We will let you know once we are back.';
+        await sendTextMessage(from,
+            `Sorry! 😔 Our shop is currently closed. ${reopenMsg} Please try again later.`,
             session.config);
         return false;
     }
@@ -1405,6 +1415,11 @@ const handleAddressCollection = async (from, text, session, tenant) => {
 // Handler: Payment Selection
 // =========================
 const handlePaymentSelection = async (from, text, session, tenant) => {
+    const branch = await Branch.findByPk(session.branchId);
+    if (branch && branch.isOpen === false) {
+        return await sendTextMessage(from, 'Sorry! The shop is currently closed. Please try again later.', session.config);
+    }
+
     const paymentMethod = text === 'pay_cod' ? 'Cash on Delivery' : 'Online Payment';
     const address = session.address || 'N/A';
 

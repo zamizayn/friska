@@ -580,9 +580,19 @@ export default function Orders() {
                                             <option value="paid">Paid</option>
                                         </select>
                                         {order.paymentStatus === 'paid' && (
-                                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                {order.collectedVia ? `via ${order.collectedVia}` : 'via —'}
-                                                <button onClick={() => openPaymentViaEditor(order.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '11px', color: 'var(--accent)', textDecoration: 'underline' }}>edit</button>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                {order.collectedVia ? (
+                                                    <>
+                                                        <span style={{ fontSize: '10px', fontWeight: 600, color: '#16a34a', background: 'rgba(22,163,74,0.1)', padding: '1px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
+                                                            {order.collectedVia}
+                                                        </span>
+                                                        <button onClick={() => openPaymentViaEditor(order.id)} style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }} title="Change mode">✎</button>
+                                                    </>
+                                                ) : (
+                                                    <button onClick={() => openPaymentViaEditor(order.id)} style={{ fontSize: '9px', color: 'var(--accent)', background: 'none', border: '1px dashed var(--accent)', borderRadius: '4px', padding: '1px 6px', cursor: 'pointer' }}>
+                                                        + Mode
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                         {order.paymentTransactionId && (

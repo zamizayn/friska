@@ -270,9 +270,12 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
 
                 // Payment status
                 const pmtColor = paymentStatus === 'paid' ? successColor : warningColor;
-                pickFont(doc, 'bold', paymentStatus);
+                const pmtLabel = paymentStatus === 'paid' && order.collectedVia
+                    ? `Paid (${order.collectedVia.charAt(0).toUpperCase() + order.collectedVia.slice(1)})`
+                    : paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1);
+                pickFont(doc, 'bold', pmtLabel);
                 doc.fontSize(7).fillColor(pmtColor);
-                doc.text(paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1), colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
+                doc.text(pmtLabel, colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
 
                 // Date & Time
                 pickFont(doc, 'regular', dateStr);

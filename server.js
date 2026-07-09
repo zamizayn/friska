@@ -3,8 +3,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
+const moment = require('moment-timezone');
 const { Op } = require('sequelize');
-const { CustomerLog } = require('./models');
+const { CustomerLog, Branch } = require('./models');
 
 const webhookRoutes = require('./routes/webhook');
 const adminRoutes = require('./routes/admin/index');
@@ -46,6 +47,29 @@ cron.schedule('0 0 * * *', async () => {
         console.log(`[Cron] Purged ${deletedCount} old log(s).`);
     } catch (e) {
         console.error('[Cron] Error purging old logs:', e.message);
+    }
+});
+
+// Schedule cron job to auto-reopen branches when closedUntil time has passed
+cron.schedule('* * * * *', async () => {
+    try {
+        const closedBranches = await Branch.findAll({
+            where: { isOpen: false, closedUntil: { [Op.ne]: null } }
+        });
+        if (closedBranches.length === 0) return;
+        const now = moment().tz('Asia/Kolkata').format('HH:mm');
+        let reopened = 0;
+        for (const branch of closedBranches) {
+            if (now >= branch.closedUntil) {
+                await branch.update({ isOpen: true, closedUntil: null });
+                reopened++;
+            }
+        }
+        if (reopened > 0) {
+            console.log(`[Cron] Auto-reopened ${reopened} branch(es) at ${now} IST`);
+        }
+    } catch (e) {
+        console.error('[Cron] Error auto-reopening branches:', e.message);
     }
 });
 

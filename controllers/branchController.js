@@ -111,6 +111,24 @@ const deleteBranch = async (req, res) => {
     }
 };
 
+const getBranch = async (req, res) => {
+    try {
+        const branch = await Branch.findByPk(req.params.id);
+        if (!branch) return res.status(404).json({ error: 'Branch not found' });
+
+        if (req.user.role === 'tenant' && branch.tenantId !== req.user.tenantId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+        if (req.user.role === 'branch' && branch.id !== req.user.branchId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        res.json(branch);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 const getBranchLogs = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -145,5 +163,6 @@ module.exports = {
     createBranch,
     updateBranch,
     deleteBranch,
+    getBranch,
     getBranchLogs
 };

@@ -772,14 +772,6 @@ const validateShopOpen = async (from, session) => {
         return false;
     }
     if (branch.isOpen === false) {
-        if (branch.closedUntil) {
-            const now = moment().tz('Asia/Kolkata');
-            const reopen = moment(branch.closedUntil, 'HH:mm').tz('Asia/Kolkata');
-            if (now.isAfter(reopen)) {
-                await branch.update({ isOpen: true, closedUntil: null });
-                return true;
-            }
-        }
         const reopenMsg = branch.closedUntil
             ? `We will be back by *${format12Hour(branch.closedUntil)}*.`
             : 'We will let you know once we are back.';

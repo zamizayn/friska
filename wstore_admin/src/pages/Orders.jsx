@@ -62,6 +62,11 @@ export default function Orders() {
     const [customerSearchResults, setCustomerSearchResults] = useState([]);
     const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
     const searchTimeoutRef = useRef(null);
+    const role = localStorage.getItem('adminRole');
+    const [branches, setBranches] = useState([]);
+    const defaultBranchId = role === 'branch'
+        ? localStorage.getItem('branchId') || ''
+        : localStorage.getItem('selectedBranchId') || '';
     const [products, setProducts] = useState([]);
     const [customerAddresses, setCustomerAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -89,11 +94,6 @@ export default function Orders() {
     const [filters, setFilters] = useState(initialFilters);
     const [deliveryBoys, setDeliveryBoys] = useState([]);
     const [selectedDeliveryBoyId, setSelectedDeliveryBoyId] = useState('');
-    const role = localStorage.getItem('adminRole');
-    const [branches, setBranches] = useState([]);
-    const defaultBranchId = role === 'branch'
-        ? localStorage.getItem('branchId') || ''
-        : localStorage.getItem('selectedBranchId') || '';
     const navigate = useNavigate();
 
     const fetchOrders = async (page = 1) => {

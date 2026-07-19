@@ -156,7 +156,6 @@ export default function Customers() {
                     <select
                         value={orderFilter}
                         onChange={e => setOrderFilter(e.target.value)}
-                        className="input-group"
                         style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'white', cursor: 'pointer' }}
                     >
                         <option value="all">All Customers</option>

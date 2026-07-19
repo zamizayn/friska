@@ -339,7 +339,7 @@ const trySendStatusNotification = async (order, status) => {
         }
         await sendTextMessage(order.customerPhone, msg, config);
     } catch (e) {
-        console.error(`Notification error for order #${order.id}:`, e.message);
+        res.status(500).json({ error: e.message, details: e.errors || undefined });
     }
 };
 

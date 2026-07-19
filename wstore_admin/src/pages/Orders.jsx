@@ -355,7 +355,7 @@ export default function Orders() {
         await fetch(API_ENDPOINTS.ORDERS, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ ...formData, subtotalBeforeTax: subtotal, total })
+            body: JSON.stringify({ ...formData, discountAmount, subtotalBeforeTax: subtotal, total })
         });
 
         setModalOpen(false);

@@ -24,11 +24,18 @@ const createOrder = async (req, res) => {
             where: { phone: req.body.customerPhone }
         });
 
-        await Customer.upsert({
-            phone: req.body.customerPhone,
-            name: req.body.customerName || '',
-            lastInteraction: new Date()
-        });
+        if (existingCustomer) {
+            await existingCustomer.update({
+                name: req.body.customerName || '',
+                lastInteraction: new Date()
+            });
+        } else {
+            await Customer.create({
+                phone: req.body.customerPhone,
+                name: req.body.customerName || '',
+                lastInteraction: new Date()
+            });
+        }
 
         const order = await Order.create({
             ...req.body,

@@ -63,14 +63,20 @@ export default function Orders() {
     const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
     const searchTimeoutRef = useRef(null);
     const [products, setProducts] = useState([]);
+    const [customerAddresses, setCustomerAddresses] = useState([]);
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const [showAddAddress, setShowAddAddress] = useState(false);
+    const [newAddressText, setNewAddressText] = useState('');
     const [formData, setFormData] = useState({
         customerPhone: '',
         customerName: '',
         address: '',
+        formattedAddress: '',
         items: [],
         status: 'pending',
         paymentMethod: 'Cash on Delivery',
-        discountAmount: ''
+        discountAmount: '',
+        branchId: defaultBranchId
     });
 
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -83,6 +89,11 @@ export default function Orders() {
     const [filters, setFilters] = useState(initialFilters);
     const [deliveryBoys, setDeliveryBoys] = useState([]);
     const [selectedDeliveryBoyId, setSelectedDeliveryBoyId] = useState('');
+    const role = localStorage.getItem('adminRole');
+    const [branches, setBranches] = useState([]);
+    const defaultBranchId = role === 'branch'
+        ? localStorage.getItem('branchId') || ''
+        : localStorage.getItem('selectedBranchId') || '';
     const navigate = useNavigate();
 
     const fetchOrders = async (page = 1) => {
@@ -133,6 +144,15 @@ export default function Orders() {
         fetchProducts();
         fetchDeliveryBoys();
     }, [filters]);
+
+    useEffect(() => {
+        if (role === 'superadmin' || role === 'tenant') {
+            fetch(API_ENDPOINTS.BRANCHES, { headers: getHeaders() })
+                .then(res => res.json())
+                .then(data => setBranches(data))
+                .catch(() => {});
+        }
+    }, [role]);
 
     const handlePageChange = (newPage) => {
         fetchOrders(newPage);
@@ -245,8 +265,21 @@ export default function Orders() {
     };
 
     const selectCustomer = (customer) => {
-        setFormData({ ...formData, customerPhone: customer.phone, customerName: customer.name });
+        setFormData({ ...formData, customerPhone: customer.phone, customerName: customer.name, address: '', formattedAddress: '' });
         setCustomerSearchOpen(false);
+        setSelectedAddressId(null);
+        setShowAddAddress(false);
+        setNewAddressText('');
+        fetch(`${API_ENDPOINTS.CUSTOMERS}/${customer.phone}/addresses`, { headers: getHeaders() })
+            .then(res => res.json())
+            .then(data => {
+                setCustomerAddresses(data || []);
+                if (data && data.length > 0) {
+                    setSelectedAddressId(data[0].id);
+                    setFormData(prev => ({ ...prev, address: data[0].address, formattedAddress: data[0].formattedAddress || data[0].address }));
+                }
+            })
+            .catch(() => setCustomerAddresses([]));
     };
 
     const confirmCancellation = async () => {
@@ -326,7 +359,11 @@ export default function Orders() {
         });
 
         setModalOpen(false);
-        setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '' });
+        setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId });
+        setCustomerAddresses([]);
+        setSelectedAddressId(null);
+        setShowAddAddress(false);
+        setNewAddressText('');
         fetchOrders();
     };
 
@@ -407,7 +444,7 @@ export default function Orders() {
                     <button className="btn-outline" onClick={handleExportPdf}>
                         <FileText size={18} /> Export PDF
                     </button>
-                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '' }); setModalOpen(true); }}>
+                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId }); setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText(''); setModalOpen(true); }}>
                         <Plus size={18} /> Manual Order
                     </button>
                 </div>
@@ -691,6 +728,90 @@ export default function Orders() {
                                         <label>Customer Name</label>
                                         <input type="text" placeholder="e.g. John Doe" value={formData.customerName} onChange={e => setFormData({ ...formData, customerName: e.target.value })} required />
                                     </div>
+                                    {customerAddresses.length > 0 && (
+                                        <div className="input-group">
+                                            <label>Saved Addresses</label>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                {customerAddresses.map(addr => (
+                                                    <div
+                                                        key={addr.id}
+                                                        onClick={() => {
+                                                            setSelectedAddressId(addr.id);
+                                                            setFormData({ ...formData, address: addr.address, formattedAddress: addr.formattedAddress || addr.address });
+                                                            setShowAddAddress(false);
+                                                        }}
+                                                        style={{
+                                                            padding: '10px 12px',
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            border: `2px solid ${selectedAddressId === addr.id ? 'var(--accent)' : 'var(--border-color)'}`,
+                                                            background: selectedAddressId === addr.id ? 'rgba(99,102,241,0.05)' : 'transparent',
+                                                            fontSize: '13px',
+                                                            lineHeight: 1.4
+                                                        }}
+                                                    >
+                                                        {addr.formattedAddress || addr.address}
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    className="btn-outline"
+                                                    style={{ padding: '6px 12px', fontSize: '12px', justifyContent: 'center' }}
+                                                    onClick={() => setShowAddAddress(!showAddAddress)}
+                                                >
+                                                    {showAddAddress ? 'Cancel' : '+ Add New Address'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {showAddAddress && formData.customerPhone && (
+                                        <div className="input-group" style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                                            <label>New Address</label>
+                                            <textarea
+                                                style={{ height: '80px', marginBottom: '8px' }}
+                                                placeholder="Enter address..."
+                                                value={newAddressText}
+                                                onChange={e => setNewAddressText(e.target.value)}
+                                            />
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    type="button"
+                                                    className="btn-primary"
+                                                    style={{ flex: 1, justifyContent: 'center', fontSize: '13px', padding: '8px' }}
+                                                    disabled={!newAddressText.trim()}
+                                                    onClick={async () => {
+                                                        const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}/${formData.customerPhone}/addresses`, {
+                                                            method: 'POST',
+                                                            headers: getHeaders(),
+                                                            body: JSON.stringify({ address: newAddressText.trim(), formattedAddress: newAddressText.trim() })
+                                                        });
+                                                        if (res.ok) {
+                                                            const newAddr = await res.json();
+                                                            setCustomerAddresses(prev => [newAddr, ...prev]);
+                                                            setSelectedAddressId(newAddr.id);
+                                                            setFormData(prev => ({ ...prev, address: newAddr.address, formattedAddress: newAddr.formattedAddress || newAddr.address }));
+                                                            setNewAddressText('');
+                                                            setShowAddAddress(false);
+                                                        }
+                                                    }}
+                                                >
+                                                    Save Address
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {!customerAddresses.length && formData.customerPhone && (
+                                        <div style={{ marginBottom: '16px' }}>
+                                            <button
+                                                type="button"
+                                                className="btn-outline"
+                                                style={{ padding: '6px 12px', fontSize: '12px', justifyContent: 'center' }}
+                                                onClick={() => setShowAddAddress(!showAddAddress)}
+                                            >
+                                                {showAddAddress ? 'Cancel' : '+ Add New Address'}
+                                            </button>
+                                        </div>
+                                    )}
                                     <div className="input-group">
                                         <label>Full Address</label>
                                         <textarea style={{ height: '100px' }} value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} required />
@@ -706,6 +827,17 @@ export default function Orders() {
                                         <label>Discount Amount (₹)</label>
                                         <input type="number" min="0" step="0.01" placeholder="0" value={formData.discountAmount} onChange={e => setFormData({ ...formData, discountAmount: e.target.value })} />
                                     </div>
+                                    {(role === 'superadmin' || role === 'tenant') && (
+                                        <div className="input-group">
+                                            <label>Branch</label>
+                                            <select value={formData.branchId || ''} onChange={e => setFormData({ ...formData, branchId: e.target.value })}>
+                                                <option value="">Select Branch...</option>
+                                                {branches.map(b => (
+                                                    <option key={b.id} value={b.id}>{b.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                     <div className="input-group">
                                         <label>Add Product</label>
                                         <select onChange={(e) => { if (e.target.value) addItem(e.target.value); e.target.value = ''; }}>

@@ -19,11 +19,12 @@ export default function Customers() {
     const [activeCustomer, setActiveCustomer] = useState(null);
     const [broadcastMsg, setBroadcastMsg] = useState('');
     const [sending, setSending] = useState(false);
+    const [orderFilter, setOrderFilter] = useState('all');
     const navigate = useNavigate();
 
     const fetchCustomers = async (page = 1) => {
         const branchId = localStorage.getItem('selectedBranchId') || '';
-        const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?page=${page}&limit=10&branchId=${branchId}`, {
+        const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?page=${page}&limit=10&branchId=${branchId}&orderFilter=${orderFilter}`, {
             headers: getHeaders()
         });
         if (res.status === 401) return navigate('/login');
@@ -77,7 +78,7 @@ export default function Customers() {
         }
     };
 
-    useEffect(() => { fetchCustomers(); }, []);
+    useEffect(() => { fetchCustomers(); }, [orderFilter]);
 
     const formatLogDetails = (log) => {
         const { details, actionType } = log;
@@ -151,7 +152,18 @@ export default function Customers() {
                     <h1>Customers</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Audience insights and relationship management</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <select
+                        value={orderFilter}
+                        onChange={e => setOrderFilter(e.target.value)}
+                        className="input-group"
+                        style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'white', cursor: 'pointer' }}
+                    >
+                        <option value="all">All Customers</option>
+                        <option value="most">Most Orders First</option>
+                        <option value="least">Least Orders First</option>
+                        <option value="none">No Orders</option>
+                    </select>
                     <button className="btn-outline" onClick={toggleAll}>
                         {selectedPhones.length === customers.length ? <CheckSquare size={18} /> : <Square size={18} />}
                         {selectedPhones.length === customers.length ? 'Deselect All' : 'Select All Page'}
@@ -204,6 +216,7 @@ export default function Customers() {
                                                 )}
                                             </div>
                                             <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>+{cust.phone}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{cust.orderCount} order{cust.orderCount !== 1 ? 's' : ''}</div>
                                         </div>
                                     </div>
                                 </td>

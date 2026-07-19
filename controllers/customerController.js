@@ -1,7 +1,13 @@
 const { Op } = require('sequelize');
-const { Customer, Order, CustomerLog, Category, Product, sequelize } = require('../models');
+const { Customer, CustomerAddress, Order, CustomerLog, Category, Product, sequelize } = require('../models');
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage } = require('../services/whatsappService');
+
+const orderCountSubquery = `(
+    SELECT COUNT(*) FROM "Orders"
+    WHERE "Orders"."customerPhone" = "Customer"."phone"
+      AND "Orders".status != 'cancelled'
+)`;
 
 const getAllCustomers = async (req, res) => {
     try {
@@ -18,22 +24,31 @@ const getAllCustomers = async (req, res) => {
             ];
         }
 
+        const orderFilter = req.query.orderFilter || 'all';
+
+        if (orderFilter === 'none') {
+            where[Op.and] = sequelize.literal(orderCountSubquery + ' = 0');
+        }
+
+        let order;
+        if (orderFilter === 'most') {
+            order = [[sequelize.literal('"orderCount"'), 'DESC']];
+        } else if (orderFilter === 'least') {
+            order = [[sequelize.literal('"orderCount"'), 'ASC']];
+        } else {
+            order = [['lastInteraction', 'DESC']];
+        }
+
         const { count, rows } = await Customer.findAndCountAll({
             where,
             attributes: {
                 include: [
-                    [
-                        sequelize.literal(`(
-                            SELECT COUNT(*) FROM "Orders"
-                            WHERE "Orders"."customerPhone" = "Customer"."phone"
-                        )`),
-                        'orderCount'
-                    ]
+                    [sequelize.literal(orderCountSubquery), 'orderCount']
                 ]
             },
             limit,
             offset,
-            order: [['lastInteraction', 'DESC']]
+            order
         });
 
         res.json({
@@ -108,6 +123,34 @@ const getCustomerLogs = async (req, res) => {
     }
 };
 
+const getCustomerAddresses = async (req, res) => {
+    try {
+        const addresses = await CustomerAddress.findAll({
+            where: { customerPhone: req.params.phone },
+            order: [['createdAt', 'DESC']]
+        });
+        res.json(addresses);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+const addCustomerAddress = async (req, res) => {
+    try {
+        const { address, formattedAddress } = req.body;
+        if (!address) return res.status(400).json({ error: 'Address is required' });
+
+        const addr = await CustomerAddress.create({
+            customerPhone: req.params.phone,
+            address,
+            formattedAddress: formattedAddress || address
+        });
+        res.status(201).json(addr);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 const broadcastMessage = async (req, res) => {
     const { phones, message } = req.body;
     if (!phones || !message) return res.status(400).json({ error: 'Missing phones or message' });
@@ -133,5 +176,7 @@ module.exports = {
     getAllCustomers,
     getCustomerOrders,
     getCustomerLogs,
+    getCustomerAddresses,
+    addCustomerAddress,
     broadcastMessage
 };

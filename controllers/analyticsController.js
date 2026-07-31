@@ -53,7 +53,7 @@ const getDashboardAnalytics = async (req, res) => {
 
         // Trend Section
         if (shouldInclude('trend')) {
-            let trendWhere = scopedWhere;
+            let trendWhere = { ...scopedWhere };
             let truncateUnit = 'day';
 
             if (!startDate && !endDate) {

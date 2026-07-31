@@ -406,6 +406,38 @@ const getProductMetaStatus = async (retailerId, config) => {
     }
 };
 
+const sendTemplateMessage = async (to, templateName, bodyParams, config = {}, headerImage = null) => {
+    try {
+        const components = [];
+
+        if (headerImage) {
+            components.push({
+                type: 'header',
+                parameters: [{ type: 'image', image: { link: headerImage } }]
+            });
+        }
+
+        components.push({
+            type: 'body',
+            parameters: bodyParams.map(p => ({ type: 'text', text: String(p) }))
+        });
+
+        await axios.post(getUrl(config), {
+            messaging_product: 'whatsapp',
+            to,
+            type: 'template',
+            template: {
+                name: templateName,
+                language: { code: 'en', policy: 'deterministic' },
+                components
+            }
+        }, { headers: getHeaders(config) });
+    } catch (error) {
+        console.error('WhatsApp Template Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     sendTextMessage,
     sendButtonMessage,
@@ -419,6 +451,7 @@ module.exports = {
     sendCarouselMessage,
     sendDocumentMessage,
     sendTypingIndicator,
+    sendTemplateMessage,
     uploadMedia,
     getMediaUrl,
     syncProductToMeta,

@@ -22,6 +22,7 @@ import Settings from './pages/Settings';
 import PaymentSettings from './pages/PaymentSettings';
 import WhatsAppSettings from './pages/WhatsAppSettings';
 import ChangePassword from './pages/ChangePassword';
+import OfferBroadcast from './pages/OfferBroadcast';
 import RegistrationPayment from './pages/RegistrationPayment';
 import PlatformSettings from './pages/PlatformSettings';
 import DeliveryBoys from './pages/DeliveryBoys';
@@ -63,6 +64,7 @@ export default function App() {
                     <Route path="support" element={<Support />} />
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="offers" element={<Offers />} />
+                    <Route path="offer-broadcast" element={<OfferBroadcast />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="payment-settings" element={<PaymentSettings />} />
                     <Route path="whatsapp-settings" element={<WhatsAppSettings />} />

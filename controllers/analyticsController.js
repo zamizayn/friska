@@ -65,6 +65,8 @@ const getDashboardAnalytics = async (req, res) => {
                 if (diffDays > 31) truncateUnit = 'month';
             }
 
+            trendWhere.status = 'delivered';
+
             const trend = await Order.findAll({
                 where: trendWhere,
                 attributes: [

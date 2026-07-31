@@ -1,4 +1,6 @@
-const { Offer } = require('../models');
+const { Offer, Customer, Branch } = require('../models');
+const { sendTemplateMessage } = require('../services/whatsappService');
+const { getTenantConfig } = require('../utils/tenantHelpers');
 
 exports.getOffers = async (req, res) => {
     try {
@@ -47,5 +49,44 @@ exports.deleteOffer = async (req, res) => {
         res.status(404).json({ message: 'Offer not found' });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+exports.broadcastOffer = async (req, res) => {
+    try {
+        const { templateName, phones, headerImage, bodyParams } = req.body;
+        if (!templateName || !Array.isArray(phones) || phones.length === 0) {
+            return res.status(400).json({ error: 'templateName and phones array are required' });
+        }
+
+        const branch = await Branch.findByPk(req.body.branchId || req.branchId).catch(() => null);
+        const tenantId = branch?.tenantId || req.tenantId;
+        const config = await getTenantConfig(tenantId);
+
+        const results = [];
+        for (const phone of phones) {
+            try {
+                await sendTemplateMessage(phone, templateName, bodyParams || [], config, headerImage || null);
+                results.push({ phone, status: 'sent' });
+            } catch (e) {
+                results.push({ phone, status: 'failed', error: e.message });
+            }
+        }
+
+        res.json({ sent: results.filter(r => r.status === 'sent').length, failed: results.filter(r => r.status === 'failed').length, results });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.uploadImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Image file is required' });
+        }
+        const url = `/uploads/offers/${req.file.filename}`;
+        res.json({ url });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };

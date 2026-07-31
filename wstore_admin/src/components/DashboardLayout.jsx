@@ -13,6 +13,7 @@ const ALL_PAGES = [
     { label: 'Product Sales', path: '/admin/product-sales', icon: TrendingUp, keywords: ['sales', 'analytics', 'revenue', 'performance', 'stats'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Categories', path: '/admin/categories', icon: Tags, keywords: ['category', 'group', 'tag', 'organize'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Customers', path: '/admin/customers', icon: Users, keywords: ['customer', 'user', 'audience', 'broadcast', 'whatsapp'], roles: ['superadmin', 'tenant', 'branch'] },
+    { label: 'Offer Broadcast', path: '/admin/offer-broadcast', icon: MessageSquare, keywords: ['broadcast', 'whatsapp', 'template', 'campaign', 'send'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Inventory', path: '/admin/inventory', icon: Boxes, keywords: ['inventory', 'stock', 'warehouse', 'supply'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Offers', path: '/admin/offers', icon: Tags, keywords: ['offer', 'discount', 'coupon', 'promo', 'rules'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
@@ -141,7 +142,7 @@ export default function DashboardLayout() {
             fetch(`${API_ENDPOINTS.BRANCHES}/${branchId}`, { headers: getHeaders() })
                 .then(res => res.json())
                 .then(data => setShopOpen(data.isOpen !== false))
-                .catch(() => {});
+                .catch(() => { });
         }
     }, [localStorage.getItem('selectedBranchId')]);
 

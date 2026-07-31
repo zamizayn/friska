@@ -1,7 +1,7 @@
 const { Order, Customer, Product, Branch, Tenant, DeliveryBoy } = require('../models');
 const { Op } = require('sequelize');
 const { getTenantConfig } = require('../utils/tenantHelpers');
-const { sendTextMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
+const { sendTemplateMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
 const { generateInvoice } = require('../services/invoiceService');
 const { generateOrdersReport } = require('../services/orderExportService');
 const orderService = require('../services/orderService');
@@ -241,18 +241,21 @@ const updateOrderStatus = async (req, res) => {
         // Fire-and-forget: notifications, invoice, and WhatsApp messages (non-blocking)
         try {
             const config = await getTenantConfig(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
+            const customer = await Customer.findByPk(order.customerPhone);
+            const custName = customer?.name || 'Customer';
+            const statusLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+
+            await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
 
             if (order.status === 'delivered') {
                 sendDeliveryInvoice(order, config).catch(e =>
                     console.error("Invoice Automation Failed:", e.message)
                 );
-
-                await sendButtonMessage(order.customerPhone, msg, [
-                    { id: `rate_${order.id}`, title: 'Rate Order ⭐' },
+                const rateMsg = `Thank you for shopping with Friska! How was your experience?`;
+                await sendButtonMessage(order.customerPhone, rateMsg, [
+                    { id: `rate_${order.id}`, title: 'Rate Order' },
                     { id: 'menu', title: 'Main Menu' }
                 ], config);
-            } else {
-                await sendTextMessage(order.customerPhone, msg, config);
             }
         } catch (e) {
             console.error("WhatsApp notification error:", e.message);
@@ -324,29 +327,24 @@ const bulkUpdateOrderStatus = async (req, res) => {
 const trySendStatusNotification = async (order, status) => {
     try {
         const config = await getTenantConfig(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
-        let msg = '';
-        if (status === 'shipped') {
-            msg = `🚚 *Update on your Order #${order.id}*\n\nGreat news! Your order has been shipped and is on its way to you!`;
-        } else if (status === 'delivered') {
-            msg = `✅ *Update on your Order #${order.id}*\n\nYour order has been successfully delivered! Thank you for shopping with Friska!`;
+        const customer = await Customer.findByPk(order.customerPhone);
+        const custName = customer?.name || 'Customer';
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
 
+        await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
+
+        if (status === 'delivered') {
             sendDeliveryInvoice(order, config).catch(e =>
                 console.error("Invoice Automation Failed:", e.message)
             );
-
-            await sendButtonMessage(order.customerPhone, msg, [
-                { id: `rate_${order.id}`, title: 'Rate Order ⭐' },
+            const rateMsg = `Thank you for shopping with Friska! How was your experience?`;
+            await sendButtonMessage(order.customerPhone, rateMsg, [
+                { id: `rate_${order.id}`, title: 'Rate Order' },
                 { id: 'menu', title: 'Main Menu' }
             ], config);
-            return;
-        } else if (status === 'cancelled') {
-            msg = `❌ *Update on your Order #${order.id}*\n\nYour order has been cancelled.`;
-        } else {
-            msg = `🔄 *Update on your Order #${order.id}*\n\nYour order status is now: *${status.toUpperCase()}*.`;
         }
-        await sendTextMessage(order.customerPhone, msg, config);
     } catch (e) {
-        res.status(500).json({ error: e.message, details: e.errors || undefined });
+        console.error("WhatsApp notification error:", e.message);
     }
 };
 

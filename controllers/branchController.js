@@ -70,7 +70,6 @@ const updateBranch = async (req, res) => {
         if (!updateData.password) {
             delete updateData.password;
         }
-        delete updateData.closeReason;
 
         const prevIsOpen = branch.isOpen;
         const newIsOpen = req.body.isOpen;
@@ -83,6 +82,10 @@ const updateBranch = async (req, res) => {
                 reason: req.body.closeReason || null,
                 closedUntil: req.body.closedUntil || null
             });
+        }
+
+        if (newIsOpen === true) {
+            updateData.closeReason = null;
         }
 
         await branch.update(updateData);

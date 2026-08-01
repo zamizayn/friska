@@ -775,8 +775,9 @@ const validateShopOpen = async (from, session) => {
         const reopenMsg = branch.closedUntil
             ? `We will be back by *${format12Hour(branch.closedUntil)}*.`
             : 'We will let you know once we are back.';
+        const reasonMsg = branch.closeReason ? `\n\n*Reason:* ${branch.closeReason}` : '';
         await sendTextMessage(from,
-            `Sorry! 😔 Our shop is currently closed. ${reopenMsg} Please try again later.`,
+            `Sorry! 😔 Our shop is currently closed.${reasonMsg} ${reopenMsg} Please try again later.`,
             session.config);
         return false;
     }

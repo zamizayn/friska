@@ -59,8 +59,10 @@ exports.broadcastOffer = async (req, res) => {
             return res.status(400).json({ error: 'templateName and phones array are required' });
         }
 
-        const branch = await Branch.findByPk(req.body.branchId || req.branchId).catch(() => null);
-        const tenantId = branch?.tenantId || req.tenantId;
+        const branch = req.body.branchId
+            ? await Branch.findByPk(req.body.branchId).catch(() => null)
+            : null;
+        const tenantId = branch?.tenantId || req.user?.tenantId;
         const config = await getTenantConfig(tenantId);
 
         const results = [];
@@ -84,7 +86,7 @@ exports.uploadImage = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'Image file is required' });
         }
-        const url = `/uploads/offers/${req.file.filename}`;
+        const url = `${req.protocol}://${req.get('host')}/uploads/offers/${req.file.filename}`;
         res.json({ url });
     } catch (error) {
         res.status(500).json({ error: error.message });

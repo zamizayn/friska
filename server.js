@@ -61,7 +61,7 @@ cron.schedule('* * * * *', async () => {
         let reopened = 0;
         for (const branch of closedBranches) {
             if (now >= branch.closedUntil) {
-                await branch.update({ isOpen: true, closedUntil: null });
+                await branch.update({ isOpen: true, closedUntil: null, closeReason: null });
                 reopened++;
             }
         }

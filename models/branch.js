@@ -34,7 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
-    closedUntil: DataTypes.STRING
+    closedUntil: DataTypes.STRING,
+    closeReason: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Branch',

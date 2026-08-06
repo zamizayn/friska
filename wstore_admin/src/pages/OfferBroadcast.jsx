@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Image, MessageSquare, X, CheckCircle, AlertCircle, UploadCloud, Check, ChevronLeft, Phone, Video, MoreVertical } from 'lucide-react';
+import { Send, Image, MessageSquare, X, CheckCircle, AlertCircle, UploadCloud, ChevronLeft, Phone, Video, MoreVertical, Search, CheckSquare, Square, Users } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 const TEMPLATES = [
@@ -11,44 +11,40 @@ const TEMPLATES = [
 const TEMPLATE_PARAMS = {
     offer_template: [
         { key: '1', label: 'Customer Name', placeholder: 'e.g. John' },
-        { key: '2', label: 'Offer Title', placeholder: 'e.g. Summer Sale' },
-        { key: '3', label: 'Discount', placeholder: 'e.g. 20% OFF' },
-        { key: '4', label: 'Valid Until', placeholder: 'e.g. 31st March' },
+        { key: '2', label: 'Offer Details', placeholder: 'e.g. Get 20% OFF on all items' },
+        { key: '3', label: 'Valid Until', placeholder: 'e.g. 31st March' },
     ],
     offer_template_image: [
         { key: '1', label: 'Customer Name', placeholder: 'e.g. John' },
-        { key: '2', label: 'Offer Title', placeholder: 'e.g. Summer Sale' },
-        { key: '3', label: 'Discount', placeholder: 'e.g. 20% OFF' },
-        { key: '4', label: 'Valid Until', placeholder: 'e.g. 31st March' },
+        { key: '2', label: 'Offer Details', placeholder: 'e.g. Get 20% OFF on all items' },
+        { key: '3', label: 'Valid Until', placeholder: 'e.g. 31st March' },
     ],
 };
 
 const LIVE_PREVIEWS = {
     offer_template: (params) => {
-        const [name, title, discount, validUntil] = params;
-        return `Hey *${name || '{{1}}'}*,
+        const [name, details, validUntil] = params;
+        return `Hello *${name || '{{1}}'}*,
 
-We have an exclusive offer just for you!
+🎉 Exclusive offer just for you!
 
-*${title || '{{2}}'}* - *${discount || '{{3}}'}*
+*${details || '{{2}}'}*
 
-Valid until: *${validUntil || '{{4}}'}*
+Offer valid until *${validUntil || '{{3}}'}*.
 
-Tap below to grab this deal!
-`;
+Tap the button below to shop now.`;
     },
     offer_template_image: (params) => {
-        const [name, title, discount, validUntil] = params;
-        return `Hey *${name || '{{1}}'}*,
+        const [name, details, validUntil] = params;
+        return `Hello *${name || '{{1}}'}*,
 
-We have an exclusive offer just for you!
+🎉 Exclusive offer just for you!
 
-*${title || '{{2}}'}* - *${discount || '{{3}}'}*
+*${details || '{{2}}'}*
 
-Valid until: *${validUntil || '{{4}}'}*
+Offer valid until *${validUntil || '{{3}}'}*.
 
-Tap below to grab this deal!
-`;
+Tap the button below to shop now.`;
     },
 };
 
@@ -77,9 +73,74 @@ export default function OfferBroadcast() {
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
 
+    // Recipient selection states
+    const [recipientMode, setRecipientMode] = useState('select'); // 'select' or 'manual'
+    const [customersList, setCustomersList] = useState([]);
+    const [loadingCustomers, setLoadingCustomers] = useState(false);
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [selectedCustomers, setSelectedCustomers] = useState([]);
+
     const paramDefs = TEMPLATE_PARAMS[templateName] || [];
-    const previewParams = paramDefs.map(p => bodyParams[p.key] || '');
+
+    // Dynamically evaluate preview params:
+    // If Select mode is active and we have selected contacts, show the first contact's name in the preview.
+    const previewParams = paramDefs.map(p => {
+        if (p.key === '1' && recipientMode === 'select' && selectedCustomers.length > 0) {
+            return selectedCustomers[0].name || 'Customer';
+        }
+        return bodyParams[p.key] || '';
+    });
     const previewText = LIVE_PREVIEWS[templateName] ? LIVE_PREVIEWS[templateName](previewParams) : '';
+
+    // Fetch customers from backend
+    const fetchCustomers = async (search = '') => {
+        setLoadingCustomers(true);
+        try {
+            const branchId = localStorage.getItem('selectedBranchId') || '';
+            const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?page=1&limit=100&branchId=${branchId}&search=${encodeURIComponent(search)}`, {
+                headers: getHeaders()
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setCustomersList(data.data || []);
+            }
+        } catch (e) {
+            console.error('Failed to fetch customers:', e);
+        } finally {
+            setLoadingCustomers(false);
+        }
+    };
+
+    useEffect(() => {
+        if (role !== 'branch' && recipientMode === 'select') {
+            fetchCustomers(customerSearch);
+        }
+    }, [customerSearch, role, recipientMode]);
+
+    const toggleCustomerSelection = (customer) => {
+        if (selectedCustomers.some(c => c.phone === customer.phone)) {
+            setSelectedCustomers(selectedCustomers.filter(c => c.phone !== customer.phone));
+        } else {
+            setSelectedCustomers([...selectedCustomers, customer]);
+        }
+    };
+
+    const toggleAllCustomers = () => {
+        const allCurrentSelected = customersList.every(c => selectedCustomers.some(sc => sc.phone === c.phone));
+        if (allCurrentSelected) {
+            // Deselect all loaded search results
+            setSelectedCustomers(selectedCustomers.filter(sc => !customersList.some(c => c.phone === sc.phone)));
+        } else {
+            // Add all loaded search results (avoid duplicates)
+            const newSelections = [...selectedCustomers];
+            customersList.forEach(c => {
+                if (!newSelections.some(sc => sc.phone === c.phone)) {
+                    newSelections.push(c);
+                }
+            });
+            setSelectedCustomers(newSelections);
+        }
+    };
 
     const handleImageSelect = (e) => {
         const file = e.target.files[0];
@@ -98,14 +159,19 @@ export default function OfferBroadcast() {
     };
 
     const handleSend = async () => {
-        const phoneList = phones.split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-            .map(normalizePhone)
-            .filter(p => /^\d{10,15}$/.test(p));
+        const phoneList = recipientMode === 'select'
+            ? selectedCustomers.map(c => c.phone)
+            : phones.split(',')
+                .map(s => s.trim())
+                .filter(Boolean)
+                .map(normalizePhone)
+                .filter(p => /^\d{10,15}$/.test(p));
 
         if (phoneList.length === 0) {
-            setError('Please enter at least one valid phone number.');
+            setError(recipientMode === 'select' 
+                ? 'Please select at least one contact from the list.' 
+                : 'Please enter at least one valid phone number.'
+            );
             return;
         }
 
@@ -119,7 +185,15 @@ export default function OfferBroadcast() {
             return;
         }
 
-        const missingParams = paramDefs.filter(p => !bodyParams[p.key] || !bodyParams[p.key].trim());
+        // Validate bodyParams: If select mode is active, the first parameter (Customer Name) is auto-personalizing
+        // and doesn't strictly block validation if empty (it will default to 'Customer' or fallback field).
+        const missingParams = paramDefs.filter(p => {
+            if (p.key === '1' && recipientMode === 'select') {
+                return false; 
+            }
+            return !bodyParams[p.key] || !bodyParams[p.key].trim();
+        });
+
         if (missingParams.length > 0) {
             setError(`Please fill in all message variables. Missing: ${missingParams.map(p => p.label).join(', ')}`);
             return;
@@ -295,20 +369,29 @@ export default function OfferBroadcast() {
                         </p>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {paramDefs.map(p => (
-                                <div className="input-group" key={p.key} style={{ marginBottom: 0 }}>
-                                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span>{p.label}</span>
-                                        <span style={{ fontSize: '11px', color: 'var(--accent)', background: 'var(--accent-light)', padding: '2px 6px', borderRadius: '4px' }}>{`{{${p.key}}}`}</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={bodyParams[p.key] || ''}
-                                        onChange={(e) => setBodyParams(prev => ({ ...prev, [p.key]: e.target.value }))}
-                                        placeholder={p.placeholder}
-                                    />
-                                </div>
-                            ))}
+                            {paramDefs.map(p => {
+                                const isNameField = p.key === '1';
+                                const isSelectMode = recipientMode === 'select';
+                                return (
+                                    <div className="input-group" key={p.key} style={{ marginBottom: 0 }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>{isNameField && isSelectMode ? 'Fallback Customer Name (Optional)' : p.label}</span>
+                                            <span style={{ fontSize: '11px', color: 'var(--accent)', background: 'var(--accent-light)', padding: '2px 6px', borderRadius: '4px' }}>{`{{${p.key}}}`}</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={bodyParams[p.key] || ''}
+                                            onChange={(e) => setBodyParams(prev => ({ ...prev, [p.key]: e.target.value }))}
+                                            placeholder={isNameField && isSelectMode ? 'e.g. Customer' : p.placeholder}
+                                        />
+                                        {isNameField && isSelectMode && (
+                                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px', display: 'block', lineHeight: '1.4' }}>
+                                                💡 Names will automatically be loaded from database contacts. If a contact name is missing in the database, this fallback name is used.
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -316,23 +399,195 @@ export default function OfferBroadcast() {
                     <div className="white-card">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
                             <div style={{ width: '32px', height: '32px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Send size={16} />
+                                <Users size={16} />
                             </div>
                             <span style={{ fontWeight: 700, fontSize: '16px' }}>3. Target Audience</span>
                         </div>
 
-                        <div className="input-group" style={{ marginBottom: 0 }}>
-                            <label>Recipient Phone Numbers</label>
-                            <textarea
-                                value={phones}
-                                onChange={(e) => setPhones(e.target.value)}
-                                placeholder="+919876543210, +919876543211, ..."
-                                rows={4}
-                            />
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', display: 'block' }}>
-                                Separate multiple numbers with commas. Enter numbers with country code (e.g. +91 for India).
-                            </span>
+                        {/* Mode toggle */}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', background: 'var(--bg-app)', padding: '4px', borderRadius: '8px' }}>
+                            <button 
+                                type="button" 
+                                onClick={() => setRecipientMode('select')}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 12px',
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    background: recipientMode === 'select' ? 'white' : 'transparent',
+                                    color: recipientMode === 'select' ? 'var(--accent)' : 'var(--text-muted)',
+                                    boxShadow: recipientMode === 'select' ? 'var(--shadow-sm)' : 'none',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                Select Contacts
+                            </button>
+                            <button 
+                                type="button" 
+                                onClick={() => setRecipientMode('manual')}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 12px',
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    background: recipientMode === 'manual' ? 'white' : 'transparent',
+                                    color: recipientMode === 'manual' ? 'var(--accent)' : 'var(--text-muted)',
+                                    boxShadow: recipientMode === 'manual' ? 'var(--shadow-sm)' : 'none',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                Enter Manually
+                            </button>
                         </div>
+
+                        {recipientMode === 'select' ? (
+                            /* Select Contacts UI */
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <div style={{ position: 'relative', flex: 1 }}>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Search name or phone..." 
+                                            value={customerSearch}
+                                            onChange={e => setCustomerSearch(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px 16px 10px 40px',
+                                                borderRadius: '10px',
+                                                border: '1px solid var(--border-color)',
+                                                fontSize: '13.5px',
+                                                background: 'white'
+                                            }}
+                                        />
+                                        <div style={{ position: 'absolute', left: '14px', top: '53%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '14px' }}>
+                                            🔍
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button"
+                                        className="btn-outline" 
+                                        onClick={toggleAllCustomers}
+                                        style={{ padding: '10px 14px', fontSize: '13px', height: '40px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                    >
+                                        <span>{customersList.length > 0 && customersList.every(c => selectedCustomers.some(sc => sc.phone === c.phone)) ? 'Deselect Page' : 'Select Page'}</span>
+                                    </button>
+                                </div>
+
+                                {/* Selection Summary Banner */}
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center', 
+                                    fontSize: '13px', 
+                                    background: 'var(--accent-light)', 
+                                    padding: '10px 14px', 
+                                    borderRadius: '8px', 
+                                    color: 'var(--accent)', 
+                                    fontWeight: 600 
+                                }}>
+                                    <span>Selected: {selectedCustomers.length} contact{selectedCustomers.length !== 1 ? 's' : ''}</span>
+                                    {selectedCustomers.length > 0 && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setSelectedCustomers([])} 
+                                            style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}
+                                        >
+                                            Clear Selection
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Scrollable Customer list */}
+                                <div style={{ 
+                                    maxHeight: '260px', 
+                                    overflowY: 'auto', 
+                                    border: '1px solid var(--border-color)', 
+                                    borderRadius: '12px', 
+                                    background: 'var(--bg-app)',
+                                    padding: '8px'
+                                }}>
+                                    {loadingCustomers && customersList.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)', fontSize: '13.5px' }}>
+                                            Searching database...
+                                        </div>
+                                    ) : customersList.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)', fontSize: '13.5px' }}>
+                                            No customers found.
+                                        </div>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            {customersList.map(c => {
+                                                const isSelected = selectedCustomers.some(sc => sc.phone === c.phone);
+                                                return (
+                                                    <div 
+                                                        key={c.phone} 
+                                                        onClick={() => toggleCustomerSelection(c)}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '12px',
+                                                            padding: '10px 12px',
+                                                            borderRadius: '8px',
+                                                            background: isSelected ? 'white' : 'transparent',
+                                                            border: isSelected ? '1px solid var(--accent)' : '1px solid transparent',
+                                                            boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.15s'
+                                                        }}
+                                                    >
+                                                        <div style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
+                                                            {isSelected ? <CheckSquare size={18} style={{ color: 'var(--accent)' }} /> : <Square size={18} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />}
+                                                        </div>
+                                                        <div style={{ 
+                                                            width: '34px', 
+                                                            height: '34px', 
+                                                            background: isSelected ? 'var(--accent-light)' : 'var(--border-hover)', 
+                                                            color: isSelected ? 'var(--accent)' : 'var(--text-muted)', 
+                                                            borderRadius: '50%', 
+                                                            display: 'flex', 
+                                                            alignItems: 'center', 
+                                                            justifyContent: 'center',
+                                                            fontWeight: 800,
+                                                            fontSize: '13px'
+                                                        }}>
+                                                            {c.name ? c.name[0].toUpperCase() : 'C'}
+                                                        </div>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                {c.name || 'Unnamed Customer'}
+                                                            </div>
+                                                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                                                                {c.phone}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            /* Enter Manually UI */
+                            <div className="input-group" style={{ marginBottom: 0 }}>
+                                <label>Recipient Phone Numbers</label>
+                                <textarea
+                                    value={phones}
+                                    onChange={(e) => setPhones(e.target.value)}
+                                    placeholder="+919876543210, +919876543211, ..."
+                                    rows={4}
+                                />
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', display: 'block' }}>
+                                    Separate multiple numbers with commas. Enter numbers with country code (e.g. +91 for India).
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Feedback & Actions */}

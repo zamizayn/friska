@@ -1,6 +1,7 @@
 const { Offer, Customer, Branch } = require('../models');
 const { sendTemplateMessage } = require('../services/whatsappService');
 const { getTenantConfig } = require('../utils/tenantHelpers');
+const { Op } = require('sequelize');
 
 exports.getOffers = async (req, res) => {
     try {
@@ -73,11 +74,33 @@ exports.broadcastOffer = async (req, res) => {
         const tenantId = branch?.tenantId || req.user?.tenantId;
         const config = await getTenantConfig(tenantId);
 
+        // Fetch matching customer names in bulk to avoid querying in a loop
+        const cleanPhones = phones.map(p => p.replace(/\D/g, '').slice(-10));
+        const customers = await Customer.findAll({
+            where: {
+                phone: {
+                    [Op.or]: cleanPhones.map(cp => ({ [Op.like]: `%${cp}` }))
+                }
+            }
+        }).catch(() => []);
+
+        const customerMap = {};
+        for (const customer of customers) {
+            const cp = customer.phone.replace(/\D/g, '').slice(-10);
+            customerMap[cp] = customer.name;
+        }
+
         const results = [];
         for (const phone of phones) {
             try {
-                await sendTemplateMessage(phone, templateName, bodyParams || [], config, headerImage || null);
-                results.push({ phone, status: 'sent' });
+                const cp = phone.replace(/\D/g, '').slice(-10);
+                const nameToUse = customerMap[cp] || bodyParams[0] || 'Customer';
+
+                const personalizedParams = [...bodyParams];
+                personalizedParams[0] = nameToUse;
+
+                await sendTemplateMessage(phone, templateName, personalizedParams, config, headerImage || null);
+                results.push({ phone, status: 'sent', customerName: nameToUse });
             } catch (e) {
                 results.push({ phone, status: 'failed', error: e.message });
             }

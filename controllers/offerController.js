@@ -59,6 +59,14 @@ exports.broadcastOffer = async (req, res) => {
             return res.status(400).json({ error: 'templateName and phones array are required' });
         }
 
+        if (Array.isArray(bodyParams) && bodyParams.some(val => !val || String(val).trim() === '')) {
+            return res.status(400).json({ error: 'All message template parameters must have non-empty text values' });
+        }
+
+        if (templateName.includes('image') && !headerImage) {
+            return res.status(400).json({ error: 'headerImage is required for image templates' });
+        }
+
         const branch = req.body.branchId
             ? await Branch.findByPk(req.body.branchId).catch(() => null)
             : null;

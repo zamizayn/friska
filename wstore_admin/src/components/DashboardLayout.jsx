@@ -298,6 +298,11 @@ export default function DashboardLayout() {
                     <NavLink to="/admin/customers" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                         <Users size={18} /> <span>Customers</span>
                     </NavLink>
+                    {(role === 'superadmin' || role === 'tenant') && (
+                        <NavLink to="/admin/offer-broadcast" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                            <MessageSquare size={18} /> <span>Offer Broadcast</span>
+                        </NavLink>
+                    )}
                     <NavLink to="/admin/inventory" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                         <Boxes size={18} /> <span>Inventory</span>
                     </NavLink>

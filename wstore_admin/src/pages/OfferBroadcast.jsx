@@ -26,13 +26,16 @@ const LIVE_PREVIEWS = {
         const [name, details, validUntil] = params;
         return `Hello *${name || '{{1}}'}*,
 
-🎉 Exclusive offer just for you!
+We have an update for you.
 
 *${details || '{{2}}'}*
 
-Offer valid until *${validUntil || '{{3}}'}*.
+Offer details:
+*${validUntil || '{{3}}'}*
 
-Tap the button below to shop now.`;
+Send Hi to get started
+
+Thank you for choosing our service.`;
     },
     offer_template_image: (params) => {
         const [name, details, validUntil] = params;
@@ -42,9 +45,7 @@ Tap the button below to shop now.`;
 
 *${details || '{{2}}'}*
 
-Offer valid until *${validUntil || '{{3}}'}*.
-
-Tap the button below to shop now.`;
+Offer valid until *${validUntil || '{{3}}'}*.`;
     },
 };
 
@@ -56,6 +57,53 @@ const formatWhatsAppText = (text) => {
             return <strong key={i} style={{ fontWeight: '700' }}>{part.slice(1, -1)}</strong>;
         }
         return part;
+    });
+};
+
+const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                const MAX_SIZE = 1200;
+                if (width > MAX_SIZE || height > MAX_SIZE) {
+                    if (width > height) {
+                        height = Math.round((height * MAX_SIZE) / width);
+                        width = MAX_SIZE;
+                    } else {
+                        width = Math.round((width * MAX_SIZE) / height);
+                        height = MAX_SIZE;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        reject(new Error("Canvas blob creation failed"));
+                        return;
+                    }
+                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    resolve(compressedFile);
+                }, 'image/jpeg', 0.7);
+            };
+            img.onerror = (err) => reject(err);
+            img.src = event.target.result;
+        };
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
     });
 };
 
@@ -145,7 +193,8 @@ export default function OfferBroadcast() {
     const handleImageSelect = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setImage(file);
+            setError(null);
+            setImage(file); // Set file instantly
             const reader = new FileReader();
             reader.onload = (ev) => setImagePreview(ev.target.result);
             reader.readAsDataURL(file);
@@ -168,8 +217,8 @@ export default function OfferBroadcast() {
                 .filter(p => /^\d{10,15}$/.test(p));
 
         if (phoneList.length === 0) {
-            setError(recipientMode === 'select' 
-                ? 'Please select at least one contact from the list.' 
+            setError(recipientMode === 'select'
+                ? 'Please select at least one contact from the list.'
                 : 'Please enter at least one valid phone number.'
             );
             return;
@@ -189,7 +238,7 @@ export default function OfferBroadcast() {
         // and doesn't strictly block validation if empty (it will default to 'Customer' or fallback field).
         const missingParams = paramDefs.filter(p => {
             if (p.key === '1' && recipientMode === 'select') {
-                return false; 
+                return false;
             }
             return !bodyParams[p.key] || !bodyParams[p.key].trim();
         });
@@ -207,8 +256,16 @@ export default function OfferBroadcast() {
             let uploadedImageUrl = null;
 
             if (image && templateName === 'offer_template_image') {
+                // Compress image just before uploading
+                let fileToUpload = image;
+                try {
+                    fileToUpload = await compressImage(image);
+                } catch (compressErr) {
+                    console.error("Image compression failed during send, uploading original:", compressErr);
+                }
+
                 const formData = new FormData();
-                formData.append('image', image);
+                formData.append('image', fileToUpload);
                 const uploadRes = await fetch(`${API_ENDPOINTS.OFFERS}/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': getHeaders()['Authorization'] },
@@ -225,7 +282,12 @@ export default function OfferBroadcast() {
                 phones: phoneList,
                 branchId: branchId || undefined,
                 headerImage: uploadedImageUrl,
-                bodyParams: paramDefs.map(p => bodyParams[p.key] || ''),
+                bodyParams: paramDefs.map(p => {
+                    if (p.key === '1' && recipientMode === 'select') {
+                        return 'User';
+                    }
+                    return bodyParams[p.key] || '';
+                }),
             };
 
             const res = await fetch(API_ENDPOINTS.OFFER_BROADCAST, {
@@ -275,7 +337,7 @@ export default function OfferBroadcast() {
             <div className="dashboard-grid">
                 {/* Form Inputs (Left Column) */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    
+
                     {/* Section 1: Template Selection */}
                     <div className="white-card">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
@@ -289,11 +351,11 @@ export default function OfferBroadcast() {
                             <label>WhatsApp Approved Template</label>
                             <select
                                 value={templateName}
-                                onChange={(e) => { 
-                                    setTemplateName(e.target.value); 
-                                    setBodyParams({}); 
-                                    setImage(null); 
-                                    setImagePreview(null); 
+                                onChange={(e) => {
+                                    setTemplateName(e.target.value);
+                                    setBodyParams({});
+                                    setImage(null);
+                                    setImagePreview(null);
                                 }}
                             >
                                 {TEMPLATES.map(t => (
@@ -319,8 +381,8 @@ export default function OfferBroadcast() {
                                         transition: 'all 0.2s',
                                         textAlign: 'center'
                                     }}
-                                    onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
-                                    onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-hover)'}
+                                        onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
+                                        onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-hover)'}
                                     >
                                         <UploadCloud size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px' }} />
                                         <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-main)' }}>Click to upload image</span>
@@ -330,8 +392,8 @@ export default function OfferBroadcast() {
                                 ) : (
                                     <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-app)', padding: '10px' }}>
                                         <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
-                                        <button 
-                                            onClick={() => { setImage(null); setImagePreview(null); }} 
+                                        <button
+                                            onClick={() => { setImage(null); setImagePreview(null); }}
                                             style={{
                                                 position: 'absolute',
                                                 top: '16px',
@@ -372,22 +434,29 @@ export default function OfferBroadcast() {
                             {paramDefs.map(p => {
                                 const isNameField = p.key === '1';
                                 const isSelectMode = recipientMode === 'select';
+                                if (isNameField && isSelectMode) {
+                                    return null; // Hide Customer Name field in Select Contacts mode
+                                }
                                 return (
                                     <div className="input-group" key={p.key} style={{ marginBottom: 0 }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span>{isNameField && isSelectMode ? 'Fallback Customer Name (Optional)' : p.label}</span>
-                                            <span style={{ fontSize: '11px', color: 'var(--accent)', background: 'var(--accent-light)', padding: '2px 6px', borderRadius: '4px' }}>{`{{${p.key}}}`}</span>
+                                            <span>{p.label}</span>
                                         </label>
-                                        <input
-                                            type="text"
-                                            value={bodyParams[p.key] || ''}
-                                            onChange={(e) => setBodyParams(prev => ({ ...prev, [p.key]: e.target.value }))}
-                                            placeholder={isNameField && isSelectMode ? 'e.g. Customer' : p.placeholder}
-                                        />
-                                        {isNameField && isSelectMode && (
-                                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px', display: 'block', lineHeight: '1.4' }}>
-                                                💡 Names will automatically be loaded from database contacts. If a contact name is missing in the database, this fallback name is used.
-                                            </span>
+                                        {p.key === '2' ? (
+                                            <textarea
+                                                value={bodyParams[p.key] || ''}
+                                                onChange={(e) => setBodyParams(prev => ({ ...prev, [p.key]: e.target.value }))}
+                                                placeholder={p.placeholder}
+                                                rows={3}
+                                                style={{ resize: 'vertical' }}
+                                            />
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                value={bodyParams[p.key] || ''}
+                                                onChange={(e) => setBodyParams(prev => ({ ...prev, [p.key]: e.target.value }))}
+                                                placeholder={p.placeholder}
+                                            />
                                         )}
                                     </div>
                                 );
@@ -406,8 +475,8 @@ export default function OfferBroadcast() {
 
                         {/* Mode toggle */}
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', background: 'var(--bg-app)', padding: '4px', borderRadius: '8px' }}>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={() => setRecipientMode('select')}
                                 style={{
                                     flex: 1,
@@ -425,8 +494,8 @@ export default function OfferBroadcast() {
                             >
                                 Select Contacts
                             </button>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={() => setRecipientMode('manual')}
                                 style={{
                                     flex: 1,
@@ -451,9 +520,9 @@ export default function OfferBroadcast() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                     <div style={{ position: 'relative', flex: 1 }}>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Search name or phone..." 
+                                        <input
+                                            type="text"
+                                            placeholder="Search name or phone..."
                                             value={customerSearch}
                                             onChange={e => setCustomerSearch(e.target.value)}
                                             style={{
@@ -469,9 +538,9 @@ export default function OfferBroadcast() {
                                             🔍
                                         </div>
                                     </div>
-                                    <button 
+                                    <button
                                         type="button"
-                                        className="btn-outline" 
+                                        className="btn-outline"
                                         onClick={toggleAllCustomers}
                                         style={{ padding: '10px 14px', fontSize: '13px', height: '40px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                     >
@@ -480,22 +549,22 @@ export default function OfferBroadcast() {
                                 </div>
 
                                 {/* Selection Summary Banner */}
-                                <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center', 
-                                    fontSize: '13px', 
-                                    background: 'var(--accent-light)', 
-                                    padding: '10px 14px', 
-                                    borderRadius: '8px', 
-                                    color: 'var(--accent)', 
-                                    fontWeight: 600 
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    fontSize: '13px',
+                                    background: 'var(--accent-light)',
+                                    padding: '10px 14px',
+                                    borderRadius: '8px',
+                                    color: 'var(--accent)',
+                                    fontWeight: 600
                                 }}>
                                     <span>Selected: {selectedCustomers.length} contact{selectedCustomers.length !== 1 ? 's' : ''}</span>
                                     {selectedCustomers.length > 0 && (
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setSelectedCustomers([])} 
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedCustomers([])}
                                             style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}
                                         >
                                             Clear Selection
@@ -504,11 +573,11 @@ export default function OfferBroadcast() {
                                 </div>
 
                                 {/* Scrollable Customer list */}
-                                <div style={{ 
-                                    maxHeight: '260px', 
-                                    overflowY: 'auto', 
-                                    border: '1px solid var(--border-color)', 
-                                    borderRadius: '12px', 
+                                <div style={{
+                                    maxHeight: '260px',
+                                    overflowY: 'auto',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '12px',
                                     background: 'var(--bg-app)',
                                     padding: '8px'
                                 }}>
@@ -525,8 +594,8 @@ export default function OfferBroadcast() {
                                             {customersList.map(c => {
                                                 const isSelected = selectedCustomers.some(sc => sc.phone === c.phone);
                                                 return (
-                                                    <div 
-                                                        key={c.phone} 
+                                                    <div
+                                                        key={c.phone}
                                                         onClick={() => toggleCustomerSelection(c)}
                                                         style={{
                                                             display: 'flex',
@@ -544,14 +613,14 @@ export default function OfferBroadcast() {
                                                         <div style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}>
                                                             {isSelected ? <CheckSquare size={18} style={{ color: 'var(--accent)' }} /> : <Square size={18} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />}
                                                         </div>
-                                                        <div style={{ 
-                                                            width: '34px', 
-                                                            height: '34px', 
-                                                            background: isSelected ? 'var(--accent-light)' : 'var(--border-hover)', 
-                                                            color: isSelected ? 'var(--accent)' : 'var(--text-muted)', 
-                                                            borderRadius: '50%', 
-                                                            display: 'flex', 
-                                                            alignItems: 'center', 
+                                                        <div style={{
+                                                            width: '34px',
+                                                            height: '34px',
+                                                            background: isSelected ? 'var(--accent-light)' : 'var(--border-hover)',
+                                                            color: isSelected ? 'var(--accent)' : 'var(--text-muted)',
+                                                            borderRadius: '50%',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
                                                             justifyContent: 'center',
                                                             fontWeight: 800,
                                                             fontSize: '13px'
@@ -661,7 +730,7 @@ export default function OfferBroadcast() {
                 {/* Simulated WhatsApp Phone Mock (Right Column) */}
                 <div style={{ position: 'sticky', top: '32px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
                     <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)' }}>Campaign Live Preview</span>
-                    
+
                     <div style={{
                         width: '100%',
                         maxWidth: '380px',
@@ -689,14 +758,14 @@ export default function OfferBroadcast() {
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <ChevronLeft size={20} style={{ cursor: 'pointer' }} />
-                                <div style={{ 
-                                    width: '34px', 
-                                    height: '34px', 
-                                    borderRadius: '50%', 
-                                    background: 'var(--accent)', 
-                                    color: 'white', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
+                                <div style={{
+                                    width: '34px',
+                                    height: '34px',
+                                    borderRadius: '50%',
+                                    background: 'var(--accent)',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
                                     justifyContent: 'center',
                                     fontWeight: 700,
                                     fontSize: '14px',
@@ -707,14 +776,14 @@ export default function OfferBroadcast() {
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <span style={{ fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         {localStorage.getItem('tenantName') || 'Friska Store'}
-                                        <span style={{ 
-                                            width: '12px', 
-                                            height: '12px', 
-                                            borderRadius: '50%', 
-                                            background: '#3897f0', 
-                                            color: 'white', 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
+                                        <span style={{
+                                            width: '12px',
+                                            height: '12px',
+                                            borderRadius: '50%',
+                                            background: '#3897f0',
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
                                             justifyContent: 'center',
                                             fontSize: '8px',
                                             fontWeight: 'bold'
@@ -739,15 +808,15 @@ export default function OfferBroadcast() {
                             flexDirection: 'column',
                             justifyContent: 'flex-start'
                         }}>
-                            <div style={{ 
-                                alignSelf: 'center', 
-                                background: 'rgba(225, 243, 254, 0.8)', 
-                                color: '#1c3d5a', 
-                                fontSize: '11px', 
-                                padding: '5px 12px', 
-                                borderRadius: '8px', 
-                                marginBottom: '20px', 
-                                textAlign: 'center', 
+                            <div style={{
+                                alignSelf: 'center',
+                                background: 'rgba(225, 243, 254, 0.8)',
+                                color: '#1c3d5a',
+                                fontSize: '11px',
+                                padding: '5px 12px',
+                                borderRadius: '8px',
+                                marginBottom: '20px',
+                                textAlign: 'center',
                                 boxShadow: '0 1px 1px rgba(0,0,0,0.05)',
                                 maxWidth: '85%'
                             }}>
@@ -802,7 +871,7 @@ export default function OfferBroadcast() {
                                     fontFamily: 'inherit'
                                 }}>
                                     {previewText ? formatWhatsAppText(previewText) : 'Select template and fill variables.'}
-                                    
+
                                     {/* Time Stamp inside bubble */}
                                     <div style={{
                                         position: 'absolute',
@@ -816,32 +885,6 @@ export default function OfferBroadcast() {
                                     }}>
                                         <span>12:00 PM</span>
                                     </div>
-                                </div>
-
-                                {/* Custom CTA Action Buttons at bottom of WhatsApp Message */}
-                                <div style={{
-                                    borderTop: '1px solid #f0f2f5',
-                                    marginTop: '2px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    background: '#fafafa',
-                                    borderRadius: '0 0 10px 10px'
-                                }}>
-                                    <a href="#link" onClick={(e) => e.preventDefault()} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '6px',
-                                        padding: '10px',
-                                        color: '#00a884',
-                                        fontSize: '13px',
-                                        fontWeight: 600,
-                                        textDecoration: 'none',
-                                        borderBottom: '1px solid #f0f2f5'
-                                    }}>
-                                        <Send size={12} />
-                                        <span>Grab Deal</span>
-                                    </a>
                                 </div>
                             </div>
                         </div>

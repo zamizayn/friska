@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   ShoppingCart,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import logo from './assets/logo.png';
+import Landing from './components/Landing';
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api/app`
@@ -32,9 +34,13 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showLaunchMessage, setShowLaunchMessage] = useState(false);
 
-  const username = window.location.pathname.split('/').pop() || 'friska';
+  const location = useLocation();
+  const username = location.pathname.split('/').pop() || 'friska';
+
+  const isRoot = location.pathname === '/' || location.pathname === '';
 
   useEffect(() => {
+    if (isRoot) return;
     const fetchData = async () => {
       try {
         const response = await axios.get(`${API_BASE}/catalog/${username}`);
@@ -49,7 +55,7 @@ function App() {
 
     const savedCart = localStorage.getItem(`cart_${username}`);
     if (savedCart) setCart(JSON.parse(savedCart));
-  }, [username]);
+  }, [username, isRoot]);
 
   useEffect(() => {
     localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
@@ -110,56 +116,66 @@ function App() {
     setIsCartOpen(false);
   };
 
+  if (isRoot) return <Landing />;
+
   if (loading) return (
-    <div className="container">
-      <header>
-        <div className="skeleton" style={{ height: '32px', width: '120px', borderRadius: '8px' }}></div>
-        <div className="skeleton" style={{ height: '40px', width: '40px', borderRadius: '12px' }}></div>
+    <div className="catalog-layout">
+      <header className="catalog-header">
+        <div className="catalog-header-inner">
+          <div className="skeleton" style={{ height: '32px', width: '120px', borderRadius: '8px' }}></div>
+          <div className="skeleton" style={{ height: '40px', width: '40px', borderRadius: '12px' }}></div>
+        </div>
       </header>
-      <div className="skeleton" style={{ height: '50px', width: '100%', borderRadius: '16px', margin: '1.5rem 0' }}></div>
-      <div className="flex gap-3 mb-8 overflow-hidden">
-        {[1, 2, 3, 4].map(i => <div key={i} className="skeleton" style={{ height: '36px', minWidth: '80px', borderRadius: '20px' }}></div>)}
-      </div>
-      <div className="product-grid">
-        {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="skeleton-card">
-            <div className="skeleton-image skeleton"></div>
-            <div className="skeleton-line skeleton"></div>
-            <div className="skeleton-line short skeleton"></div>
-          </div>
-        ))}
+      <div className="container">
+        <div className="skeleton" style={{ height: '50px', width: '100%', borderRadius: '16px', margin: '1.5rem 0' }}></div>
+        <div className="flex gap-3 mb-8 overflow-hidden">
+          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton" style={{ height: '36px', minWidth: '80px', borderRadius: '20px' }}></div>)}
+        </div>
+        <div className="product-grid">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="skeleton-card">
+              <div className="skeleton-image skeleton"></div>
+              <div className="skeleton-line skeleton"></div>
+              <div className="skeleton-line short skeleton"></div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 
   if (error) return (
-    <div className="p-12 text-center">
-      <div className="bg-red-50 text-red-600 p-8 rounded-[2rem] inline-block border border-red-100">
-        <X size={48} className="mx-auto mb-4 opacity-50" />
-        <h2 className="text-xl font-black mb-2">Something went wrong</h2>
-        <p className="font-medium opacity-80">{error}</p>
-        <button onClick={() => window.location.reload()} className="mt-6 px-6 py-2 bg-red-600 text-white rounded-xl font-bold">Try Again</button>
+    <div className="error-container">
+      <div className="error-card">
+        <X size={48} className="error-icon" />
+        <h2 className="error-title">Something went wrong</h2>
+        <p className="error-message">{error}</p>
+        <button onClick={() => window.location.reload()} className="error-btn">Try Again</button>
       </div>
     </div>
   );
 
   return (
-    <div className="container">
-      <header>
-        <div className="store-logo-container">
-          <img src={data.tenant.logo || logo} alt={data.tenant.name} className="store-logo" />
+    <div className="catalog-layout">
+      <header className="catalog-header">
+        <div className="catalog-header-inner">
+          <div className="store-logo-container">
+            <img src={data.tenant.logo || logo} alt={data.tenant.name} className="store-logo" />
+            <span className="store-brand">{data.tenant.name || 'Friska'}</span>
+          </div>
+          <button onClick={() => setIsCartOpen(true)} className="cart-icon-btn">
+            <ShoppingCart size={22} strokeWidth={2.5} />
+            {totalItems > 0 && (
+              <span className="cart-badge">
+                {totalItems}
+              </span>
+            )}
+          </button>
         </div>
-        <button onClick={() => setIsCartOpen(true)} className="cart-icon-btn">
-          <ShoppingCart size={22} strokeWidth={2.5} />
-          {totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-sm">
-              {totalItems}
-            </span>
-          )}
-        </button>
       </header>
 
-      <div className="search-container">
+      <div className="container">
+        <div className="search-container">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} strokeWidth={2.5} />
         <input
           type="text"
@@ -189,10 +205,10 @@ function App() {
       </div>
 
       {filteredProducts.length === 0 ? (
-        <div className="text-center py-20 opacity-40">
-          <Search size={64} className="mx-auto mb-4" />
-          <h3 className="text-lg font-bold">No items found</h3>
-          <p className="text-sm">Try searching for something else</p>
+        <div className="no-results">
+          <Search size={64} className="no-results-icon" />
+          <h3 className="no-results-title">No items found</h3>
+          <p className="no-results-sub">Try searching for something else</p>
         </div>
       ) : (
         <div className="product-grid">
@@ -218,18 +234,18 @@ function App() {
 
       {totalItems > 0 && !isCartOpen && (
         <button className="cart-fab" onClick={() => setIsCartOpen(true)}>
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-2.5 rounded-xl">
+          <div className="cart-fab-left">
+            <div className="cart-fab-icon-wrap">
               <ShoppingBag size={22} strokeWidth={2.5} />
             </div>
-            <div className="text-left">
-              <div className="text-xs font-bold uppercase tracking-wider opacity-60">{totalItems} items</div>
-              <div className="text-lg font-black">View Cart</div>
+            <div className="cart-fab-text">
+              <div className="cart-fab-count">{totalItems} {totalItems === 1 ? 'item' : 'items'}</div>
+              <div className="cart-fab-label">View Cart</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-black">₹{totalAmount}</span>
-            <ChevronRight size={24} strokeWidth={3} />
+          <div className="cart-fab-right">
+            <span className="cart-fab-price">₹{totalAmount}</span>
+            <ChevronRight size={24} strokeWidth={3} className="cart-fab-arrow" />
           </div>
         </button>
       )}
@@ -254,7 +270,7 @@ function App() {
                   </div>
                   <div className="qty-control">
                     <button onClick={() => updateQuantity(item.id, -1)} className="qty-btn"><Minus size={14} strokeWidth={3} /></button>
-                    <span className="font-black min-w-[24px] text-center">{item.quantity}</span>
+                    <span className="qty-value">{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.id, 1)} className="qty-btn"><Plus size={14} strokeWidth={3} /></button>
                   </div>
                 </div>
@@ -332,6 +348,7 @@ function App() {
           </div>
         </div>
       )}
+      </div> {/* end of .container */}
     </div>
   );
 }

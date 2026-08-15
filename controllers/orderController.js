@@ -234,7 +234,7 @@ const updateOrderStatus = async (req, res) => {
             const custName = customer?.name || 'Customer';
             const statusLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1);
 
-            await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
+            // await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
 
             if (order.status === 'delivered') {
                 sendDeliveryInvoice(order, config).catch(e =>

@@ -203,7 +203,7 @@ const sendDeliveryInvoice = async (order, config) => {
 };
 
 const sendOrderStatusNotification = async (order, statusLabel, config) => {
-    const customer = await Customer.findByPk(order.customerPhone);
+    const customer = await Customer.findOne({ where: { phone: order.customerPhone } });
     const custName = customer?.name || 'Customer';
 
     try {

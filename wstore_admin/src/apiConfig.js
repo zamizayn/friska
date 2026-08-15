@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
   NOTIFICATIONS_READ: `${BASE_URL}/notifications/read`,
   PRODUCT_SALES: `${BASE_URL}/product-sales`,
   OFFERS: `${BASE_URL}/offers`,
+  BANNERS: `${BASE_URL}/banners`,
   WHATSAPP_SETTINGS: `${BASE_URL}/tenants/me/whatsapp-settings`,
   CHANGE_PASSWORD: `${BASE_URL}/change-password`,
   GLOBAL_CONFIGS: `${BASE_URL}/global-configs`,

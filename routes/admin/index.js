@@ -32,6 +32,7 @@ router.get('/product-sales', require('../../controllers/analyticsController').ge
 router.use('/notifications', require('./notification'));
 router.use('/fcm', require('./fcm'));
 router.use('/offers', require('./offer'));
+router.use('/banners', require('./banner'));
 router.put('/global-configs', require('../../controllers/globalConfigController').updateConfigs);
 
 // Delivery boy management

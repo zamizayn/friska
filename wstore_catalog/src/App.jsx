@@ -33,6 +33,22 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showLaunchMessage, setShowLaunchMessage] = useState(false);
+  const [bannerIndex, setBannerIndex] = useState(0);
+
+  const normalizeImage = (url) => (url || '').replace(/^http:\/\//, 'https://');
+
+  const banners = useMemo(() => {
+    if (!data?.banners?.length) return [];
+    return data.banners.map(b => ({ ...b, image: normalizeImage(b.image) }));
+  }, [data]);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setInterval(() => {
+      setBannerIndex(prev => (prev + 1) % banners.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [banners.length]);
 
   const location = useLocation();
   const username = location.pathname.split('/').pop() || 'friska';
@@ -175,6 +191,30 @@ function App() {
       </header>
 
       <div className="container">
+        {banners.length > 0 && (
+          <div className="banner-carousel">
+            <div className="banner-slider" style={{ transform: `translateX(-${bannerIndex * 100}%)` }}>
+              {banners.map(banner => (
+                <div className="banner-slide" key={banner.id}>
+                  <img src={banner.image} alt={banner.title || 'Offer'} className="banner-image" />
+                  {banner.title && <div className="banner-caption">{banner.title}</div>}
+                </div>
+              ))}
+            </div>
+            {banners.length > 1 && (
+              <div className="banner-dots">
+                {banners.map((banner, i) => (
+                  <button
+                    key={banner.id}
+                    className={`banner-dot ${i === bannerIndex ? 'active' : ''}`}
+                    onClick={() => setBannerIndex(i)}
+                    aria-label={`Go to banner ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <div className="search-container">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} strokeWidth={2.5} />
         <input

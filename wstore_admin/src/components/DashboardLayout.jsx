@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike, Image } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -16,6 +16,7 @@ const ALL_PAGES = [
     { label: 'Offer Broadcast', path: '/admin/offer-broadcast', icon: MessageSquare, keywords: ['broadcast', 'whatsapp', 'template', 'campaign', 'send'], roles: ['superadmin', 'tenant'] },
     { label: 'Inventory', path: '/admin/inventory', icon: Boxes, keywords: ['inventory', 'stock', 'warehouse', 'supply'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Offers', path: '/admin/offers', icon: Tags, keywords: ['offer', 'discount', 'coupon', 'promo', 'rules'], roles: ['superadmin', 'tenant', 'branch'] },
+    { label: 'Banners', path: '/admin/banners', icon: Image, keywords: ['banner', 'carousel', 'promo', 'advertisement', 'slider'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub', 'settings'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Settings', path: '/admin/settings', icon: Settings, keywords: ['settings', 'config', 'preferences'], roles: ['tenant'] },
@@ -308,6 +309,9 @@ export default function DashboardLayout() {
                     </NavLink>
                     <NavLink to="/admin/offers" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                         <Tags size={18} /> <span>Offers</span>
+                    </NavLink>
+                    <NavLink to="/admin/banners" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                        <Image size={18} /> <span>Banners</span>
                     </NavLink>
 
                     <div className="nav-section-label">Support</div>

@@ -18,6 +18,7 @@ import ProductSales from './pages/ProductSales';
 import Support from './pages/Support';
 import Notifications from './pages/Notifications';
 import Offers from './pages/Offers';
+import Banners from './pages/Banners';
 import Settings from './pages/Settings';
 import PaymentSettings from './pages/PaymentSettings';
 import WhatsAppSettings from './pages/WhatsAppSettings';
@@ -64,6 +65,7 @@ export default function App() {
                     <Route path="support" element={<Support />} />
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="offers" element={<Offers />} />
+                    <Route path="banners" element={<Banners />} />
                     <Route path="offer-broadcast" element={<OfferBroadcast />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="payment-settings" element={<PaymentSettings />} />

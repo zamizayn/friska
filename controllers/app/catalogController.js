@@ -1,4 +1,4 @@
-const { Tenant, Branch, Product, Category } = require('../../models');
+const { Tenant, Branch, Product, Category, Banner } = require('../../models');
 
 /**
  * Fetches the public catalog for a tenant by their username
@@ -43,7 +43,14 @@ const getPublicCatalog = async (req, res) => {
             order: [['priority', 'ASC'], ['name', 'ASC']]
         });
 
-        // 5. Build response
+        // 5. Fetch active banners across all branches
+        const banners = await Banner.findAll({
+            where: { branchId: branchIds, isActive: true },
+            attributes: ['id', 'title', 'image', 'sortOrder'],
+            order: [['sortOrder', 'ASC'], ['createdAt', 'DESC']]
+        });
+
+        // 6. Build response
         res.json({
             launched: process.env.LAUNCHED !== 'false',
             launchedMessage: process.env.LAUNCHED_MESSAGE || null,
@@ -60,7 +67,8 @@ const getPublicCatalog = async (req, res) => {
             },
             branches,
             categories,
-            products
+            products,
+            banners
         });
     } catch (error) {
         console.error('Public Catalog Error:', error);

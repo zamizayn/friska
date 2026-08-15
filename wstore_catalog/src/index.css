@@ -36,6 +36,93 @@ body {
   min-height: 100vh;
 }
 
+/* Banner carousel */
+.banner-carousel {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  aspect-ratio: 16 / 7;
+}
+
+.banner-slider {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.banner-slide {
+  position: relative;
+  min-width: 100%;
+  height: 100%;
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.banner-caption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: rgba(11, 28, 51, 0.55);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.banner-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+.banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.banner-dot.active {
+  background: #fff;
+  width: 20px;
+  border-radius: 4px;
+}
+
+@media (max-width: 400px) {
+  .banner-carousel {
+    aspect-ratio: 16 / 8;
+  }
+}
+
+@media (min-width: 768px) {
+  .banner-carousel {
+    aspect-ratio: 21 / 7;
+  }
+}
+
 /* Header */
 header {
   display: flex;
@@ -1387,6 +1474,7 @@ header {
 
 .catalog-header-inner {
   max-width: 600px; /* Keep catalog header elements aligned with centered content */
+  width: 100%;
   margin: 0 auto;
   padding: 0.85rem 1.25rem;
   display: flex;

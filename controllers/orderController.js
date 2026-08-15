@@ -1,7 +1,7 @@
 const { Order, Customer, Product, Branch, Tenant, DeliveryBoy } = require('../models');
 const { Op } = require('sequelize');
 const { getTenantConfig } = require('../utils/tenantHelpers');
-const { sendTemplateMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
+const { sendTemplateMessage, sendTextMessage, sendButtonMessage, uploadMedia, sendDocumentMessage } = require('../services/whatsappService');
 const { generateInvoice } = require('../services/invoiceService');
 const { generateOrdersReport } = require('../services/orderExportService');
 const orderService = require('../services/orderService');
@@ -202,6 +202,22 @@ const sendDeliveryInvoice = async (order, config) => {
     fs.unlinkSync(pdfPath);
 };
 
+const sendOrderStatusNotification = async (order, statusLabel, config) => {
+    const customer = await Customer.findByPk(order.customerPhone);
+    const custName = customer?.name || 'Customer';
+
+    try {
+        await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
+    } catch (e) {
+        console.error('[Order Status] Template failed, falling back to text:', e.message);
+        await sendTextMessage(
+            order.customerPhone,
+            `*Order #${order.id} Status Update*\n\nHello ${custName}, your order is now: *${statusLabel}*.\nThank you for choosing Friska!`,
+            config
+        );
+    }
+};
+
 const updateOrderStatus = async (req, res) => {
     try {
         const order = await Order.findByPk(req.params.id);
@@ -230,11 +246,9 @@ const updateOrderStatus = async (req, res) => {
         // Fire-and-forget: notifications, invoice, and WhatsApp messages (non-blocking)
         try {
             const config = await getTenantConfig(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
-            const customer = await Customer.findByPk(order.customerPhone);
-            const custName = customer?.name || 'Customer';
             const statusLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1);
 
-            // await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
+            await sendOrderStatusNotification(order, statusLabel, config);
 
             if (order.status === 'delivered') {
                 sendDeliveryInvoice(order, config).catch(e =>
@@ -316,11 +330,9 @@ const bulkUpdateOrderStatus = async (req, res) => {
 const trySendStatusNotification = async (order, status) => {
     try {
         const config = await getTenantConfig(order.tenantId || (await Branch.findByPk(order.branchId))?.tenantId);
-        const customer = await Customer.findByPk(order.customerPhone);
-        const custName = customer?.name || 'Customer';
         const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
 
-        await sendTemplateMessage(order.customerPhone, 'order_template', [custName, String(order.id), statusLabel], config);
+        await sendOrderStatusNotification(order, statusLabel, config);
 
         if (status === 'delivered') {
             sendDeliveryInvoice(order, config).catch(e =>

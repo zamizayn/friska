@@ -60,7 +60,10 @@ function App() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`${API_BASE}/catalog/${username}`);
-        setData(response.data);
+        setData({
+          ...response.data,
+          products: (response.data.products || []).map(p => ({ ...p, image: normalizeImage(p.image) }))
+        });
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.error || 'Failed to load catalog');
@@ -260,7 +263,7 @@ function App() {
             return (
             <div key={p.id} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} onClick={() => setSelectedProduct(p)}>
               <div className="product-image-container">
-                <img src={p.image || 'https://via.placeholder.com/400?text=No+Image'} alt={p.name} className="product-image" />
+                <img src={p.image || 'https://placehold.co/400x400?text=No+Image'} alt={p.name} className="product-image" />
                 {outOfStock && <div className="out-of-stock-badge">Out of Stock</div>}
               </div>
               <div className="product-info">
@@ -314,7 +317,7 @@ function App() {
             <div className="cart-items-list">
               {cart.map(item => (
                 <div key={item.id} className="cart-item">
-                  <img src={item.image || 'https://via.placeholder.com/200'} className="cart-item-img" />
+                  <img src={item.image || 'https://placehold.co/200x200?text=No+Image'} className="cart-item-img" />
                   <div className="cart-item-details">
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-price">₹{item.price}</div>
@@ -351,7 +354,7 @@ function App() {
               <X size={24} strokeWidth={2.5} />
             </button>
             <div className="detail-image-container">
-              <img src={selectedProduct.image || 'https://via.placeholder.com/600'} className="detail-image" />
+              <img src={selectedProduct.image || 'https://placehold.co/600x500?text=No+Image'} className="detail-image" />
             </div>
             <div className="detail-info">
               <div className="detail-header">

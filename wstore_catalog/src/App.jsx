@@ -87,6 +87,7 @@ function App() {
   }, [data, selectedCategory, searchQuery]);
 
   const addToCart = (product) => {
+    if (isOutOfStock(product)) return;
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -108,6 +109,8 @@ function App() {
 
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const isOutOfStock = (product) => typeof product.stock === 'number' && product.stock <= 0;
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
@@ -252,23 +255,31 @@ function App() {
         </div>
       ) : (
         <div className="product-grid">
-          {filteredProducts.map(p => (
-            <div key={p.id} className="product-card" onClick={() => setSelectedProduct(p)}>
+          {filteredProducts.map(p => {
+            const outOfStock = isOutOfStock(p);
+            return (
+            <div key={p.id} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} onClick={() => setSelectedProduct(p)}>
               <div className="product-image-container">
                 <img src={p.image || 'https://via.placeholder.com/400?text=No+Image'} alt={p.name} className="product-image" />
+                {outOfStock && <div className="out-of-stock-badge">Out of Stock</div>}
               </div>
               <div className="product-info">
                 <div className="product-title">{p.name}</div>
                 <div className="product-price">₹{p.price}</div>
-                <button className="add-btn" onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(p);
-                }}>
-                  <Plus size={16} strokeWidth={3} /> Add
+                <button
+                  className="add-btn"
+                  disabled={outOfStock}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(p);
+                  }}
+                >
+                  <Plus size={16} strokeWidth={3} /> {outOfStock ? 'Out of Stock' : 'Add'}
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -352,11 +363,15 @@ function App() {
               </p>
 
               <div className="detail-actions">
-                <button className="detail-add-btn" onClick={() => {
-                  addToCart(selectedProduct);
-                  setSelectedProduct(null);
-                }}>
-                  Add to Cart — ₹{selectedProduct.price}
+                <button
+                  className="detail-add-btn"
+                  disabled={isOutOfStock(selectedProduct)}
+                  onClick={() => {
+                    addToCart(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
+                >
+                  {isOutOfStock(selectedProduct) ? 'Out of Stock' : `Add to Cart — ₹${selectedProduct.price}`}
                 </button>
               </div>
             </div>

@@ -263,7 +263,7 @@ function App() {
             return (
             <div key={p.id} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} onClick={() => setSelectedProduct(p)}>
               <div className="product-image-container">
-                <img src={p.image || 'https://placehold.co/400x400?text=No+Image'} alt={p.name} className="product-image" />
+                <img src={p.image || 'https://placehold.co/400x400?text=No+Image'} className="product-image" />
                 {outOfStock && <div className="out-of-stock-badge">Out of Stock</div>}
               </div>
               <div className="product-info">

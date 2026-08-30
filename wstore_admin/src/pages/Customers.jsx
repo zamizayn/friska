@@ -6,7 +6,7 @@ import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 export default function Customers() {
     const [customers, setCustomers] = useState([]);
-    const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+    const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
     const [selectedPhones, setSelectedPhones] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [historyOpen, setHistoryOpen] = useState(false);
@@ -37,7 +37,7 @@ export default function Customers() {
         if (res.status === 401) return navigate('/login');
         const result = await res.json();
         setCustomers(result.data);
-        setPagination({ page: result.page, totalPages: result.totalPages });
+        setPagination({ page: result.page, totalPages: result.totalPages, total: result.total || 0 });
     };
 
     const fetchHistory = async (customer, page = 1) => {
@@ -158,6 +158,7 @@ export default function Customers() {
                 <div>
                     <h1>Customers</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>Audience insights and relationship management</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '2px', fontWeight: 600 }}>{pagination.total} customers</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <select

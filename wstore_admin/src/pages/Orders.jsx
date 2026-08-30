@@ -53,6 +53,11 @@ export default function Orders() {
     const [selectedAddress, setSelectedAddress] = useState('');
     const [selectedRawAddress, setSelectedRawAddress] = useState('');
     const [viewingOrder, setViewingOrder] = useState(null);
+    const [customerHistoryOpen, setCustomerHistoryOpen] = useState(false);
+    const [customerHistory, setCustomerHistory] = useState([]);
+    const [customerHistoryPhone, setCustomerHistoryPhone] = useState('');
+    const [customerHistoryName, setCustomerHistoryName] = useState('');
+    const [customerHistoryPagination, setCustomerHistoryPagination] = useState({ page: 1, totalPages: 1 });
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
     const [orderToCancel, setOrderToCancel] = useState(null);
@@ -156,6 +161,23 @@ export default function Orders() {
 
     const handlePageChange = (newPage) => {
         fetchOrders(newPage);
+    };
+
+    const fetchCustomerOrders = async (order, page = 1) => {
+        try {
+            const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}/${order.customerPhone}/orders?page=${page}&limit=10`, {
+                headers: getHeaders()
+            });
+            if (res.status === 401) return navigate('/login');
+            const result = await res.json();
+            setCustomerHistory(result.data || []);
+            setCustomerHistoryPagination({ page: result.page, totalPages: result.totalPages });
+            setCustomerHistoryName(order.customer?.name || 'Guest Customer');
+            setCustomerHistoryPhone(order.customerPhone);
+            setCustomerHistoryOpen(true);
+        } catch (e) {
+            console.error('Failed to fetch customer orders:', e);
+        }
     };
 
     const handleExportPdf = async () => {
@@ -684,6 +706,9 @@ export default function Orders() {
                                         <button className="btn-outline" style={{ padding: '6px' }} onClick={() => { setViewingOrder(order); setViewModalOpen(true); }}>
                                             <Eye size={16} />
                                         </button>
+                                        <button className="btn-outline" style={{ padding: '6px' }} onClick={() => fetchCustomerOrders(order)} title="View past orders">
+                                            <History size={16} />
+                                        </button>
                                         <button className="btn-outline" style={{ padding: '6px' }} onClick={() => {
                                             setSelectedAddress(order.formattedAddress || order.address);
                                             setSelectedRawAddress(order.address);
@@ -940,6 +965,59 @@ export default function Orders() {
                                     <MapPin size={18} /> Open in Maps
                                 </a>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Customer Order History Modal */}
+            {customerHistoryOpen && (
+                <div className="modal-overlay active">
+                    <div className="modal" style={{ maxWidth: '800px', padding: '32px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                            <h3>Order History: {customerHistoryName} <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '14px' }}>+{customerHistoryPhone}</span></h3>
+                            <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setCustomerHistoryOpen(false)}>✕</button>
+                        </div>
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {customerHistory.map(order => (
+                                    <tr key={order.id}>
+                                        <td style={{ fontWeight: 700 }}>#{order.id}</td>
+                                        <td>{format(new Date(order.createdAt), 'dd MMM yyyy, hh:mm a')}</td>
+                                        <td style={{ fontWeight: 700 }}>₹{order.total}</td>
+                                        <td>
+                                            <span className={`status-pill ${order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'danger' : 'warning'}`}>
+                                                {order.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {customerHistory.length === 0 && (
+                            <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No previous orders found for this customer.</p>
+                        )}
+
+                        {customerHistoryPagination.totalPages > 1 && (
+                            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+                                <Pagination
+                                    currentPage={customerHistoryPagination.page}
+                                    totalPages={customerHistoryPagination.totalPages}
+                                    onPageChange={(page) => fetchCustomerOrders({ customerPhone: customerHistoryPhone, customer: { name: customerHistoryName } }, page)}
+                                />
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: '32px' }}>
+                            <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { setCustomerHistoryOpen(false); setCustomerHistory([]); }}>Done</button>
                         </div>
                     </div>
                 </div>

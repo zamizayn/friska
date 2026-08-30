@@ -45,6 +45,12 @@ const getAllCustomers = async (req, res) => {
             ];
         }
 
+        if (req.query.phone) {
+            where[Op.or] = [
+                { phone: { [Op.iLike]: `%${req.query.phone}%` } }
+            ];
+        }
+
         const orderFilter = req.query.orderFilter || 'all';
 
         const startDate = isValidDate(req.query.startDate) ? req.query.startDate : null;

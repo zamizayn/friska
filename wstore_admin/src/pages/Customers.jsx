@@ -22,6 +22,7 @@ export default function Customers() {
     const [orderFilter, setOrderFilter] = useState('all');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     const fetchCustomers = async (page = 1) => {
@@ -29,6 +30,7 @@ export default function Customers() {
         const params = new URLSearchParams({ page: String(page), limit: '10', branchId, orderFilter });
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
+        if (searchTerm.trim()) params.append('phone', searchTerm.trim());
         const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?${params}`, {
             headers: getHeaders()
         });
@@ -83,7 +85,7 @@ export default function Customers() {
         }
     };
 
-    useEffect(() => { fetchCustomers(); }, [orderFilter, startDate, endDate]);
+    useEffect(() => { fetchCustomers(); }, [orderFilter, startDate, endDate, searchTerm]);
 
     const formatLogDetails = (log) => {
         const { details, actionType } = log;
@@ -185,6 +187,25 @@ export default function Customers() {
             </header>
 
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)', fontWeight: 600, position: 'relative' }}>
+                    <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                    <input
+                        type="text"
+                        placeholder="Search by phone number..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{ height: '40px', padding: '0 40px 0 36px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'white', color: 'var(--text-main)', width: '240px' }}
+                    />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}
+                            title="Clear search"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
+                </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)', fontWeight: 600 }}>
                     From
                     <input

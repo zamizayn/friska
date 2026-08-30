@@ -3,10 +3,31 @@ const { Customer, CustomerAddress, Order, CustomerLog, Category, Product, sequel
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage } = require('../services/whatsappService');
 
-const orderCountSubquery = `(
+const allTimeOrderCountSubquery = `(
     SELECT COUNT(*) FROM "Orders"
     WHERE "Orders"."customerPhone" = "Customer"."phone"
       AND "Orders".status != 'cancelled'
+)`;
+
+const isValidDate = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d);
+
+const buildDateClause = (startDate, endDate) => {
+    const clauses = [];
+    if (startDate) clauses.push(`"Orders"."createdAt" >= '${startDate}T00:00:00.000Z'`);
+    if (endDate) clauses.push(`"Orders"."createdAt" <= '${endDate}T23:59:59.999Z'`);
+    return clauses.length ? ` AND ${clauses.join(' AND ')}` : '';
+};
+
+const orderCountSubquery = (dateClause = '') => `(
+    SELECT COUNT(*) FROM "Orders"
+    WHERE "Orders"."customerPhone" = "Customer"."phone"
+      AND "Orders".status != 'cancelled'${dateClause}
+)`;
+
+const totalSpendSubquery = (dateClause = '') => `(
+    SELECT COALESCE(SUM("Orders"."total"), 0) FROM "Orders"
+    WHERE "Orders"."customerPhone" = "Customer"."phone"
+      AND "Orders".status != 'cancelled'${dateClause}
 )`;
 
 const getAllCustomers = async (req, res) => {
@@ -26,8 +47,12 @@ const getAllCustomers = async (req, res) => {
 
         const orderFilter = req.query.orderFilter || 'all';
 
+        const startDate = isValidDate(req.query.startDate) ? req.query.startDate : null;
+        const endDate = isValidDate(req.query.endDate) ? req.query.endDate : null;
+        const dateClause = buildDateClause(startDate, endDate);
+
         if (orderFilter === 'none') {
-            where[Op.and] = sequelize.literal(orderCountSubquery + ' = 0');
+            where[Op.and] = sequelize.literal(allTimeOrderCountSubquery + ' = 0');
         }
 
         let order;
@@ -35,6 +60,10 @@ const getAllCustomers = async (req, res) => {
             order = [[sequelize.literal('"orderCount"'), 'DESC']];
         } else if (orderFilter === 'least') {
             order = [[sequelize.literal('"orderCount"'), 'ASC']];
+        } else if (orderFilter === 'spend') {
+            order = [[sequelize.literal('"totalSpend"'), 'DESC']];
+        } else if (orderFilter === 'spendLeast') {
+            order = [[sequelize.literal('"totalSpend"'), 'ASC']];
         } else {
             order = [['lastInteraction', 'DESC']];
         }
@@ -43,7 +72,8 @@ const getAllCustomers = async (req, res) => {
             where,
             attributes: {
                 include: [
-                    [sequelize.literal(orderCountSubquery), 'orderCount']
+                    [sequelize.literal(orderCountSubquery(dateClause)), 'orderCount'],
+                    [sequelize.literal(totalSpendSubquery(dateClause)), 'totalSpend']
                 ]
             },
             limit,

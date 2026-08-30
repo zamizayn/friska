@@ -20,11 +20,16 @@ export default function Customers() {
     const [broadcastMsg, setBroadcastMsg] = useState('');
     const [sending, setSending] = useState(false);
     const [orderFilter, setOrderFilter] = useState('all');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const navigate = useNavigate();
 
     const fetchCustomers = async (page = 1) => {
         const branchId = localStorage.getItem('selectedBranchId') || '';
-        const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?page=${page}&limit=10&branchId=${branchId}&orderFilter=${orderFilter}`, {
+        const params = new URLSearchParams({ page: String(page), limit: '10', branchId, orderFilter });
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?${params}`, {
             headers: getHeaders()
         });
         if (res.status === 401) return navigate('/login');
@@ -78,7 +83,7 @@ export default function Customers() {
         }
     };
 
-    useEffect(() => { fetchCustomers(); }, [orderFilter]);
+    useEffect(() => { fetchCustomers(); }, [orderFilter, startDate, endDate]);
 
     const formatLogDetails = (log) => {
         const { details, actionType } = log;
@@ -161,6 +166,8 @@ export default function Customers() {
                         <option value="all">All Customers</option>
                         <option value="most">Most Orders First</option>
                         <option value="least">Least Orders First</option>
+                        <option value="spend">Highest Spend</option>
+                        <option value="spendLeast">Lowest Spend</option>
                         <option value="none">No Orders</option>
                     </select>
                     <button className="btn-outline" onClick={toggleAll}>
@@ -176,6 +183,32 @@ export default function Customers() {
                     </button>
                 </div>
             </header>
+
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    From
+                    <input
+                        type="date"
+                        value={startDate}
+                        max={endDate || undefined}
+                        onChange={e => setStartDate(e.target.value)}
+                        style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'white', color: 'var(--text-main)' }}
+                    />
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    To
+                    <input
+                        type="date"
+                        value={endDate}
+                        min={startDate || undefined}
+                        onChange={e => setEndDate(e.target.value)}
+                        style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'white', color: 'var(--text-main)' }}
+                    />
+                </label>
+                {(startDate || endDate) && (
+                    <button className="btn-outline" onClick={() => { setStartDate(''); setEndDate(''); }}>Clear Dates</button>
+                )}
+            </div>
 
             <div className="white-card">
                 <table className="modern-table">
@@ -216,6 +249,7 @@ export default function Customers() {
                                             </div>
                                             <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>+{cust.phone}</div>
                                             <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{cust.orderCount} order{cust.orderCount !== 1 ? 's' : ''}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '2px', fontWeight: 700 }}>₹{Number(cust.totalSpend || 0).toFixed(0)} spent</div>
                                         </div>
                                     </div>
                                 </td>

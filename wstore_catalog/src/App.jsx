@@ -268,7 +268,10 @@ function App() {
               </div>
               <div className="product-info">
                 <div className="product-title">{p.name}</div>
-                <div className="product-price">₹{p.price}</div>
+                <div className="product-price">
+                  {p.mrp > 0 && p.mrp > p.price && <span className="mrp-price">₹{p.mrp}</span>}
+                  ₹{p.price}
+                </div>
                 <button
                   className="add-btn"
                   disabled={outOfStock}
@@ -359,7 +362,10 @@ function App() {
             <div className="detail-info">
               <div className="detail-header">
                 <h2 className="detail-title">{selectedProduct.name}</h2>
-                <div className="detail-price">₹{selectedProduct.price}</div>
+                <div className="detail-price">
+                  {selectedProduct.mrp > 0 && selectedProduct.mrp > selectedProduct.price && <span className="mrp-price">₹{selectedProduct.mrp}</span>}
+                  ₹{selectedProduct.price}
+                </div>
               </div>
               <p className="detail-description">
                 {selectedProduct.description || "No description available for this item. It's freshly prepared and ready for your order!"}

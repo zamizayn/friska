@@ -335,6 +335,14 @@ header {
   margin-bottom: 0.75rem;
 }
 
+.mrp-price {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-decoration: line-through;
+  margin-right: 0.5rem;
+}
+
 .add-btn {
   width: 100%;
   background: #f8fafc;

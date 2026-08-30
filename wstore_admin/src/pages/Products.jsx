@@ -11,7 +11,7 @@ export default function Products() {
     const [tenants, setTenants] = useState([]);
     const [selectedTenant, setSelectedTenant] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, name: '', price: '', categoryId: '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
+    const [formData, setFormData] = useState({ id: null, name: '', price: '', mrp: '', categoryId: '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
     const [imagePreview, setImagePreview] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
@@ -197,7 +197,7 @@ export default function Products() {
             setSelectedFile(null);
             fetchMetaStatus(item.id);
         } else {
-            setFormData({ id: null, name: '', price: '', categoryId: categories[0]?.id || '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
+            setFormData({ id: null, name: '', price: '', mrp: '', categoryId: categories[0]?.id || '', description: '', image: '', stock: 50, retailerId: '', priority: '' });
             setImagePreview(null);
             setSelectedFile(null);
             setMetaStatus(null);
@@ -546,6 +546,10 @@ export default function Products() {
                                 <div className="input-group">
                                     <label>Price (INR)</label>
                                     <input type="number" placeholder="0.00" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} onWheel={e => e.target.blur()} required />
+                                </div>
+                                <div className="input-group">
+                                    <label>MRP (INR)</label>
+                                    <input type="number" placeholder="0.00" value={formData.mrp ?? ''} onChange={e => setFormData({ ...formData, mrp: e.target.value })} onWheel={e => e.target.blur()} />
                                 </div>
                                 <div className="input-group">
                                     <label>Initial Stock Level</label>

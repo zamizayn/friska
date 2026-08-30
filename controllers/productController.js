@@ -89,6 +89,7 @@ const createProduct = async (req, res) => {
     }
 
     if (data.price) data.price = parseFloat(data.price);
+    if (data.mrp !== undefined && data.mrp !== '') data.mrp = parseFloat(data.mrp);
     if (data.stock) data.stock = parseInt(data.stock);
     if (data.priority !== undefined) data.priority = parseInt(data.priority) || 0;
 
@@ -127,6 +128,7 @@ const updateProduct = async (req, res) => {
         }
 
         if (data.price) data.price = parseFloat(data.price);
+        if (data.mrp !== undefined && data.mrp !== '') data.mrp = parseFloat(data.mrp);
         if (data.stock !== undefined) data.stock = parseInt(data.stock);
 
         if (data.priority !== undefined) {

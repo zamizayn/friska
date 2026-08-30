@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike, FileText } from 'lucide-react';
+import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike, FileText, History } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import DatePicker from 'react-datepicker';
@@ -185,6 +185,10 @@ export default function Orders() {
 
     const clearFilters = () => {
         setFilters(initialFilters);
+    };
+
+    const viewPastOrders = () => {
+        setFilters({ ...filters, startDate: '', endDate: '' });
     };
 
     const updateStatus = async (id, newStatus) => {
@@ -543,6 +547,11 @@ export default function Orders() {
                     <div>
                         <button className="btn-outline" style={{ width: '100%', height: '45px', justifyContent: 'center', color: 'var(--danger)', borderColor: 'var(--danger)', opacity: filters.status || filters.search || filters.startDate || filters.endDate ? 1 : 0.5 }} onClick={clearFilters} disabled={!(filters.status || filters.search || filters.startDate || filters.endDate)}>
                             <RotateCcw size={16} /> Reset
+                        </button>
+                    </div>
+                    <div>
+                        <button className="btn-outline" style={{ width: '100%', height: '45px', justifyContent: 'center', color: 'var(--accent)', borderColor: 'var(--accent)' }} onClick={viewPastOrders} title="View all orders including older/past ones">
+                            <History size={16} /> View Past Orders
                         </button>
                     </div>
                 </div>

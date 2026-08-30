@@ -21,13 +21,13 @@ const buildDateClause = (startDate, endDate) => {
 const orderCountSubquery = (dateClause = '') => `(
     SELECT COUNT(*) FROM "Orders"
     WHERE "Orders"."customerPhone" = "Customer"."phone"
-      AND "Orders".status != 'cancelled'${dateClause}
+      AND "Orders".status = 'delivered'${dateClause}
 )`;
 
 const totalSpendSubquery = (dateClause = '') => `(
     SELECT COALESCE(SUM("Orders"."total"), 0) FROM "Orders"
     WHERE "Orders"."customerPhone" = "Customer"."phone"
-      AND "Orders".status != 'cancelled'${dateClause}
+      AND "Orders".status = 'delivered'${dateClause}
 )`;
 
 const getAllCustomers = async (req, res) => {

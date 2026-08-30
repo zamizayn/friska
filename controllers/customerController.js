@@ -59,6 +59,8 @@ const getAllCustomers = async (req, res) => {
 
         if (orderFilter === 'none') {
             where[Op.and] = sequelize.literal(allTimeOrderCountSubquery + ' = 0');
+        } else if (dateClause) {
+            where[Op.and] = sequelize.literal(orderCountSubquery(dateClause) + ' > 0');
         }
 
         let order;

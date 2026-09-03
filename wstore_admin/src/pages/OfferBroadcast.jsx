@@ -127,6 +127,11 @@ export default function OfferBroadcast() {
     const [loadingCustomers, setLoadingCustomers] = useState(false);
     const [customerSearch, setCustomerSearch] = useState('');
     const [selectedCustomers, setSelectedCustomers] = useState([]);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [orderFilter, setOrderFilter] = useState('all');
+    const [totalCustomers, setTotalCustomers] = useState(0);
+    const [loadingSelectAll, setLoadingSelectAll] = useState(false);
 
     const paramDefs = TEMPLATE_PARAMS[templateName] || [];
 
@@ -141,16 +146,23 @@ export default function OfferBroadcast() {
     const previewText = LIVE_PREVIEWS[templateName] ? LIVE_PREVIEWS[templateName](previewParams) : '';
 
     // Fetch customers from backend
-    const fetchCustomers = async (search = '') => {
+    const buildCustomersUrl = (page = 1, limit = 100) => {
+        const branchId = localStorage.getItem('selectedBranchId') || '';
+        let url = `${API_ENDPOINTS.CUSTOMERS}?page=${page}&limit=${limit}&branchId=${branchId}&search=${encodeURIComponent(customerSearch)}`;
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
+        if (orderFilter !== 'all') url += `&orderFilter=${orderFilter}`;
+        return url;
+    };
+
+    const fetchCustomers = async () => {
         setLoadingCustomers(true);
         try {
-            const branchId = localStorage.getItem('selectedBranchId') || '';
-            const res = await fetch(`${API_ENDPOINTS.CUSTOMERS}?page=1&limit=100&branchId=${branchId}&search=${encodeURIComponent(search)}`, {
-                headers: getHeaders()
-            });
+            const res = await fetch(buildCustomersUrl(), { headers: getHeaders() });
             if (res.ok) {
                 const data = await res.json();
                 setCustomersList(data.data || []);
+                setTotalCustomers(data.total || 0);
             }
         } catch (e) {
             console.error('Failed to fetch customers:', e);
@@ -163,7 +175,34 @@ export default function OfferBroadcast() {
         if (role !== 'branch' && recipientMode === 'select') {
             fetchCustomers(customerSearch);
         }
-    }, [customerSearch, role, recipientMode]);
+    }, [customerSearch, role, recipientMode, startDate, endDate, orderFilter]);
+
+    const selectAllCustomers = async () => {
+        if (loadingSelectAll) return;
+        setLoadingSelectAll(true);
+        try {
+            if (totalCustomers <= customersList.length && customersList.length > 0) {
+                setSelectedCustomers([...customersList]);
+            } else {
+                const all = [];
+                const firstRes = await fetch(buildCustomersUrl(1), { headers: getHeaders() });
+                const firstData = await firstRes.json();
+                all.push(...(firstData.data || []));
+                const totalPages = firstData.totalPages || 1;
+                for (let page = 2; page <= totalPages; page++) {
+                    const res = await fetch(buildCustomersUrl(page), { headers: getHeaders() });
+                    const data = await res.json();
+                    all.push(...(data.data || []));
+                }
+                setCustomersList(all);
+                setSelectedCustomers(all);
+            }
+        } catch (e) {
+            console.error('Failed to select all customers:', e);
+        } finally {
+            setLoadingSelectAll(false);
+        }
+    };
 
     const toggleCustomerSelection = (customer) => {
         if (selectedCustomers.some(c => c.phone === customer.phone)) {
@@ -518,6 +557,48 @@ export default function OfferBroadcast() {
                         {recipientMode === 'select' ? (
                             /* Select Contacts UI */
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type="date"
+                                            value={startDate}
+                                            max={endDate || undefined}
+                                            onChange={e => setStartDate(e.target.value)}
+                                            style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '13.5px', background: 'white', color: 'var(--text-main)' }}
+                                        />
+                                    </div>
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type="date"
+                                            value={endDate}
+                                            min={startDate || undefined}
+                                            onChange={e => setEndDate(e.target.value)}
+                                            style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '13.5px', background: 'white', color: 'var(--text-main)' }}
+                                        />
+                                    </div>
+                                    {(startDate || endDate) && (
+                                        <button
+                                            type="button"
+                                            className="btn-outline"
+                                            onClick={() => { setStartDate(''); setEndDate(''); }}
+                                            style={{ padding: '0 12px', fontSize: '13px', height: '40px', display: 'flex', alignItems: 'center' }}
+                                        >
+                                            Clear Dates
+                                        </button>
+                                    )}
+                                    <select
+                                        value={orderFilter}
+                                        onChange={e => setOrderFilter(e.target.value)}
+                                        style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '13.5px', background: 'white', cursor: 'pointer', color: 'var(--text-main)' }}
+                                    >
+                                        <option value="all">All Customers</option>
+                                        <option value="most">Most Orders First</option>
+                                        <option value="least">Least Orders First</option>
+                                        <option value="spend">Highest Spend</option>
+                                        <option value="spendLeast">Lowest Spend</option>
+                                        <option value="none">No Orders</option>
+                                    </select>
+                                </div>
                                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                     <div style={{ position: 'relative', flex: 1 }}>
                                         <input
@@ -545,6 +626,15 @@ export default function OfferBroadcast() {
                                         style={{ padding: '10px 14px', fontSize: '13px', height: '40px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                     >
                                         <span>{customersList.length > 0 && customersList.every(c => selectedCustomers.some(sc => sc.phone === c.phone)) ? 'Deselect Page' : 'Select Page'}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn-outline"
+                                        onClick={selectAllCustomers}
+                                        disabled={loadingSelectAll || totalCustomers === 0}
+                                        style={{ padding: '10px 14px', fontSize: '13px', height: '40px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                    >
+                                        <span>{loadingSelectAll ? 'Loading all...' : `Select All (${totalCustomers})`}</span>
                                     </button>
                                 </div>
 

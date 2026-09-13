@@ -18,7 +18,7 @@ import {
 
 import logo from './assets/logo.png';
 import Landing from './components/Landing';
-import InstallPrompt from './components/InstallPrompt';
+import { InstallIcon } from './components/InstallPrompt';
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api/app`
@@ -194,6 +194,7 @@ function App() {
               </span>
             )}
           </button>
+          <InstallIcon />
         </div>
       </header>
 
@@ -414,7 +415,6 @@ function App() {
         </div>
       )}
       </div> {/* end of .container */}
-      <InstallPrompt />
     </div>
   );
 }

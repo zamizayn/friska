@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import logo from '../assets/logo.png';
+import InstallPrompt from './InstallPrompt';
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api/app`
@@ -324,6 +325,7 @@ export default function Landing() {
         </div>
         <p>&copy; {new Date().getFullYear()} Friska. All rights reserved.</p>
       </footer>
+      <InstallPrompt />
     </div>
   );
 }

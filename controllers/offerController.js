@@ -74,8 +74,23 @@ exports.broadcastOffer = async (req, res) => {
         const tenantId = branch?.tenantId || req.user?.tenantId;
         const config = await getTenantConfig(tenantId);
 
+        // Dedupe recipients so a single request can never message the same number twice.
+        // Key is the last 10 digits so "+9197012738756" and "7012738756" collapse to one entry.
+        const seenPhones = new Set();
+        const uniquePhones = [];
+        for (const p of phones) {
+            const raw = String(p).trim();
+            if (!raw) continue;
+            const digits = raw.replace(/\D/g, '');
+            const key = digits.length > 0 ? digits.slice(-10) : raw;
+            if (seenPhones.has(key)) continue;
+            seenPhones.add(key);
+            uniquePhones.push(raw);
+        }
+        const duplicatesRemoved = phones.length - uniquePhones.length;
+
         // Fetch matching customer names in bulk to avoid querying in a loop
-        const cleanPhones = phones.map(p => p.replace(/\D/g, '').slice(-10));
+        const cleanPhones = uniquePhones.map(p => p.replace(/\D/g, '').slice(-10));
         const customers = await Customer.findAll({
             where: {
                 phone: {
@@ -91,7 +106,7 @@ exports.broadcastOffer = async (req, res) => {
         }
 
         const results = [];
-        for (const phone of phones) {
+        for (const phone of uniquePhones) {
             try {
                 const cp = phone.replace(/\D/g, '').slice(-10);
                 const nameToUse = customerMap[cp] || bodyParams[0] || 'Customer';
@@ -106,7 +121,7 @@ exports.broadcastOffer = async (req, res) => {
             }
         }
 
-        res.json({ sent: results.filter(r => r.status === 'sent').length, failed: results.filter(r => r.status === 'failed').length, results });
+        res.json({ sent: results.filter(r => r.status === 'sent').length, failed: results.filter(r => r.status === 'failed').length, duplicatesRemoved, results });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

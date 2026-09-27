@@ -194,8 +194,15 @@ export default function OfferBroadcast() {
                     const data = await res.json();
                     all.push(...(data.data || []));
                 }
-                setCustomersList(all);
-                setSelectedCustomers(all);
+                // Dedupe by phone: rows tied on the sort key can land on two pages,
+                // which would otherwise message the same number twice.
+                const byPhone = new Map();
+                for (const c of all) {
+                    if (c && c.phone && !byPhone.has(c.phone)) byPhone.set(c.phone, c);
+                }
+                const merged = Array.from(byPhone.values());
+                setCustomersList(merged);
+                setSelectedCustomers(merged);
             }
         } catch (e) {
             console.error('Failed to select all customers:', e);
@@ -247,13 +254,24 @@ export default function OfferBroadcast() {
     };
 
     const handleSend = async () => {
-        const phoneList = recipientMode === 'select'
+        const rawList = recipientMode === 'select'
             ? selectedCustomers.map(c => c.phone)
             : phones.split(',')
                 .map(s => s.trim())
                 .filter(Boolean)
                 .map(normalizePhone)
                 .filter(p => /^\d{10,15}$/.test(p));
+
+        // Dedupe by last 10 digits so the same recipient is never messaged twice
+        const seenPhones = new Set();
+        const phoneList = rawList.filter(p => {
+            if (!p) return false;
+            const digits = String(p).replace(/\D/g, '');
+            const key = digits.length > 0 ? digits.slice(-10) : String(p);
+            if (seenPhones.has(key)) return false;
+            seenPhones.add(key);
+            return true;
+        });
 
         if (phoneList.length === 0) {
             setError(recipientMode === 'select'

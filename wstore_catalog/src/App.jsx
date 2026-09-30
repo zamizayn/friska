@@ -116,6 +116,16 @@ function App() {
 
   const isOutOfStock = (product) => typeof product.stock === 'number' && product.stock <= 0;
 
+  const getDiscountPercent = (product) => {
+    const mrp = Number(product?.mrp) || 0;
+    const price = Number(product?.price) || 0;
+    if (!mrp || mrp <= price) return 0;
+    const percent = Math.round(((mrp - price) / mrp) * 100);
+    return percent >= 1 ? percent : 0;
+  };
+
+  const detailDiscount = selectedProduct ? getDiscountPercent(selectedProduct) : 0;
+
   const handleCheckout = () => {
     if (cart.length === 0) return;
 
@@ -260,14 +270,16 @@ function App() {
         </div>
       ) : (
         <div className="product-grid">
-          {filteredProducts.map(p => {
+{filteredProducts.map(p => {
             const outOfStock = isOutOfStock(p);
+            const discount = getDiscountPercent(p);
             return (
-            <div key={p.id} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} onClick={() => setSelectedProduct(p)}>
-              <div className="product-image-container">
-                <img src={p.image || 'https://placehold.co/400x400?text=No+Image'} className="product-image" />
-                {outOfStock && <div className="out-of-stock-badge">Out of Stock</div>}
-              </div>
+              <div key={p.id} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} onClick={() => setSelectedProduct(p)}>
+                <div className="product-image-container">
+                  <img src={p.image || 'https://placehold.co/400x400?text=No+Image'} className="product-image" />
+                  {discount > 0 && <div className="discount-badge">{discount}% OFF</div>}
+                  {outOfStock && <div className="out-of-stock-badge">Out of Stock</div>}
+                </div>
               <div className="product-info">
                 <div className="product-title">{p.name}</div>
                 <div className="product-price">
@@ -367,6 +379,7 @@ function App() {
                 <div className="detail-price">
                   {selectedProduct.mrp > 0 && selectedProduct.mrp > selectedProduct.price && <span className="mrp-price">₹{selectedProduct.mrp}</span>}
                   ₹{selectedProduct.price}
+                  {detailDiscount > 0 && <span className="discount-pill">{detailDiscount}% OFF</span>}
                 </div>
               </div>
               <p className="detail-description">

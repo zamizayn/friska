@@ -4,6 +4,8 @@ import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 const DEFAULT_FEE_FORM = {
     enabled: false,
+    useOrder: true,
+    useDistance: true,
     freeAbove: '',
     // Each row is a range: from = previous row's `to` (0 for the first). The last order row's `to` is orderMaxSubtotal
     orderTiers: [{ to: '', fee: '' }],
@@ -23,26 +25,37 @@ const feeConfigToForm = (config) => {
         : DEFAULT_FEE_FORM.distanceSlabs;
     return {
         enabled: config.enabled !== false,
+        // Each fee is optional: a saved config only has the lists of the fees it charges
+        useOrder: config.mode !== 'distance',
+        useDistance: config.mode !== 'order',
         freeAbove: config.freeAboveSubtotal != null ? String(config.freeAboveSubtotal) : '',
         orderTiers,
         distanceSlabs
     };
 };
 
-const feeFormToConfig = (fee, hadConfig) => {
-    // A branch that never had a fee config and leaves it off stays null
-    if (!fee.enabled && !hadConfig) return null;
+const feeFormToConfig = (fee, originalConfig) => {
+    if (!fee.enabled) {
+        // Turning the fee off keeps the saved rules untouched; a branch that never had a config stays null
+        return originalConfig ? { ...originalConfig, enabled: false } : null;
+    }
     const num = (v) => parseFloat(v) || 0;
-    // Delivery fees are always order value + distance, added together
-    const config = { enabled: fee.enabled, mode: 'both' };
+    const config = {
+        enabled: true,
+        mode: fee.useOrder && fee.useDistance ? 'both' : fee.useOrder ? 'order' : 'distance'
+    };
     if (parseFloat(fee.freeAbove) > 0) config.freeAboveSubtotal = parseFloat(fee.freeAbove);
-    config.orderTiers = fee.orderTiers.map((t, i) => ({
-        minSubtotal: i === 0 ? 0 : num(fee.orderTiers[i - 1].to),
-        fee: num(t.fee)
-    }));
-    // The last row's "To" is its upper limit: orders at or above it pay no order-value fee
-    config.orderMaxSubtotal = num(fee.orderTiers[fee.orderTiers.length - 1].to);
-    config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.to), fee: num(sl.fee) }));
+    if (fee.useOrder) {
+        config.orderTiers = fee.orderTiers.map((t, i) => ({
+            minSubtotal: i === 0 ? 0 : num(fee.orderTiers[i - 1].to),
+            fee: num(t.fee)
+        }));
+        // The last row's "To" is its upper limit: orders at or above it pay no order-value fee
+        config.orderMaxSubtotal = num(fee.orderTiers[fee.orderTiers.length - 1].to);
+    }
+    if (fee.useDistance) {
+        config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.to), fee: num(sl.fee) }));
+    }
     return config;
 };
 
@@ -58,7 +71,10 @@ const validateRanges = (fee) => {
         return null;
     };
     if (!fee.enabled) return null;
-    return check(fee.orderTiers, 'Order value fee') || check(fee.distanceSlabs, 'Distance fee');
+    if (!fee.useOrder && !fee.useDistance) return 'Turn on the order value fee, the distance fee, or both.';
+    return (fee.useOrder && check(fee.orderTiers, 'Order value fee'))
+        || (fee.useDistance && check(fee.distanceSlabs, 'Distance fee'))
+        || null;
 };
 
 export default function DeliveryFee() {
@@ -71,14 +87,14 @@ export default function DeliveryFee() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
     const [feeForm, setFeeForm] = useState({ ...DEFAULT_FEE_FORM });
-    const [hadConfig, setHadConfig] = useState(false);
+    const [originalConfig, setOriginalConfig] = useState(null);
 
     const branch = branches.find(b => String(b.id) === String(branchId));
 
     const selectBranch = (b) => {
         setBranchId(b ? String(b.id) : '');
         setFeeForm(feeConfigToForm(b?.deliveryFeeConfig));
-        setHadConfig(!!b?.deliveryFeeConfig);
+        setOriginalConfig(b?.deliveryFeeConfig || null);
         setMessage(null);
     };
 
@@ -123,7 +139,7 @@ export default function DeliveryFee() {
             const res = await fetch(`${API_ENDPOINTS.BRANCHES}/${branch.id}`, {
                 method: 'PUT',
                 headers: getHeaders(),
-                body: JSON.stringify({ deliveryFeeConfig: feeFormToConfig(feeForm, hadConfig) })
+                body: JSON.stringify({ deliveryFeeConfig: feeFormToConfig(feeForm, originalConfig) })
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || 'Failed to save delivery fee');
@@ -158,6 +174,17 @@ export default function DeliveryFee() {
         <div className="input-group" style={{ margin: 0, maxWidth: '180px' }}>
             <input type="number" min="0" step="any" required style={{ background: 'var(--bg-app)' }} {...props} />
         </div>
+    );
+    const feeSwitch = (key, label) => (
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+            <input type="checkbox" checked={feeForm[key]}
+                onChange={e => setFeeForm({ ...feeForm, [key]: e.target.checked })}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+            {label}
+        </label>
+    );
+    const offNote = (text) => (
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>{text}</p>
     );
     const rangeFrom = (value) => (
         <span style={{ fontWeight: 600 }}>{value === '' || value == null ? '—' : value}</span>
@@ -241,7 +268,7 @@ export default function DeliveryFee() {
 
                             {feeForm.enabled && (
                                 <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '16px 0 0' }}>
-                                    The customer pays the <b>order value fee</b> plus the <b>distance fee</b>, both set below.
+                                    Turn on the <b>order value fee</b>, the <b>distance fee</b>, or both. If both are on, the customer pays the two added together.
                                 </p>
                             )}
                         </div>
@@ -249,7 +276,9 @@ export default function DeliveryFee() {
                         {feeForm.enabled && (
                             <div className="white-card" style={{ padding: '32px', marginBottom: '24px' }}>
                                 {cardHeader(IndianRupee, 'Order value fee',
-                                    'Delivery fee for each order amount range, measured after discount and before GST. Use a fee of 0 for free delivery.')}
+                                    'Delivery fee for each order amount range, measured after discount and before GST. Use a fee of 0 for free delivery.',
+                                    feeSwitch('useOrder', feeForm.useOrder ? 'On' : 'Off'))}
+                                {!feeForm.useOrder ? offNote('Not charged. Turn this on to add a fee based on the order amount.') : <>
                                 <table className="modern-table">
                                     <thead><tr><th>From (₹)</th><th>To (₹)</th><th>Delivery fee (₹)</th><th /></tr></thead>
                                     <tbody>
@@ -272,13 +301,16 @@ export default function DeliveryFee() {
                                     <Plus size={16} /> Add tier
                                 </button>
                                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>A range includes its From amount but not its To amount, so 0 – 300 covers ₹0 to ₹299.99 and the next range starts at ₹300. Orders at or above the last To amount pay no order value fee.</p>
+                                </>}
                             </div>
                         )}
 
                         {feeForm.enabled && (
                             <div className="white-card" style={{ padding: '32px', marginBottom: '24px' }}>
                                 {cardHeader(Route, 'Distance fee',
-                                    `Fee for deliveries up to each distance. Customers are already limited by the branch delivery radius${branch.deliveryRadius ? ` (${branch.deliveryRadius} km)` : ''}.`)}
+                                    `Fee for deliveries up to each distance. Customers are already limited by the branch delivery radius${branch.deliveryRadius ? ` (${branch.deliveryRadius} km)` : ''}.`,
+                                    feeSwitch('useDistance', feeForm.useDistance ? 'On' : 'Off'))}
+                                {!feeForm.useDistance ? offNote('Not charged. Turn this on to add a fee based on how far the customer is.') : <>
                                 {(missingLocation || missingRadius) && (
                                     <div style={{ fontSize: '13px', color: '#854d0e', marginBottom: '16px', background: '#fef9c3', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                         <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -302,6 +334,7 @@ export default function DeliveryFee() {
                                     onClick={() => addRow('distanceSlabs', { to: '', fee: '' })}>
                                     <Plus size={16} /> Add slab
                                 </button>
+                                </>}
                             </div>
                         )}
 

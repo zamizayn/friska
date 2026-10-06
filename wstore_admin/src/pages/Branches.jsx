@@ -2,39 +2,7 @@ import { useEffect, useState } from 'react';
 import { MapPin, Plus, Trash2, Store, Edit2, Clock } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
-
-const loadGoogleMapsScript = (apiKey, callback) => {
-    if (!apiKey) {
-        callback();
-        return;
-    }
-    if (window.google && window.google.maps) {
-        callback();
-        return;
-    }
-    const existingScript = document.getElementById('google-maps-script');
-    if (existingScript) {
-        const interval = setInterval(() => {
-            if (window.google && window.google.maps) {
-                clearInterval(interval);
-                callback();
-            }
-        }, 100);
-        return;
-    }
-
-    const script = document.createElement('script');
-    script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => callback();
-    script.onerror = () => {
-        console.error('Failed to load Google Maps script');
-        callback();
-    };
-    document.head.appendChild(script);
-};
+import { loadGoogleMapsScript } from '../googleMaps';
 
 export default function Branches() {
     const [branches, setBranches] = useState([]);

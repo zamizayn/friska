@@ -8,5 +8,6 @@ router.post('/', branchController.createBranch); // Note: Used in onboarding wit
 router.put('/:id', branchController.updateBranch);
 router.delete('/:id', branchController.deleteBranch);
 router.get('/:id/logs', branchController.getBranchLogs);
+router.get('/:id/customer-map', branchController.getCustomerMap);
 
 module.exports = router;

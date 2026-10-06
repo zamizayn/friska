@@ -1,4 +1,6 @@
-const { Branch, Tenant, BranchLog } = require('../models');
+const { Branch, Tenant, BranchLog, Customer, CustomerAddress, Order } = require('../models');
+const { Op, fn, col } = require('sequelize');
+const { calculateDistance } = require('../utils/distance');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middleware/auth');
 const { validateDeliveryFeeConfig } = require('../services/deliveryFeeService');
@@ -172,11 +174,88 @@ const getBranchLogs = async (req, res) => {
     }
 };
 
+const MAX_MAP_CUSTOMERS = 2000;
+
+// Customers' saved delivery addresses that fall inside the branch's delivery radius, for the map view
+// Superadmin only
+const getCustomerMap = async (req, res) => {
+    try {
+        if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Access denied' });
+
+        const branch = await Branch.findByPk(req.params.id);
+        if (!branch) return res.status(404).json({ error: 'Branch not found' });
+
+        const tenant = branch.tenantId
+            ? await Tenant.findByPk(branch.tenantId, { attributes: ['googleMapsApiKey'] })
+            : null;
+
+        const lat = branch.latitude != null ? parseFloat(branch.latitude) : null;
+        const lng = branch.longitude != null ? parseFloat(branch.longitude) : null;
+        const radiusKm = branch.deliveryRadius != null ? parseFloat(branch.deliveryRadius) : null;
+
+        const response = {
+            mapsApiKey: tenant?.googleMapsApiKey || null,
+            branch: { id: branch.id, name: branch.name, address: branch.address, latitude: lat, longitude: lng, deliveryRadius: radiusKm },
+            customers: [],
+            truncated: false
+        };
+        if (lat == null || lng == null || radiusKm == null) return res.json(response);
+
+        // Cheap bounding-box prefilter in SQL, exact distance check below
+        const dLat = radiusKm / 111;
+        const dLng = radiusKm / (111 * Math.max(Math.cos(lat * Math.PI / 180), 0.01));
+        const addresses = await CustomerAddress.findAll({
+            where: {
+                latitude: { [Op.between]: [lat - dLat, lat + dLat] },
+                longitude: { [Op.between]: [lng - dLng, lng + dLng] }
+            },
+            include: [{ model: Customer, as: 'customer', where: { branchId: branch.id }, attributes: ['name', 'phone'], required: true }]
+        });
+
+        const points = [];
+        for (const a of addresses) {
+            const distanceKm = calculateDistance(lat, lng, parseFloat(a.latitude), parseFloat(a.longitude));
+            if (distanceKm == null || distanceKm > radiusKm) continue;
+            points.push({
+                phone: a.customerPhone,
+                name: a.customer?.name || null,
+                label: a.label || null,
+                address: a.formattedAddress || a.address || null,
+                latitude: parseFloat(a.latitude),
+                longitude: parseFloat(a.longitude),
+                distanceKm: Math.round(distanceKm * 100) / 100
+            });
+        }
+        points.sort((x, y) => x.distanceKm - y.distanceKm);
+        if (points.length > MAX_MAP_CUSTOMERS) {
+            points.length = MAX_MAP_CUSTOMERS;
+            response.truncated = true;
+        }
+
+        const phones = [...new Set(points.map(p => p.phone))];
+        const counts = phones.length
+            ? await Order.findAll({
+                where: { branchId: branch.id, customerPhone: { [Op.in]: phones }, status: { [Op.ne]: 'cancelled' } },
+                attributes: ['customerPhone', [fn('COUNT', col('id')), 'orderCount']],
+                group: ['customerPhone'],
+                raw: true
+            })
+            : [];
+        const orderCounts = Object.fromEntries(counts.map(c => [c.customerPhone, parseInt(c.orderCount, 10)]));
+        response.customers = points.map(p => ({ ...p, orderCount: orderCounts[p.phone] || 0 }));
+
+        res.json(response);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 module.exports = {
     getAllBranches,
     createBranch,
     updateBranch,
     deleteBranch,
     getBranch,
-    getBranchLogs
+    getBranchLogs,
+    getCustomerMap
 };

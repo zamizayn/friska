@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike, Image, Truck } from 'lucide-react';
+import { LayoutDashboard, Tags, ShoppingBag, ShoppingCart, Users, LogOut, Hexagon, MapPin, Building2, ChevronDown, Boxes, LifeBuoy, Search, Bell, Settings, CreditCard, TrendingUp, ArrowRight, X, Menu, MessageSquare, Lock, Bike, Image, Truck, Map as MapIcon } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import { requestNotificationPermission, onForegroundMessage } from '../firebase';
 import logo from '../assets/logo.png';
@@ -19,6 +19,7 @@ const ALL_PAGES = [
     { label: 'Banners', path: '/admin/banners', icon: Image, keywords: ['banner', 'carousel', 'promo', 'advertisement', 'slider'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Support Desk', path: '/admin/support', icon: LifeBuoy, keywords: ['support', 'help', 'ticket', 'request', 'complaint'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Branches', path: '/admin/branches', icon: MapPin, keywords: ['branch', 'location', 'store', 'outlet', 'hub', 'settings'], roles: ['superadmin', 'tenant', 'branch'] },
+    { label: 'Customer Map', path: '/admin/customer-map', icon: MapIcon, keywords: ['map', 'customers', 'location', 'delivery radius', 'area', 'coverage'], roles: ['superadmin'] },
     { label: 'Delivery Fee', path: '/admin/delivery-fee', icon: Truck, keywords: ['delivery', 'fee', 'charge', 'shipping', 'distance', 'free delivery'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Settings', path: '/admin/settings', icon: Settings, keywords: ['settings', 'config', 'preferences'], roles: ['tenant'] },
     { label: 'Payment Settings', path: '/admin/payment-settings', icon: CreditCard, keywords: ['payment', 'razorpay', 'keys', 'gateway', 'checkout'], roles: ['tenant'] },
@@ -327,6 +328,11 @@ export default function DashboardLayout() {
                     {(role === 'superadmin' || role === 'tenant' || role === 'branch') && (
                         <NavLink to="/admin/delivery-boys" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                             <Bike size={18} /> <span>Delivery Boys</span>
+                        </NavLink>
+                    )}
+                    {role === 'superadmin' && (
+                        <NavLink to="/admin/customer-map" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
+                            <MapIcon size={18} /> <span>Customer Map</span>
                         </NavLink>
                     )}
                     {(role === 'superadmin' || role === 'tenant' || role === 'branch') && (

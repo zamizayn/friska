@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
   REGISTRATION_STATUS: (id) => `${BASE_URL}/tenants/${id}/registration-status`,
   DELIVERY_BOYS: `${BASE_URL}/delivery-boys`,
   BRANCH_LOGS: (id) => `${BASE_URL}/branches/${id}/logs`,
+  BRANCH_CUSTOMER_MAP: (id) => `${BASE_URL}/branches/${id}/customer-map`,
   OFFER_BROADCAST: `${BASE_URL}/offers/broadcast`,
 };
 

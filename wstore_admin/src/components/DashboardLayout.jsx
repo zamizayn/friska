@@ -13,7 +13,7 @@ const ALL_PAGES = [
     { label: 'Product Sales', path: '/admin/product-sales', icon: TrendingUp, keywords: ['sales', 'analytics', 'revenue', 'performance', 'stats'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Categories', path: '/admin/categories', icon: Tags, keywords: ['category', 'group', 'tag', 'organize'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Customers', path: '/admin/customers', icon: Users, keywords: ['customer', 'user', 'audience', 'broadcast', 'whatsapp'], roles: ['superadmin', 'tenant', 'branch'] },
-    { label: 'Offer Broadcast', path: '/admin/offer-broadcast', icon: MessageSquare, keywords: ['broadcast', 'whatsapp', 'template', 'campaign', 'send'], roles: ['superadmin', 'tenant'] },
+    { label: 'Offer Broadcast', path: '/admin/offer-broadcast', icon: MessageSquare, keywords: ['broadcast', 'whatsapp', 'template', 'campaign', 'send'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Inventory', path: '/admin/inventory', icon: Boxes, keywords: ['inventory', 'stock', 'warehouse', 'supply'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Offers', path: '/admin/offers', icon: Tags, keywords: ['offer', 'discount', 'coupon', 'promo', 'rules'], roles: ['superadmin', 'tenant', 'branch'] },
     { label: 'Banners', path: '/admin/banners', icon: Image, keywords: ['banner', 'carousel', 'promo', 'advertisement', 'slider'], roles: ['superadmin', 'tenant', 'branch'] },
@@ -300,7 +300,7 @@ export default function DashboardLayout() {
                     <NavLink to="/admin/customers" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                         <Users size={18} /> <span>Customers</span>
                     </NavLink>
-                    {(role === 'superadmin' || role === 'tenant') && (
+                    {(role === 'superadmin' || role === 'tenant' || role === 'branch') && (
                         <NavLink to="/admin/offer-broadcast" className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}>
                             <MessageSquare size={18} /> <span>Offer Broadcast</span>
                         </NavLink>

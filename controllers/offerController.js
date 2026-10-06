@@ -68,10 +68,13 @@ exports.broadcastOffer = async (req, res) => {
             return res.status(400).json({ error: 'headerImage is required for image templates' });
         }
 
-        const branch = req.body.branchId
-            ? await Branch.findByPk(req.body.branchId).catch(() => null)
-            : null;
-        const tenantId = branch?.tenantId || req.user?.tenantId;
+        // Tenant and branch logins always send through their own tenant's WhatsApp account.
+        // Only a superadmin may pick a branch (and so a tenant) through the request body.
+        let tenantId = req.user?.tenantId;
+        if (req.user?.role === 'superadmin' && req.body.branchId) {
+            const branch = await Branch.findByPk(req.body.branchId).catch(() => null);
+            tenantId = branch?.tenantId || tenantId;
+        }
         const config = await getTenantConfig(tenantId);
 
         // Dedupe recipients so a single request can never message the same number twice.

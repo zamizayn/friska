@@ -110,7 +110,6 @@ const compressImage = (file) => {
 export default function OfferBroadcast() {
     const navigate = useNavigate();
     const branchId = localStorage.getItem('selectedBranchId') || localStorage.getItem('branchId') || '';
-    const role = localStorage.getItem('adminRole');
 
     const [templateName, setTemplateName] = useState('offer_template');
     const [phones, setPhones] = useState('');
@@ -172,10 +171,10 @@ export default function OfferBroadcast() {
     };
 
     useEffect(() => {
-        if (role !== 'branch' && recipientMode === 'select') {
+        if (recipientMode === 'select') {
             fetchCustomers(customerSearch);
         }
-    }, [customerSearch, role, recipientMode, startDate, endDate, orderFilter]);
+    }, [customerSearch, recipientMode, startDate, endDate, orderFilter]);
 
     const selectAllCustomers = async () => {
         if (loadingSelectAll) return;
@@ -363,22 +362,6 @@ export default function OfferBroadcast() {
             setSending(false);
         }
     };
-
-    if (role === 'branch') {
-        return (
-            <div className="dashboard-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-                <div className="white-card" style={{ maxWidth: '480px', textAlign: 'center', padding: '40px' }}>
-                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#d97706' }}>
-                        <AlertCircle size={32} />
-                    </div>
-                    <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Access Denied</h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.5' }}>
-                        Offer broadcast features are not available for branch accounts. Please sign in as a Tenant or Superadmin to manage campaigns.
-                    </p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="dashboard-content">

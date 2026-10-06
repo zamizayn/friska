@@ -1,6 +1,7 @@
 const { Branch, Tenant, BranchLog } = require('../models');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middleware/auth');
+const { validateDeliveryFeeConfig } = require('../services/deliveryFeeService');
 
 const getAllBranches = async (req, res) => {
     try {
@@ -27,6 +28,11 @@ const getAllBranches = async (req, res) => {
 const createBranch = async (req, res) => {
     try {
         const data = { ...req.body };
+        if ('deliveryFeeConfig' in data) {
+            const { config, error } = validateDeliveryFeeConfig(data.deliveryFeeConfig);
+            if (error) return res.status(400).json({ error: `Invalid deliveryFeeConfig: ${error}` });
+            data.deliveryFeeConfig = config;
+        }
         const authHeader = req.headers['authorization'];
         if (authHeader) {
             const token = authHeader.split(' ')[1];
@@ -67,6 +73,11 @@ const updateBranch = async (req, res) => {
         }
 
         const updateData = { ...req.body };
+        if ('deliveryFeeConfig' in updateData) {
+            const { config, error } = validateDeliveryFeeConfig(updateData.deliveryFeeConfig);
+            if (error) return res.status(400).json({ error: `Invalid deliveryFeeConfig: ${error}` });
+            updateData.deliveryFeeConfig = config;
+        }
         if (!updateData.password) {
             delete updateData.password;
         }

@@ -1162,17 +1162,25 @@ export default function Orders() {
                                     })}
                                 </tbody>
                                 <tfoot style={{ background: 'var(--bg-app)', fontWeight: 800 }}>
+                                    {(viewingOrder.discountAmount > 0 || viewingOrder.deliveryFee > 0) && (
+                                        <tr style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                                            <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>Subtotal</td>
+                                            <td style={{ padding: '8px 20px', border: 'none' }}>₹{(viewingOrder.total - (viewingOrder.deliveryFee || 0) + (viewingOrder.discountAmount || 0)).toFixed(2)}</td>
+                                        </tr>
+                                    )}
                                     {viewingOrder.discountAmount > 0 && (
-                                        <>
-                                            <tr style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                                                <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>Subtotal</td>
-                                                <td style={{ padding: '8px 20px', border: 'none' }}>₹{(viewingOrder.total + viewingOrder.discountAmount).toFixed(2)}</td>
-                                            </tr>
-                                            <tr style={{ fontSize: '13px', color: 'var(--success)' }}>
-                                                <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>Discount</td>
-                                                <td style={{ padding: '8px 20px', border: 'none' }}>-₹{viewingOrder.discountAmount}</td>
-                                            </tr>
-                                        </>
+                                        <tr style={{ fontSize: '13px', color: 'var(--success)' }}>
+                                            <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>Discount</td>
+                                            <td style={{ padding: '8px 20px', border: 'none' }}>-₹{viewingOrder.discountAmount}</td>
+                                        </tr>
+                                    )}
+                                    {viewingOrder.deliveryFee > 0 && (
+                                        <tr style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                                            <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>
+                                                Delivery Fee{viewingOrder.deliveryDistanceKm != null ? ` (${Number(viewingOrder.deliveryDistanceKm).toFixed(1)} km)` : ''}
+                                            </td>
+                                            <td style={{ padding: '8px 20px', border: 'none' }}>+₹{viewingOrder.deliveryFee}</td>
+                                        </tr>
                                     )}
                                     <tr style={{ fontSize: '16px' }}>
                                         <td colSpan="2" style={{ padding: '12px 20px', border: 'none' }}>Total Amount</td>

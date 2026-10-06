@@ -1174,14 +1174,14 @@ export default function Orders() {
                                             <td style={{ padding: '8px 20px', border: 'none' }}>-₹{viewingOrder.discountAmount}</td>
                                         </tr>
                                     )}
-                                    {viewingOrder.deliveryFee > 0 && (
-                                        <tr style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                                            <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>
-                                                Delivery Fee{viewingOrder.deliveryDistanceKm != null ? ` (${Number(viewingOrder.deliveryDistanceKm).toFixed(1)} km)` : ''}
-                                            </td>
-                                            <td style={{ padding: '8px 20px', border: 'none' }}>+₹{viewingOrder.deliveryFee}</td>
-                                        </tr>
-                                    )}
+                                    <tr style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                                        <td colSpan="2" style={{ padding: '8px 20px', border: 'none' }}>
+                                            Delivery Fee{viewingOrder.deliveryFee > 0 && viewingOrder.deliveryDistanceKm != null ? ` (${Number(viewingOrder.deliveryDistanceKm).toFixed(1)} km)` : ''}
+                                        </td>
+                                        <td style={{ padding: '8px 20px', border: 'none', color: viewingOrder.deliveryFee > 0 ? undefined : 'var(--success)' }}>
+                                            {viewingOrder.deliveryFee > 0 ? `+₹${viewingOrder.deliveryFee}` : 'Free (₹0)'}
+                                        </td>
+                                    </tr>
                                     <tr style={{ fontSize: '16px' }}>
                                         <td colSpan="2" style={{ padding: '12px 20px', border: 'none' }}>Total Amount</td>
                                         <td style={{ padding: '12px 20px', border: 'none' }}>₹{viewingOrder.total}</td>

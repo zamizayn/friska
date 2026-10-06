@@ -35,7 +35,8 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true
     },
     closedUntil: DataTypes.STRING,
-    closeReason: DataTypes.STRING
+    closeReason: DataTypes.STRING,
+    deliveryFeeConfig: DataTypes.JSONB
   }, {
     sequelize,
     modelName: 'Branch',

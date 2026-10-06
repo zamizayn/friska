@@ -58,6 +58,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       defaultValue: 0
     },
+    deliveryFee: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
+    deliveryDistanceKm: DataTypes.FLOAT,
     isNewCustomer: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

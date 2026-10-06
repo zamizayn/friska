@@ -6,19 +6,25 @@ const DEFAULT_FEE_FORM = {
     enabled: false,
     mode: 'order',
     freeAbove: '',
-    orderTiers: [{ minSubtotal: '0', fee: '' }],
-    distanceSlabs: [{ uptoKm: '', fee: '' }]
+    // Each row is a range: from = previous row's `to` (0 for the first); the last row has no upper limit for orders
+    orderTiers: [{ to: '', fee: '' }],
+    distanceSlabs: [{ to: '', fee: '' }]
 };
 
 const feeConfigToForm = (config) => {
     if (!config) return { ...DEFAULT_FEE_FORM };
-    const str = (rows, keys) => rows.map(r => Object.fromEntries(keys.map(k => [k, String(r[k])])));
+    const orderTiers = config.orderTiers?.length
+        ? config.orderTiers.map((t, i, all) => ({ to: all[i + 1] ? String(all[i + 1].minSubtotal) : '', fee: String(t.fee) }))
+        : DEFAULT_FEE_FORM.orderTiers;
+    const distanceSlabs = config.distanceSlabs?.length
+        ? config.distanceSlabs.map(sl => ({ to: String(sl.uptoKm), fee: String(sl.fee) }))
+        : DEFAULT_FEE_FORM.distanceSlabs;
     return {
         enabled: config.enabled !== false,
         mode: config.mode,
         freeAbove: config.freeAboveSubtotal != null ? String(config.freeAboveSubtotal) : '',
-        orderTiers: config.orderTiers?.length ? str(config.orderTiers, ['minSubtotal', 'fee']) : DEFAULT_FEE_FORM.orderTiers,
-        distanceSlabs: config.distanceSlabs?.length ? str(config.distanceSlabs, ['uptoKm', 'fee']) : DEFAULT_FEE_FORM.distanceSlabs
+        orderTiers,
+        distanceSlabs
     };
 };
 
@@ -29,12 +35,33 @@ const feeFormToConfig = (fee, hadConfig) => {
     const config = { enabled: fee.enabled, mode: fee.mode };
     if (parseFloat(fee.freeAbove) > 0) config.freeAboveSubtotal = parseFloat(fee.freeAbove);
     if (fee.mode !== 'distance') {
-        config.orderTiers = fee.orderTiers.map(t => ({ minSubtotal: num(t.minSubtotal), fee: num(t.fee) }));
+        config.orderTiers = fee.orderTiers.map((t, i) => ({
+            minSubtotal: i === 0 ? 0 : num(fee.orderTiers[i - 1].to),
+            fee: num(t.fee)
+        }));
     }
     if (fee.mode !== 'order') {
-        config.distanceSlabs = fee.distanceSlabs.map(s => ({ uptoKm: num(s.uptoKm), fee: num(s.fee) }));
+        config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.to), fee: num(sl.fee) }));
     }
     return config;
+};
+
+// Ranges must keep growing: each "to" has to be above the previous one. The last order range is open-ended.
+const validateRanges = (fee) => {
+    const check = (rows, label, openEnded) => {
+        let prev = 0;
+        for (let i = 0; i < rows.length; i++) {
+            if (openEnded && i === rows.length - 1) break;
+            const to = parseFloat(rows[i].to);
+            if (!(to > prev)) return `${label}: row ${i + 1} must end above ${prev}.`;
+            prev = to;
+        }
+        return null;
+    };
+    if (!fee.enabled) return null;
+    if (fee.mode !== 'distance') { const e = check(fee.orderTiers, 'Order value fee', true); if (e) return e; }
+    if (fee.mode !== 'order') { const e = check(fee.distanceSlabs, 'Distance fee', false); if (e) return e; }
+    return null;
 };
 
 export default function DeliveryFee() {
@@ -91,6 +118,8 @@ export default function DeliveryFee() {
     const handleSave = async (e) => {
         e.preventDefault();
         if (!branch) return;
+        const rangeError = validateRanges(feeForm);
+        if (rangeError) { setMessage({ type: 'error', text: rangeError }); return; }
         setSaving(true);
         setMessage(null);
         try {
@@ -141,6 +170,9 @@ export default function DeliveryFee() {
         <div className="input-group" style={{ margin: 0, maxWidth: '180px' }}>
             <input type="number" min="0" step="any" required style={{ background: 'var(--bg-app)' }} {...props} />
         </div>
+    );
+    const rangeFrom = (value) => (
+        <span style={{ fontWeight: 600 }}>{value === '' || value == null ? '—' : value}</span>
     );
     const rowRemove = (listKey, i) => (
         <button type="button" className="btn-outline" style={{ padding: '8px', color: 'var(--danger)' }} title="Remove"
@@ -245,13 +277,16 @@ export default function DeliveryFee() {
                         {feeForm.enabled && showOrder && (
                             <div className="white-card" style={{ padding: '32px', marginBottom: '24px' }}>
                                 {cardHeader(IndianRupee, 'Order value fee',
-                                    'Fee for orders at or above each amount, after discount and before GST. Use a fee of 0 for free delivery.')}
+                                    'Delivery fee for each order amount range, measured after discount and before GST. Use a fee of 0 for free delivery.')}
                                 <table className="modern-table">
-                                    <thead><tr><th>Order from (₹)</th><th>Delivery fee (₹)</th><th /></tr></thead>
+                                    <thead><tr><th>From (₹)</th><th>To (₹)</th><th>Delivery fee (₹)</th><th /></tr></thead>
                                     <tbody>
-                                        {feeForm.orderTiers.map((tier, i) => (
+                                        {feeForm.orderTiers.map((tier, i, all) => (
                                             <tr key={i}>
-                                                <td>{amountInput({ value: tier.minSubtotal, disabled: i === 0, placeholder: '0', onChange: e => updateRow('orderTiers', i, 'minSubtotal', e.target.value) })}</td>
+                                                <td>{rangeFrom(i === 0 ? 0 : all[i - 1].to)}</td>
+                                                <td>{i === all.length - 1
+                                                    ? <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>and above</span>
+                                                    : amountInput({ value: tier.to, placeholder: 'e.g. 300', onChange: e => updateRow('orderTiers', i, 'to', e.target.value) })}</td>
                                                 <td>{amountInput({ value: tier.fee, placeholder: '0', onChange: e => updateRow('orderTiers', i, 'fee', e.target.value) })}</td>
                                                 <td style={{ textAlign: 'right' }}>{rowRemove('orderTiers', i)}</td>
                                             </tr>
@@ -259,10 +294,10 @@ export default function DeliveryFee() {
                                     </tbody>
                                 </table>
                                 <button type="button" className="btn-outline" style={{ marginTop: '8px' }}
-                                    onClick={() => addRow('orderTiers', { minSubtotal: '', fee: '' })}>
+                                    onClick={() => addRow('orderTiers', { to: '', fee: '' })}>
                                     <Plus size={16} /> Add tier
                                 </button>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>The first tier always starts at ₹0.</p>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>A range includes its From amount but not its To amount, so 0 – 300 covers ₹0 to ₹299.99 and the next range starts at ₹300.</p>
                             </div>
                         )}
 
@@ -277,11 +312,12 @@ export default function DeliveryFee() {
                                     </div>
                                 )}
                                 <table className="modern-table">
-                                    <thead><tr><th>Up to (km)</th><th>Delivery fee (₹)</th><th /></tr></thead>
+                                    <thead><tr><th>From (km)</th><th>To (km)</th><th>Delivery fee (₹)</th><th /></tr></thead>
                                     <tbody>
-                                        {feeForm.distanceSlabs.map((slab, i) => (
+                                        {feeForm.distanceSlabs.map((slab, i, all) => (
                                             <tr key={i}>
-                                                <td>{amountInput({ value: slab.uptoKm, placeholder: 'e.g. 2', onChange: e => updateRow('distanceSlabs', i, 'uptoKm', e.target.value) })}</td>
+                                                <td>{rangeFrom(i === 0 ? 0 : all[i - 1].to)}</td>
+                                                <td>{amountInput({ value: slab.to, placeholder: 'e.g. 2', onChange: e => updateRow('distanceSlabs', i, 'to', e.target.value) })}</td>
                                                 <td>{amountInput({ value: slab.fee, placeholder: '0', onChange: e => updateRow('distanceSlabs', i, 'fee', e.target.value) })}</td>
                                                 <td style={{ textAlign: 'right' }}>{rowRemove('distanceSlabs', i)}</td>
                                             </tr>
@@ -289,7 +325,7 @@ export default function DeliveryFee() {
                                     </tbody>
                                 </table>
                                 <button type="button" className="btn-outline" style={{ marginTop: '8px' }}
-                                    onClick={() => addRow('distanceSlabs', { uptoKm: '', fee: '' })}>
+                                    onClick={() => addRow('distanceSlabs', { to: '', fee: '' })}>
                                     <Plus size={16} /> Add slab
                                 </button>
                             </div>

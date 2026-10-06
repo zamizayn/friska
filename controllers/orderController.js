@@ -172,7 +172,8 @@ const exportOrdersPdf = async (req, res) => {
             totalSales: totalSalesNet + offerApplied,
             offerApplied,
             balanceInHand: await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' }, paymentStatus: 'paid' } }) || 0,
-            pendingPayment: await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
+            pendingPayment: await Order.sum('total', { where: { ...where, status: { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0,
+            deliveryFees: await Order.sum('deliveryFee', { where: { ...where, status: { [Op.ne]: 'cancelled' } } }) || 0
         };
 
         const pdfPath = await generateOrdersReport(plainOrders, { status, startDate, endDate }, branch, summary);

@@ -113,6 +113,7 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             const offerApplied = summary.offerApplied ?? 0;
             const balanceInHand = summary.balanceInHand ?? 0;
             const pendingPayment = summary.pendingPayment ?? 0;
+            const deliveryFees = summary.deliveryFees ?? 0;
 
             doc.rect(0, 0, doc.page.width, 12).fill(accentColor);
 
@@ -157,8 +158,8 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
             doc.moveTo(50, 140).lineTo(545, 140).lineWidth(1).strokeColor(borderColor).stroke();
 
             const summaryY = 165;
-            const boxW = 110;
-            const boxGap = 15;
+            const boxW = 90;
+            const boxGap = 11;
             const boxH = 65;
             const startX = 50;
 
@@ -166,22 +167,23 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
                 { label: 'Total Sales', value: `Rs. ${totalSales.toLocaleString('en-IN')}`, color: accentColor, bg: '#e0e7ff' },
                 { label: 'Offer Applied', value: `Rs. ${offerApplied.toLocaleString('en-IN')}`, color: warningColor, bg: '#fef3c7' },
                 { label: 'Balance in Hand', value: `Rs. ${balanceInHand.toLocaleString('en-IN')}`, color: successColor, bg: '#dcfce7' },
-                { label: 'Pending Payment', value: `Rs. ${pendingPayment.toLocaleString('en-IN')}`, color: dangerColor, bg: '#fee2e2' }
+                { label: 'Pending Payment', value: `Rs. ${pendingPayment.toLocaleString('en-IN')}`, color: dangerColor, bg: '#fee2e2' },
+                { label: 'Delivery Fees', value: `Rs. ${deliveryFees.toLocaleString('en-IN')}`, color: primaryColor, bg: '#f1f5f9' }
             ];
 
             summaryData.forEach((item, i) => {
                 const x = startX + i * (boxW + boxGap);
                 doc.roundedRect(x, summaryY, boxW, boxH, 8).fill(item.bg);
                 pickFont(doc, 'bold', item.value);
-                doc.fillColor(item.color).fontSize(13).text(item.value, x, summaryY + 10, { width: boxW, align: 'center' });
+                doc.fillColor(item.color).fontSize(11).text(item.value, x, summaryY + 10, { width: boxW, align: 'center' });
                 pickFont(doc, 'regular', item.label);
                 doc.fillColor(secondaryColor).fontSize(8).text(item.label, x, summaryY + 35, { width: boxW, align: 'center' });
             });
 
             let tableTop = summaryY + boxH + 25;
 
-            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Amount', 'Payment', 'Date & Time'];
-            const colWidths = [30, 65, 60, 115, 55, 50, 120];
+            const tableHeader = ['#', 'Customer', 'Phone', 'Items', 'Delivery', 'Amount', 'Payment', 'Date & Time'];
+            const colWidths = [30, 62, 58, 90, 38, 55, 50, 112];
             const colStarts = [];
             let curX = 50;
             colWidths.forEach((w) => {
@@ -196,7 +198,7 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
                 pickFont(doc, 'bold', '');
                 doc.fontSize(8).fillColor('#ffffff');
                 tableHeader.forEach((h, i) => {
-                    const align = i === 0 || i === 3 || i === 4 ? 'center' : 'left';
+                    const align = i === 0 || i === 3 || i === 4 || i === 5 ? 'center' : 'left';
                     doc.text(h, colStarts[i] + 4, yPos + 7, { width: colWidths[i] - 8, align });
                 });
             };
@@ -216,6 +218,8 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
                 const customerName = order.customer?.name || order.customerName || 'Guest';
                 const phone = order.customerPhone || '-';
                 const total = parseFloat(order.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                const deliveryFee = parseFloat(order.deliveryFee || 0);
+                const deliveryText = deliveryFee > 0 ? deliveryFee.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '-';
                 const paymentMethod = order.paymentMethod || '-';
                 const paymentStatus = order.paymentStatus || 'unpaid';
                 const dateStr = order.createdAt ? formatDate(order.createdAt) : '-';
@@ -263,10 +267,15 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
                 doc.fontSize(6.5).fillColor(primaryColor);
                 doc.text(itemsText, colStarts[3] + 4, currentY, { width: colWidths[3] - 8, lineGap: 1 });
 
+                // Delivery fee
+                pickFont(doc, 'regular', '');
+                doc.fontSize(7).fillColor(secondaryColor);
+                doc.text(deliveryText, colStarts[4] + 2, currentY, { width: colWidths[4] - 4, align: 'center' });
+
                 // Amount
                 pickFont(doc, 'bold', '');
                 doc.fontSize(8).fillColor(primaryColor);
-                doc.text(total, colStarts[4] + 2, currentY, { width: colWidths[4] - 4, align: 'center' });
+                doc.text(total, colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
 
                 // Payment status
                 const pmtColor = paymentStatus === 'paid' ? successColor : warningColor;
@@ -275,12 +284,12 @@ const generateOrdersReport = async (orders, filters, branch, summary) => {
                     : paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1);
                 pickFont(doc, 'bold', pmtLabel);
                 doc.fontSize(7).fillColor(pmtColor);
-                doc.text(pmtLabel, colStarts[5] + 2, currentY, { width: colWidths[5] - 4, align: 'center' });
+                doc.text(pmtLabel, colStarts[6] + 2, currentY, { width: colWidths[6] - 4, align: 'center' });
 
                 // Date & Time
                 pickFont(doc, 'regular', dateStr);
                 doc.fontSize(6.5).fillColor(secondaryColor);
-                doc.text(dateStr, colStarts[6] + 2, currentY, { width: colWidths[6] - 4, align: 'center' });
+                doc.text(dateStr, colStarts[7] + 2, currentY, { width: colWidths[7] - 4, align: 'center' });
 
                 currentY += rowH;
             });

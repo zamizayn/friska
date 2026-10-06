@@ -29,6 +29,8 @@ const notificationService = require('../services/notificationService');
 const { sequelize } = require('../models');
 const { createPaymentLink } = require('../services/paymentService');
 const aiService = require('../services/aiService');
+const { calculateDistance } = require('../utils/distance');
+const { calculateDeliveryFee } = require('../services/deliveryFeeService');
 
 // =========================
 // In-Memory State
@@ -302,22 +304,6 @@ const getCoordsFromAddress = async (address, apiKey) => {
         console.error('Geocoding Error:', e.message);
         return null;
     }
-};
-
-// =========================
-// Helper: Calculate Haversine Distance (in km)
-// =========================
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
-    const R = 6371; // Radius of the Earth in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
 };
 
 // =========================
@@ -1408,7 +1394,43 @@ const handleAddressCollection = async (from, text, session, tenant) => {
     await saveCustomerAddress(from, text, formattedAddress, lat, lng);
     session.state = 'CHECKOUT_PAYMENT';
 
-    const msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
+    await sendPaymentPrompt(from, session, tenant);
+};
+
+// =========================
+// Helper: Parse total from a native catalog order summary
+// =========================
+const parseCatalogOrderTotal = (text) => {
+    const match = text.match(/(?:total|grand total|order total|amount)\s*(?:amount)?:?\s*₹?\s*([\d,]+(\.\d+)?)/i);
+    const amountStr = match ? match[1].replace(/,/g, '') : '0';
+    return parseFloat(amountStr) || 0;
+};
+
+// =========================
+// Helper: Ask for payment method, showing the delivery fee when one applies
+// =========================
+const sendPaymentPrompt = async (from, session, tenant) => {
+    let msg = getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?');
+    try {
+        const branch = await Branch.findByPk(session.branchId);
+        if (branch && branch.deliveryFeeConfig && branch.deliveryFeeConfig.enabled !== false) {
+            const userCart = carts[from] || [];
+            let subtotal = 0;
+            if (userCart.length > 0) {
+                userCart.forEach(item => { subtotal += item.price * item.quantity; });
+            } else if (session.lastCatalogOrder) {
+                subtotal = parseCatalogOrderTotal(session.lastCatalogOrder);
+            }
+            const bestOffer = subtotal > 0
+                ? await calculateBestOffer(from, session.branchId, subtotal, session.tenantId)
+                : null;
+            const discounted = Math.max(0, subtotal - (bestOffer ? bestOffer.calculatedDiscount : 0));
+            const { fee } = calculateDeliveryFee({ branch, subtotal: discounted, lat: session.latitude, lng: session.longitude });
+            msg += `\n\n🚚 Delivery fee: ${fee > 0 ? `₹${fee}` : 'FREE'}`;
+        }
+    } catch (e) {
+        console.error('[DeliveryFee] Preview failed:', e.message);
+    }
     await sendButtonMessage(from, msg, buildPaymentButtons(tenant), session.config);
 };
 
@@ -1438,9 +1460,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
 
     let subtotal = 0;
     if (isCatalogOrder) {
-        const match = session.lastCatalogOrder.match(/(?:total|grand total|order total|amount)\s*(?:amount)?:?\s*₹?\s*([\d,]+(\.\d+)?)/i);
-        const amountStr = match ? match[1].replace(/,/g, '') : '0';
-        subtotal = parseFloat(amountStr) || 0;
+        subtotal = parseCatalogOrderTotal(session.lastCatalogOrder);
         userCart[0].price = subtotal;
     } else {
         userCart.forEach(item => { subtotal += item.price * item.quantity; });
@@ -1458,6 +1478,11 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
     }
 
     total = Math.max(0, total);
+
+    // Delivery fee: order-mode tiers use the post-discount, pre-GST subtotal
+    const { fee: deliveryFee, distanceKm: deliveryDistanceKm } = calculateDeliveryFee({
+        branch, subtotal: total, lat: session.latitude, lng: session.longitude
+    });
 
     // Check if this is a first-time customer
     const existingCustomer = await Customer.findOne({ where: { phone: from } });
@@ -1572,7 +1597,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                 itemsWithGst.push(...userCart);
             }
 
-            const gstInclusiveTotal = Math.max(0, subtotalBeforeTax + gstAmount - discountAmount);
+            const gstInclusiveTotal = Math.max(0, subtotalBeforeTax + gstAmount - discountAmount) + deliveryFee;
 
             const order = await Order.create({
                 customerPhone: from,
@@ -1590,6 +1615,8 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
                 paymentStatus: 'pending',
                 gstAmount,
                 subtotalBeforeTax,
+                deliveryFee,
+                deliveryDistanceKm,
                 isNewCustomer: !existingCustomer
             }, { transaction: t });
 
@@ -1613,7 +1640,7 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
             return order;
         });
 
-        // Update total to GST-inclusive for downstream messages
+        // Update total to GST- and delivery-inclusive for downstream messages
         total = savedOrder.total;
     } catch (e) {
         console.error('Order transaction failed:', e.message);
@@ -1665,12 +1692,13 @@ const handlePaymentSelection = async (from, text, session, tenant) => {
             { payment_method: paymentMethod, order_id: savedOrder?.id });
 
         if (!msg.includes('₹')) {
-            const subtotalDisplay = (savedOrder.subtotalBeforeTax || savedOrder.total + savedOrder.discountAmount).toFixed(2);
+            const subtotalDisplay = (savedOrder.subtotalBeforeTax || savedOrder.total - savedOrder.deliveryFee + savedOrder.discountAmount).toFixed(2);
             const gstLine = savedOrder.gstAmount > 0
                 ? `GST: +₹${savedOrder.gstAmount.toFixed(2)}\n` : '';
+            const deliveryLine = `Delivery: ${savedOrder.deliveryFee > 0 ? '+' : ''}₹${(savedOrder.deliveryFee || 0).toFixed(2)}\n`;
             const offerLine = savedOrder.appliedOfferCode
                 ? `Offer (${savedOrder.appliedOfferCode}): -₹${savedOrder.discountAmount.toFixed(2)}\n` : '';
-            msg += `\n\n💰 *Order Summary:*\nSubtotal: ₹${subtotalDisplay}\n${gstLine}${offerLine}*Final Total: ₹${savedOrder.total.toFixed(2)}*`;
+            msg += `\n\n💰 *Order Summary:*\nSubtotal: ₹${subtotalDisplay}\n${gstLine}${offerLine}${deliveryLine}*Final Total: ₹${savedOrder.total.toFixed(2)}*`;
         }
 
         await sendTextMessage(from, msg, session.config);
@@ -2035,10 +2063,7 @@ const receiveWebhook = async (req, res) => {
             ).catch(err => console.error('[FCM error]', err.message));
 
             session.state = 'CHECKOUT_PAYMENT';
-            await sendButtonMessage(from,
-                getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),
-                buildPaymentButtons(tenant),
-                session.config);
+            await sendPaymentPrompt(from, session, tenant);
             return;
         }
 
@@ -2226,9 +2251,7 @@ const receiveWebhook = async (req, res) => {
                     session.latitude = lat;
                     session.longitude = lng;
                     session.state = 'CHECKOUT_PAYMENT';
-                    await sendButtonMessage(from,
-                        getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),
-                        buildPaymentButtons(tenant), session.config);
+                    await sendPaymentPrompt(from, session, tenant);
                 } else {
                     await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
                 }
@@ -2299,9 +2322,7 @@ const receiveWebhook = async (req, res) => {
                     session.latitude = lat;
                     session.longitude = lng;
                     session.state = 'CHECKOUT_PAYMENT';
-                    await sendButtonMessage(from,
-                        getTenantMessage(tenant, 'paymentMethodMessage', '💳 How would you like to pay?'),
-                        buildPaymentButtons(tenant), session.config);
+                    await sendPaymentPrompt(from, session, tenant);
                 } else {
                     await sendTextMessage(from, '❌ Invalid address selected. Please try again.', session.config);
                 }

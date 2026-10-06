@@ -169,7 +169,8 @@ const generateInvoice = async (order, tenant, branch) => {
 
             const gstRate = order.gstRate || 0;
             const gstAmount = order.gstAmount || 0;
-            const subtotal = order.subtotalBeforeTax || order.total;
+            const deliveryFee = order.deliveryFee || 0;
+            const subtotal = order.subtotalBeforeTax || (order.total - deliveryFee);
             const totalLabelX = 360;
             const totalValueX = 445;
 
@@ -189,6 +190,12 @@ const generateInvoice = async (order, tenant, branch) => {
                 }
                 doc.font('Helvetica').fillColor(secondaryColor).text(discountLabel, totalLabelX, currentY);
                 doc.font('Helvetica-Bold').fillColor('#ef4444').text(`-Rs. ${order.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, totalValueX, currentY, { align: 'right', width: 100 });
+                currentY += 22;
+            }
+
+            if (deliveryFee > 0) {
+                doc.font('Helvetica').fillColor(secondaryColor).text('Delivery Fee', totalLabelX, currentY);
+                doc.font('Helvetica-Bold').fillColor(primaryColor).text(`Rs. ${deliveryFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, totalValueX, currentY, { align: 'right', width: 100 });
                 currentY += 22;
             }
 

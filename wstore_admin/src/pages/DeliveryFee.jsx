@@ -174,7 +174,13 @@ export default function DeliveryFee() {
                 )}
             </header>
 
-            <div style={{ maxWidth: '800px' }}>
+            <style>{`
+                .delivery-fee-page input[type=number]::-webkit-outer-spin-button,
+                .delivery-fee-page input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+                .delivery-fee-page input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+            `}</style>
+
+            <div className="delivery-fee-page" style={{ maxWidth: '800px' }}>
                 {message && (
                     <div style={{
                         padding: '16px 20px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px', fontWeight: 600,

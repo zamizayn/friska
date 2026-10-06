@@ -4,7 +4,6 @@ import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 const DEFAULT_FEE_FORM = {
     enabled: false,
-    mode: 'order',
     freeAbove: '',
     // Each row is a range: from = previous row's `to` (0 for the first). The last order row's `to` is orderMaxSubtotal
     orderTiers: [{ to: '', fee: '' }],
@@ -24,7 +23,6 @@ const feeConfigToForm = (config) => {
         : DEFAULT_FEE_FORM.distanceSlabs;
     return {
         enabled: config.enabled !== false,
-        mode: config.mode,
         freeAbove: config.freeAboveSubtotal != null ? String(config.freeAboveSubtotal) : '',
         orderTiers,
         distanceSlabs
@@ -35,19 +33,16 @@ const feeFormToConfig = (fee, hadConfig) => {
     // A branch that never had a fee config and leaves it off stays null
     if (!fee.enabled && !hadConfig) return null;
     const num = (v) => parseFloat(v) || 0;
-    const config = { enabled: fee.enabled, mode: fee.mode };
+    // Delivery fees are always order value + distance, added together
+    const config = { enabled: fee.enabled, mode: 'both' };
     if (parseFloat(fee.freeAbove) > 0) config.freeAboveSubtotal = parseFloat(fee.freeAbove);
-    if (fee.mode !== 'distance') {
-        config.orderTiers = fee.orderTiers.map((t, i) => ({
-            minSubtotal: i === 0 ? 0 : num(fee.orderTiers[i - 1].to),
-            fee: num(t.fee)
-        }));
-        // The last row's "To" is its upper limit: orders at or above it pay no order-value fee
-        config.orderMaxSubtotal = num(fee.orderTiers[fee.orderTiers.length - 1].to);
-    }
-    if (fee.mode !== 'order') {
-        config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.to), fee: num(sl.fee) }));
-    }
+    config.orderTiers = fee.orderTiers.map((t, i) => ({
+        minSubtotal: i === 0 ? 0 : num(fee.orderTiers[i - 1].to),
+        fee: num(t.fee)
+    }));
+    // The last row's "To" is its upper limit: orders at or above it pay no order-value fee
+    config.orderMaxSubtotal = num(fee.orderTiers[fee.orderTiers.length - 1].to);
+    config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.to), fee: num(sl.fee) }));
     return config;
 };
 
@@ -63,9 +58,7 @@ const validateRanges = (fee) => {
         return null;
     };
     if (!fee.enabled) return null;
-    if (fee.mode !== 'distance') { const e = check(fee.orderTiers, 'Order value fee'); if (e) return e; }
-    if (fee.mode !== 'order') { const e = check(fee.distanceSlabs, 'Distance fee'); if (e) return e; }
-    return null;
+    return check(fee.orderTiers, 'Order value fee') || check(fee.distanceSlabs, 'Distance fee');
 };
 
 export default function DeliveryFee() {
@@ -143,17 +136,8 @@ export default function DeliveryFee() {
         }
     };
 
-    const usesDistance = feeForm.enabled && feeForm.mode !== 'order';
-    const showOrder = feeForm.mode !== 'distance';
-    const showDistance = feeForm.mode !== 'order';
     const missingLocation = branch && (branch.latitude == null || branch.longitude == null);
     const missingRadius = branch && !branch.deliveryRadius;
-
-    const MODES = [
-        { value: 'order', label: 'Order value', desc: 'Fee depends on the order amount' },
-        { value: 'distance', label: 'Distance', desc: 'Fee depends on how far the customer is' },
-        { value: 'both', label: 'Order value + Distance', desc: 'Both fees are added together' }
-    ];
 
     const iconTile = (Icon) => (
         <div style={{ width: '40px', height: '40px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -256,29 +240,13 @@ export default function DeliveryFee() {
                             </p>
 
                             {feeForm.enabled && (
-                                <div style={{ marginTop: '24px' }}>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Charge based on</label>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-                                        {MODES.map(m => {
-                                            const active = feeForm.mode === m.value;
-                                            return (
-                                                <button key={m.value} type="button" onClick={() => setFeeForm({ ...feeForm, mode: m.value })}
-                                                    style={{
-                                                        textAlign: 'left', padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
-                                                        border: `2px solid ${active ? 'var(--accent)' : 'var(--border-color)'}`,
-                                                        background: active ? 'var(--accent-light)' : 'var(--bg-card)', color: 'var(--text-main)'
-                                                    }}>
-                                                    <div style={{ fontWeight: 700, fontSize: '14px' }}>{m.label}</div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{m.desc}</div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
+                                <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '16px 0 0' }}>
+                                    The customer pays the <b>order value fee</b> plus the <b>distance fee</b>, both set below.
+                                </p>
                             )}
                         </div>
 
-                        {feeForm.enabled && showOrder && (
+                        {feeForm.enabled && (
                             <div className="white-card" style={{ padding: '32px', marginBottom: '24px' }}>
                                 {cardHeader(IndianRupee, 'Order value fee',
                                     'Delivery fee for each order amount range, measured after discount and before GST. Use a fee of 0 for free delivery.')}
@@ -307,11 +275,11 @@ export default function DeliveryFee() {
                             </div>
                         )}
 
-                        {feeForm.enabled && showDistance && (
+                        {feeForm.enabled && (
                             <div className="white-card" style={{ padding: '32px', marginBottom: '24px' }}>
                                 {cardHeader(Route, 'Distance fee',
                                     `Fee for deliveries up to each distance. Customers are already limited by the branch delivery radius${branch.deliveryRadius ? ` (${branch.deliveryRadius} km)` : ''}.`)}
-                                {usesDistance && (missingLocation || missingRadius) && (
+                                {(missingLocation || missingRadius) && (
                                     <div style={{ fontSize: '13px', color: '#854d0e', marginBottom: '16px', background: '#fef9c3', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                         <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
                                         <span>This branch has no {missingLocation ? 'location (latitude/longitude)' : 'delivery radius'} set in Branches. Until it does, every order is charged the first distance slab.</span>

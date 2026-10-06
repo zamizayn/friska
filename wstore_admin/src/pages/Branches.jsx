@@ -36,41 +36,6 @@ const loadGoogleMapsScript = (apiKey, callback) => {
     document.head.appendChild(script);
 };
 
-const DEFAULT_FEE_FORM = {
-    enabled: false,
-    mode: 'order',
-    freeAbove: '',
-    orderTiers: [{ minSubtotal: '0', fee: '' }],
-    distanceSlabs: [{ uptoKm: '', fee: '' }]
-};
-
-const feeConfigToForm = (config) => {
-    if (!config) return { ...DEFAULT_FEE_FORM };
-    const str = (rows, keys) => rows.map(r => Object.fromEntries(keys.map(k => [k, String(r[k])])));
-    return {
-        enabled: config.enabled !== false,
-        mode: config.mode,
-        freeAbove: config.freeAboveSubtotal != null ? String(config.freeAboveSubtotal) : '',
-        orderTiers: config.orderTiers?.length ? str(config.orderTiers, ['minSubtotal', 'fee']) : DEFAULT_FEE_FORM.orderTiers,
-        distanceSlabs: config.distanceSlabs?.length ? str(config.distanceSlabs, ['uptoKm', 'fee']) : DEFAULT_FEE_FORM.distanceSlabs
-    };
-};
-
-const feeFormToConfig = (fee, hadConfig) => {
-    // A branch that never had a fee config and leaves it off stays null
-    if (!fee.enabled && !hadConfig) return null;
-    const num = (v) => parseFloat(v) || 0;
-    const config = { enabled: fee.enabled, mode: fee.mode };
-    if (parseFloat(fee.freeAbove) > 0) config.freeAboveSubtotal = parseFloat(fee.freeAbove);
-    if (fee.mode !== 'distance') {
-        config.orderTiers = fee.orderTiers.map(t => ({ minSubtotal: num(t.minSubtotal), fee: num(t.fee) }));
-    }
-    if (fee.mode !== 'order') {
-        config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.uptoKm), fee: num(sl.fee) }));
-    }
-    return config;
-};
-
 export default function Branches() {
     const [branches, setBranches] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -88,8 +53,6 @@ export default function Branches() {
         deliveryRadius: '',
         address: ''
     });
-    const [feeForm, setFeeForm] = useState({ ...DEFAULT_FEE_FORM });
-    const [hadFeeConfig, setHadFeeConfig] = useState(false);
     const location = useLocation();
     const role = localStorage.getItem('adminRole');
 
@@ -235,7 +198,6 @@ export default function Branches() {
 
         const payload = {
             ...formData,
-            deliveryFeeConfig: feeFormToConfig(feeForm, hadFeeConfig),
             latitude: formData.latitude ? parseFloat(formData.latitude) : null,
             longitude: formData.longitude ? parseFloat(formData.longitude) : null,
             deliveryRadius: formData.deliveryRadius ? parseFloat(formData.deliveryRadius) : null
@@ -246,12 +208,6 @@ export default function Branches() {
             headers: getHeaders(),
             body: JSON.stringify(payload)
         });
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            alert(err.error || 'Failed to save branch');
-            return;
-        }
 
         if (res.ok) {
             setModalOpen(false);
@@ -285,11 +241,7 @@ export default function Branches() {
                 deliveryRadius: branch.deliveryRadius || '',
                 address: branch.address || ''
             });
-            setFeeForm(feeConfigToForm(branch.deliveryFeeConfig));
-            setHadFeeConfig(!!branch.deliveryFeeConfig);
         } else {
-            setFeeForm({ ...DEFAULT_FEE_FORM });
-            setHadFeeConfig(false);
             setFormData({
                 id: null,
                 name: '',
@@ -305,18 +257,6 @@ export default function Branches() {
         }
         setModalOpen(true);
     };
-
-    const updateFeeRow = (listKey, index, field, value) => {
-        setFeeForm(prev => ({
-            ...prev,
-            [listKey]: prev[listKey].map((row, i) => i === index ? { ...row, [field]: value } : row)
-        }));
-    };
-    const addFeeRow = (listKey, blank) => setFeeForm(prev => ({ ...prev, [listKey]: [...prev[listKey], blank] }));
-    const removeFeeRow = (listKey, index) => setFeeForm(prev => ({
-        ...prev,
-        [listKey]: prev[listKey].length > 1 ? prev[listKey].filter((_, i) => i !== index) : prev[listKey]
-    }));
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure? This will NOT delete sub-data but will orphan them.')) return;
@@ -380,19 +320,11 @@ export default function Branches() {
                                 </div>
                             )}
                             {branch.deliveryRadius && (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '14px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
                                     <span style={{ color: 'var(--text-muted)' }}>Delivery Radius</span>
                                     <span style={{ fontWeight: 700 }}>{branch.deliveryRadius} km</span>
                                 </div>
                             )}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
-                                <span style={{ color: 'var(--text-muted)' }}>Delivery Fee</span>
-                                <span style={{ fontWeight: 700 }}>
-                                    {branch.deliveryFeeConfig && branch.deliveryFeeConfig.enabled !== false
-                                        ? ({ distance: 'Distance-based', both: 'Order + Distance' }[branch.deliveryFeeConfig.mode] || 'Order-based')
-                                        : 'Off'}
-                                </span>
-                            </div>
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 700, fontSize: '14px' }}>
@@ -485,85 +417,6 @@ export default function Branches() {
                                         onChange={e => setFormData({ ...formData, longitude: e.target.value })} 
                                     />
                                 </div>
-                            </div>
-
-                            <div style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontWeight: 700, fontSize: '14px' }}>
-                                    <span>Delivery Fee</span>
-                                    <input
-                                        type="checkbox"
-                                        checked={feeForm.enabled}
-                                        onChange={e => setFeeForm({ ...feeForm, enabled: e.target.checked })}
-                                    />
-                                </label>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                                    {feeForm.enabled ? 'Customers are charged a delivery fee on this branch.' : 'Delivery is free. Your fee settings are kept if you turn this back on.'}
-                                </p>
-
-                                {feeForm.enabled && (
-                                    <div style={{ marginTop: '16px' }}>
-                                        <div className="input-group">
-                                            <label>Charge based on</label>
-                                            <select value={feeForm.mode} onChange={e => setFeeForm({ ...feeForm, mode: e.target.value })}>
-                                                <option value="order">Order value</option>
-                                                <option value="distance">Distance</option>
-                                                <option value="both">Order value + Distance (added together)</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="input-group">
-                                            <label>Free delivery for orders of (₹) or more <span style={{ fontSize: '12px', opacity: 0.6 }}>(optional)</span></label>
-                                            <input type="number" min="0" step="any" placeholder="e.g. 500 — leave blank for no free delivery"
-                                                value={feeForm.freeAbove}
-                                                onChange={e => setFeeForm({ ...feeForm, freeAbove: e.target.value })} />
-                                        </div>
-
-                                        {feeForm.mode === 'both' && (
-                                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
-                                                The customer pays the order value fee plus the distance fee.
-                                            </p>
-                                        )}
-
-                                        {feeForm.mode !== 'distance' && (
-                                            <>
-                                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                                                    Fee for orders at or above each amount (after discount, before GST). The first tier must start at 0. Use fee 0 for free delivery.
-                                                </p>
-                                                {feeForm.orderTiers.map((tier, i) => (
-                                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-                                                        <input type="number" min="0" step="any" placeholder="Order from (₹)" value={tier.minSubtotal}
-                                                            disabled={i === 0}
-                                                            onChange={e => updateFeeRow('orderTiers', i, 'minSubtotal', e.target.value)} required />
-                                                        <input type="number" min="0" step="any" placeholder="Fee (₹)" value={tier.fee}
-                                                            onChange={e => updateFeeRow('orderTiers', i, 'fee', e.target.value)} required />
-                                                        <button type="button" className="btn-outline" style={{ padding: '6px 10px' }}
-                                                            disabled={feeForm.orderTiers.length === 1} onClick={() => removeFeeRow('orderTiers', i)}>✕</button>
-                                                    </div>
-                                                ))}
-                                                <button type="button" className="btn-outline" onClick={() => addFeeRow('orderTiers', { minSubtotal: '', fee: '' })}>+ Add tier</button>
-                                            </>
-                                        )}
-
-                                        {feeForm.mode !== 'order' && (
-                                            <>
-                                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', marginTop: feeForm.mode === 'both' ? '20px' : 0 }}>
-                                                    Fee for deliveries up to each distance. Customers are already limited by the delivery radius above.
-                                                </p>
-                                                {feeForm.distanceSlabs.map((slab, i) => (
-                                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-                                                        <input type="number" min="0" step="any" placeholder="Up to (km)" value={slab.uptoKm}
-                                                            onChange={e => updateFeeRow('distanceSlabs', i, 'uptoKm', e.target.value)} required />
-                                                        <input type="number" min="0" step="any" placeholder="Fee (₹)" value={slab.fee}
-                                                            onChange={e => updateFeeRow('distanceSlabs', i, 'fee', e.target.value)} required />
-                                                        <button type="button" className="btn-outline" style={{ padding: '6px 10px' }}
-                                                            disabled={feeForm.distanceSlabs.length === 1} onClick={() => removeFeeRow('distanceSlabs', i)}>✕</button>
-                                                    </div>
-                                                ))}
-                                                <button type="button" className="btn-outline" onClick={() => addFeeRow('distanceSlabs', { uptoKm: '', fee: '' })}>+ Add slab</button>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
                             </div>
 
                             {mapsLoaded ? (

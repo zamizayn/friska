@@ -7,6 +7,7 @@ import Products from './pages/Products';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import Branches from './pages/Branches';
+import DeliveryFee from './pages/DeliveryFee';
 import Tenants from './pages/Tenants';
 import OnboardingWizard from './pages/OnboardingWizard';
 import Landing from './pages/Landing';
@@ -54,6 +55,7 @@ export default function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="branches" element={<Branches />} />
                     <Route path="delivery-boys" element={<DeliveryBoys />} />
+                    <Route path="delivery-fee" element={<DeliveryFee />} />
                     <Route path="tenants" element={<Tenants />} />
                     <Route path="platform-settings" element={<PlatformSettings />} />
                     <Route path="categories" element={<Categories />} />

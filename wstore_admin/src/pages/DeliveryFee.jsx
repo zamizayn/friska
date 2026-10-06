@@ -6,7 +6,7 @@ const DEFAULT_FEE_FORM = {
     enabled: false,
     mode: 'order',
     freeAbove: '',
-    // Each row is a range: from = previous row's `to` (0 for the first); the last row has no upper limit for orders
+    // Each row is a range: from = previous row's `to` (0 for the first). The last order row's `to` is orderMaxSubtotal
     orderTiers: [{ to: '', fee: '' }],
     distanceSlabs: [{ to: '', fee: '' }]
 };
@@ -14,7 +14,10 @@ const DEFAULT_FEE_FORM = {
 const feeConfigToForm = (config) => {
     if (!config) return { ...DEFAULT_FEE_FORM };
     const orderTiers = config.orderTiers?.length
-        ? config.orderTiers.map((t, i, all) => ({ to: all[i + 1] ? String(all[i + 1].minSubtotal) : '', fee: String(t.fee) }))
+        ? config.orderTiers.map((t, i, all) => ({
+            to: all[i + 1] ? String(all[i + 1].minSubtotal) : (config.orderMaxSubtotal != null ? String(config.orderMaxSubtotal) : ''),
+            fee: String(t.fee)
+        }))
         : DEFAULT_FEE_FORM.orderTiers;
     const distanceSlabs = config.distanceSlabs?.length
         ? config.distanceSlabs.map(sl => ({ to: String(sl.uptoKm), fee: String(sl.fee) }))
@@ -39,6 +42,8 @@ const feeFormToConfig = (fee, hadConfig) => {
             minSubtotal: i === 0 ? 0 : num(fee.orderTiers[i - 1].to),
             fee: num(t.fee)
         }));
+        // The last row's "To" is its upper limit: orders at or above it pay no order-value fee
+        config.orderMaxSubtotal = num(fee.orderTiers[fee.orderTiers.length - 1].to);
     }
     if (fee.mode !== 'order') {
         config.distanceSlabs = fee.distanceSlabs.map(sl => ({ uptoKm: num(sl.to), fee: num(sl.fee) }));
@@ -46,12 +51,11 @@ const feeFormToConfig = (fee, hadConfig) => {
     return config;
 };
 
-// Ranges must keep growing: each "to" has to be above the previous one. The last order range is open-ended.
+// Ranges must keep growing: each "to" has to be above the previous one.
 const validateRanges = (fee) => {
-    const check = (rows, label, openEnded) => {
+    const check = (rows, label) => {
         let prev = 0;
         for (let i = 0; i < rows.length; i++) {
-            if (openEnded && i === rows.length - 1) break;
             const to = parseFloat(rows[i].to);
             if (!(to > prev)) return `${label}: row ${i + 1} must end above ${prev}.`;
             prev = to;
@@ -59,8 +63,8 @@ const validateRanges = (fee) => {
         return null;
     };
     if (!fee.enabled) return null;
-    if (fee.mode !== 'distance') { const e = check(fee.orderTiers, 'Order value fee', true); if (e) return e; }
-    if (fee.mode !== 'order') { const e = check(fee.distanceSlabs, 'Distance fee', false); if (e) return e; }
+    if (fee.mode !== 'distance') { const e = check(fee.orderTiers, 'Order value fee'); if (e) return e; }
+    if (fee.mode !== 'order') { const e = check(fee.distanceSlabs, 'Distance fee'); if (e) return e; }
     return null;
 };
 
@@ -284,9 +288,11 @@ export default function DeliveryFee() {
                                         {feeForm.orderTiers.map((tier, i, all) => (
                                             <tr key={i}>
                                                 <td>{rangeFrom(i === 0 ? 0 : all[i - 1].to)}</td>
-                                                <td>{i === all.length - 1
-                                                    ? <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>and above</span>
-                                                    : amountInput({ value: tier.to, placeholder: 'e.g. 300', onChange: e => updateRow('orderTiers', i, 'to', e.target.value) })}</td>
+                                                <td>{amountInput({
+                                                    value: tier.to,
+                                                    placeholder: 'e.g. 300',
+                                                    onChange: e => updateRow('orderTiers', i, 'to', e.target.value)
+                                                })}</td>
                                                 <td>{amountInput({ value: tier.fee, placeholder: '0', onChange: e => updateRow('orderTiers', i, 'fee', e.target.value) })}</td>
                                                 <td style={{ textAlign: 'right' }}>{rowRemove('orderTiers', i)}</td>
                                             </tr>
@@ -297,7 +303,7 @@ export default function DeliveryFee() {
                                     onClick={() => addRow('orderTiers', { to: '', fee: '' })}>
                                     <Plus size={16} /> Add tier
                                 </button>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>A range includes its From amount but not its To amount, so 0 – 300 covers ₹0 to ₹299.99 and the next range starts at ₹300.</p>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>A range includes its From amount but not its To amount, so 0 – 300 covers ₹0 to ₹299.99 and the next range starts at ₹300. Orders at or above the last To amount pay no order value fee.</p>
                             </div>
                         )}
 

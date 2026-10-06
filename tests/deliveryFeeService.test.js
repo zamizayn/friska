@@ -153,6 +153,38 @@ test('free above: validation accepts empty values and rejects bad ones', () => {
     }
 });
 
+test('order max: orders at or above the last range limit pay no order-value fee', () => {
+    const b = branch({ mode: 'order', orderTiers: [{ minSubtotal: 0, fee: 250 }], orderMaxSubtotal: 250 });
+    assert.equal(calculateDeliveryFee({ branch: b, subtotal: 0 }).fee, 250);
+    assert.equal(calculateDeliveryFee({ branch: b, subtotal: 249.99 }).fee, 250);
+    assert.equal(calculateDeliveryFee({ branch: b, subtotal: 250 }).fee, 0);
+    assert.equal(calculateDeliveryFee({ branch: b, subtotal: 9999 }).fee, 0);
+});
+
+test('order max: in both mode only the order part is dropped', () => {
+    const b = branch({
+        mode: 'both',
+        orderTiers: [{ minSubtotal: 0, fee: 20 }],
+        orderMaxSubtotal: 300,
+        distanceSlabs: [{ uptoKm: 5, fee: 40 }]
+    });
+    assert.equal(calculateDeliveryFee({ branch: b, subtotal: 100, ...at(3) }).fee, 60);
+    assert.equal(calculateDeliveryFee({ branch: b, subtotal: 300, ...at(3) }).fee, 40);
+});
+
+test('order max: validation', () => {
+    const tiers = [{ minSubtotal: 0, fee: 20 }, { minSubtotal: 300, fee: 10 }];
+    for (const v of [undefined, null, '']) {
+        assert.equal(validateDeliveryFeeConfig(orderConfig({ orderTiers: tiers, orderMaxSubtotal: v })).config.orderMaxSubtotal, undefined);
+    }
+    assert.equal(validateDeliveryFeeConfig(orderConfig({ orderTiers: tiers, orderMaxSubtotal: 500 })).config.orderMaxSubtotal, 500);
+    for (const v of [0, -1, 300, 200, '500', NaN]) {
+        assert.ok(validateDeliveryFeeConfig(orderConfig({ orderTiers: tiers, orderMaxSubtotal: v })).error, String(v));
+    }
+    // distance-only configs drop it
+    assert.equal(validateDeliveryFeeConfig(distanceConfig({ orderMaxSubtotal: 500 })).config.orderMaxSubtotal, undefined);
+});
+
 test('no config, null branch or disabled config means no fee', () => {
     assert.deepEqual(calculateDeliveryFee({ branch: branch(null), subtotal: 100 }), { fee: 0, distanceKm: null });
     assert.deepEqual(calculateDeliveryFee({ branch: null, subtotal: 100 }), { fee: 0, distanceKm: null });

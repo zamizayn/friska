@@ -41,6 +41,8 @@ const normaliseDistanceSlabs = (slabs) => {
  *   { mode: 'distance', distanceSlabs: [{ uptoKm, fee }] }
  *   { mode: 'both',     orderTiers, distanceSlabs }   // the two fees are added together
  * Any mode may also set `freeAboveSubtotal` (> 0): orders at or above it get no fee.
+ * Modes with orderTiers may set `orderMaxSubtotal`: the last tier's upper limit. Orders at or above it
+ * pay no order-value fee (the distance part of a 'both' fee is unaffected).
  */
 const validateDeliveryFeeConfig = (input) => {
     if (input == null || input === '') return { config: null, error: null };
@@ -63,6 +65,13 @@ const validateDeliveryFeeConfig = (input) => {
         const { orderTiers, error } = normaliseOrderTiers(input.orderTiers);
         if (error) return { config: null, error };
         config.orderTiers = orderTiers;
+        const max = input.orderMaxSubtotal;
+        if (max != null && max !== '') {
+            if (!isNum(max) || max <= orderTiers[orderTiers.length - 1].minSubtotal) {
+                return { config: null, error: 'orderMaxSubtotal must be a number above the last order tier start' };
+            }
+            config.orderMaxSubtotal = max;
+        }
     }
     if (input.mode !== 'order') {
         const { distanceSlabs, error } = normaliseDistanceSlabs(input.distanceSlabs);
@@ -114,7 +123,10 @@ const calculateDeliveryFee = ({ branch, subtotal, lat, lng }) => {
     }
 
     let fee = 0;
-    if (config.orderTiers) fee += orderTierFee(config.orderTiers, subtotal);
+    if (config.orderTiers) {
+        const beyondMax = config.orderMaxSubtotal != null && (Number(subtotal) || 0) >= config.orderMaxSubtotal;
+        if (!beyondMax) fee += orderTierFee(config.orderTiers, subtotal);
+    }
     if (config.distanceSlabs) fee += distanceSlabFee(config.distanceSlabs, distanceKm);
     return { fee, distanceKm };
 };

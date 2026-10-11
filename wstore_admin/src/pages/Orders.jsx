@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike, FileText, History } from 'lucide-react';
+import { PackageOpen, Plus, User, MapPin, Trash2, IndianRupee, Copy, Check, Eye, Search, Filter, Calendar, Clock, X, CheckCircle, Wallet, CreditCard, TrendingUp, RotateCcw, Send, Bike, FileText, ShoppingBag, ArrowLeft, ArrowRight, Minus, Tag } from 'lucide-react';
 import Pagination from '../components/Pagination';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 import DatePicker from 'react-datepicker';
@@ -45,7 +45,7 @@ const parseCatalogDescription = (description) => {
 export default function Orders() {
     const [orders, setOrders] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-    const [summary, setSummary] = useState({ completed: 0, pending: 0, collected: 0, pendingCollection: 0 });
+    const [summary, setSummary] = useState({ completed: 0, pending: 0, collected: 0, pendingCollection: 0, offerApplied: 0 });
     const [copiedId, setCopiedId] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [addressModalOpen, setAddressModalOpen] = useState(false);
@@ -73,6 +73,10 @@ export default function Orders() {
         ? localStorage.getItem('branchId') || ''
         : localStorage.getItem('selectedBranchId') || '';
     const [products, setProducts] = useState([]);
+    // Manual order is two popups: 1 = pick products from a catalog grid, 2 = customer details + selected items
+    const [orderStep, setOrderStep] = useState(1);
+    const [productSearch, setProductSearch] = useState('');
+    const [productCategory, setProductCategory] = useState('all');
     const [customerAddresses, setCustomerAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [showAddAddress, setShowAddAddress] = useState(false);
@@ -325,11 +329,13 @@ export default function Orders() {
 
         const existing = formData.items.find(item => item.id === prod.id);
         if (existing) {
+            if (existing.stock != null && existing.quantity >= existing.stock) return;
             setFormData({
                 ...formData,
                 items: formData.items.map(item => item.id === prod.id ? { ...item, quantity: item.quantity + 1 } : item)
             });
         } else {
+            if (prod.stock != null && prod.stock <= 0) return;
             setFormData({
                 ...formData,
                 items: [...formData.items, {
@@ -337,7 +343,9 @@ export default function Orders() {
                     name: prod.name,
                     price: prod.price,
                     quantity: 1,
-                    categoryName: prod.category?.name || 'Uncategorized'
+                    categoryName: prod.category?.name || 'Uncategorized',
+                    image: prod.image || null,
+                    stock: prod.stock ?? null
                 }]
             });
         }
@@ -348,7 +356,8 @@ export default function Orders() {
             ...formData,
             items: formData.items.map(item => {
                 if (item.id === id) {
-                    const newQty = Math.max(1, item.quantity + delta);
+                    const max = item.stock != null ? item.stock : Infinity;
+                    const newQty = Math.min(max, Math.max(1, item.quantity + delta));
                     return { ...item, quantity: newQty };
                 }
                 return item;
@@ -377,10 +386,16 @@ export default function Orders() {
         await fetch(API_ENDPOINTS.ORDERS, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ ...formData, discountAmount, subtotalBeforeTax: subtotal, total })
+            body: JSON.stringify({
+                ...formData,
+                // image and stock are only used by the product picker
+                items: formData.items.map(({ image, stock, ...item }) => item),
+                discountAmount, subtotalBeforeTax: subtotal, total
+            })
         });
 
         setModalOpen(false);
+        setOrderStep(1);
         setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId });
         setCustomerAddresses([]);
         setSelectedAddressId(null);
@@ -466,7 +481,7 @@ export default function Orders() {
                     <button className="btn-outline" onClick={handleExportPdf}>
                         <FileText size={18} /> Export PDF
                     </button>
-                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId }); setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText(''); setModalOpen(true); }}>
+                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId }); setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText(''); setOrderStep(1); setProductSearch(''); setProductCategory('all'); setModalOpen(true); }}>
                         <Plus size={18} /> Manual Order
                     </button>
                 </div>
@@ -511,6 +526,16 @@ export default function Orders() {
                     <div>
                         <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>Pending Collection</p>
                         <h2 style={{ fontSize: '24px', fontWeight: 800, marginTop: '2px' }}>₹{summary.pendingCollection.toLocaleString()}</h2>
+                    </div>
+                </div>
+
+                <div className="white-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '24px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#ffedd5', color: '#f97316', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Tag size={24} />
+                    </div>
+                    <div>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>Offer Applied</p>
+                        <h2 style={{ fontSize: '24px', fontWeight: 800, marginTop: '2px' }}>₹{(summary.offerApplied || 0).toLocaleString()}</h2>
                     </div>
                 </div>
             </div>
@@ -698,7 +723,7 @@ export default function Orders() {
                                             <Eye size={16} />
                                         </button>
                                         <button className="btn-outline" style={{ padding: '6px' }} onClick={() => fetchCustomerOrders(order)} title="View past orders">
-                                            <History size={16} />
+                                            <ShoppingBag size={16} />
                                         </button>
                                         <button className="btn-outline" style={{ padding: '6px' }} onClick={() => {
                                             setSelectedAddress(order.formattedAddress || order.address);
@@ -724,12 +749,125 @@ export default function Orders() {
                 </div>
             </div>
 
-            {/* Manual Order Modal */}
-            {modalOpen && (
+            {/* Manual Order, step 1: pick products from a catalog-style grid */}
+            {modalOpen && orderStep === 1 && (() => {
+                const categoryOptions = [...new Map(products.filter(p => p.category).map(p => [p.category.id, p.category.name])).entries()];
+                const query = productSearch.trim().toLowerCase();
+                const visibleProducts = products.filter(p =>
+                    (productCategory === 'all' || String(p.categoryId) === productCategory) &&
+                    (!query || (p.name || '').toLowerCase().includes(query)));
+                const itemCount = formData.items.reduce((n, i) => n + i.quantity, 0);
+                const chip = (active) => ({
+                    padding: '6px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                    border: `1px solid ${active ? 'var(--accent)' : 'var(--border-color)'}`,
+                    background: active ? 'var(--accent-light)' : 'white', color: active ? 'var(--accent)' : 'var(--text-main)'
+                });
+                return (
+                    <div className="modal-overlay active">
+                        <div className="modal" style={{ maxWidth: '960px', width: '94%', height: '90vh', padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <div style={{ padding: '24px 32px 16px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                    <div>
+                                        <h3 style={{ margin: 0 }}>Create Manual Order</h3>
+                                        <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Step 1 of 2 · Choose products</p>
+                                    </div>
+                                    <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setModalOpen(false)}>✕</button>
+                                </div>
+                                <div className="input-group" style={{ position: 'relative', margin: '0 0 12px' }}>
+                                    <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                                    <input type="text" placeholder="Search products..." value={productSearch}
+                                        onChange={e => setProductSearch(e.target.value)} style={{ paddingLeft: '40px' }} />
+                                </div>
+                                {categoryOptions.length > 0 && (
+                                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                                        <button type="button" style={chip(productCategory === 'all')} onClick={() => setProductCategory('all')}>All</button>
+                                        {categoryOptions.map(([id, name]) => (
+                                            <button type="button" key={id} style={chip(productCategory === String(id))} onClick={() => setProductCategory(String(id))}>{name}</button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '8px 32px 24px' }}>
+                                {visibleProducts.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                                        <PackageOpen size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />
+                                        <p>{products.length === 0 ? 'No products available.' : 'No products match your search.'}</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '16px' }}>
+                                        {visibleProducts.map(prod => {
+                                            const inCart = formData.items.find(i => i.id === prod.id);
+                                            const soldOut = prod.stock != null && prod.stock <= 0;
+                                            const atMax = inCart && prod.stock != null && inCart.quantity >= prod.stock;
+                                            return (
+                                                <div key={prod.id} style={{
+                                                    border: `2px solid ${inCart ? 'var(--accent)' : 'var(--border-color)'}`, borderRadius: '16px',
+                                                    overflow: 'hidden', background: 'white', display: 'flex', flexDirection: 'column', opacity: soldOut ? 0.6 : 1
+                                                }}>
+                                                    <div style={{ position: 'relative', aspectRatio: '1 / 1', background: '#f1f5f9' }}>
+                                                        {prod.image ? (
+                                                            <img src={prod.image} alt={prod.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                                                                <PackageOpen size={36} style={{ opacity: 0.4 }} />
+                                                            </div>
+                                                        )}
+                                                        {soldOut && (
+                                                            <span style={{ position: 'absolute', top: '8px', left: '8px', background: '#fee2e2', color: '#991b1b', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px' }}>Out of stock</span>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                                                        <div style={{ fontWeight: 700, fontSize: '14px', lineHeight: 1.3 }}>{prod.name}</div>
+                                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                                            <span style={{ fontWeight: 800 }}>₹{prod.price}</span>
+                                                            {prod.mrp > prod.price && <span style={{ fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'line-through' }}>₹{prod.mrp}</span>}
+                                                        </div>
+                                                        <div style={{ marginTop: 'auto', paddingTop: '4px' }}>
+                                                            {inCart ? (
+                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-light)', borderRadius: '10px', padding: '4px' }}>
+                                                                    <button type="button" className="btn-outline" style={{ padding: '6px' }} onClick={() => inCart.quantity <= 1 ? removeItem(prod.id) : updateQty(prod.id, -1)}><Minus size={14} /></button>
+                                                                    <span style={{ fontWeight: 700 }}>{inCart.quantity}</span>
+                                                                    <button type="button" className="btn-outline" style={{ padding: '6px' }} disabled={atMax} onClick={() => updateQty(prod.id, 1)}><Plus size={14} /></button>
+                                                                </div>
+                                                            ) : (
+                                                                <button type="button" className="btn-outline" style={{ width: '100%', justifyContent: 'center' }} disabled={soldOut} onClick={() => addItem(prod.id)}>
+                                                                    <Plus size={14} /> Add
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ padding: '16px 32px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px', background: 'white' }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 700 }}>{itemCount} {itemCount === 1 ? 'item' : 'items'} selected</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Subtotal ₹{calculateTotal()}</div>
+                                </div>
+                                <button type="button" className="btn-outline" onClick={() => setModalOpen(false)}>Cancel</button>
+                                <button type="button" className="btn-primary" disabled={formData.items.length === 0} style={formData.items.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined} onClick={() => setOrderStep(2)}>
+                                    Continue <ArrowRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
+            {/* Manual Order, step 2: customer details and the selected items */}
+            {modalOpen && orderStep === 2 && (
                 <div className="modal-overlay active">
                     <div className="modal" style={{ maxWidth: '800px', width: '90%' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                            <h3>Create Manual Order</h3>
+                            <div>
+                                <h3 style={{ margin: 0 }}>Create Manual Order</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Step 2 of 2 · Customer details</p>
+                            </div>
                             <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setModalOpen(false)}>✕</button>
                         </div>
                         <form onSubmit={handleSubmit}>
@@ -863,25 +1001,28 @@ export default function Orders() {
                                             </select>
                                         </div>
                                     )}
-                                    <div className="input-group">
-                                        <label>Add Product</label>
-                                        <select onChange={(e) => { if (e.target.value) addItem(e.target.value); e.target.value = ''; }}>
-                                            <option value="">Search Products...</option>
-                                            {products.map(p => (
-                                                <option key={p.id} value={p.id}>{p.name} — ₹{p.price}</option>
-                                            ))}
-                                        </select>
-                                    </div>
                                 </div>
                                 <div>
-                                    <h4 style={{ marginBottom: '16px' }}>Order Items</h4>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                        <h4 style={{ margin: 0 }}>Order Items</h4>
+                                        <button type="button" onClick={() => setOrderStep(1)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>+ Add more products</button>
+                                    </div>
                                     <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '24px' }}>
-                                        {formData.items.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No items added yet.</p>}
+                                        {formData.items.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No items selected. Go back to choose products.</p>}
                                         {formData.items.map(item => (
-                                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--bg-app)', borderRadius: '12px', marginBottom: '8px' }}>
-                                                <div>
-                                                    <p style={{ fontWeight: 600, fontSize: '14px' }}>{item.name}</p>
-                                                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>₹{item.price} x {item.quantity}</p>
+                                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-app)', borderRadius: '12px', marginBottom: '8px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                                                    {item.image ? (
+                                                        <img src={item.image} alt={item.name} style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, background: '#f1f5f9' }} />
+                                                    ) : (
+                                                        <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                            <PackageOpen size={20} style={{ opacity: 0.4 }} />
+                                                        </div>
+                                                    )}
+                                                    <div style={{ minWidth: 0 }}>
+                                                        <p style={{ fontWeight: 600, fontSize: '14px' }}>{item.name}</p>
+                                                        <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>₹{item.price} x {item.quantity}</p>
+                                                    </div>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ display: 'flex', gap: '4px' }}>
@@ -914,6 +1055,7 @@ export default function Orders() {
                                 </div>
                             </div>
                             <div className="modal-actions" style={{ marginTop: '32px' }}>
+                                <button type="button" className="btn-outline" onClick={() => setOrderStep(1)}><ArrowLeft size={16} /> Back</button>
                                 <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setModalOpen(false)}>Cancel</button>
                                 <button type="submit" className="btn-primary" style={{ flex: 2, justifyContent: 'center' }}>Place Manual Order</button>
                             </div>

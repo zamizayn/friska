@@ -69,7 +69,9 @@ const getBasicProducts = async (req, res) => {
 
         const products = await Product.findAll({
             where,
-            attributes: ['id', 'name', 'price', 'stock'],
+            // image, mrp and category let the admin pick products from a catalog-style grid
+            attributes: ['id', 'name', 'price', 'mrp', 'stock', 'image', 'categoryId'],
+            include: [{ model: Category, as: 'category', attributes: ['id', 'name'] }],
             order: [['name', 'ASC']],
             limit: 200
         });

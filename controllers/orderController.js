@@ -113,7 +113,11 @@ const getAllOrders = async (req, res) => {
             completed: await Order.count({ where: { ...where, status: 'delivered' } }),
             pending: await Order.count({ where: { ...where, status: { [Op.in]: ['pending', 'shipped'] } } }),
             collected: await Order.sum('total', { where: { ...where, paymentStatus: 'paid' } }) || 0,
-            pendingCollection: await Order.sum('total', { where: { ...where, status: where.status || { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0
+            pendingCollection: await Order.sum('total', { where: { ...where, status: where.status || { [Op.ne]: 'cancelled' }, paymentStatus: { [Op.or]: ['unpaid', null, { [Op.ne]: 'paid' }] } } }) || 0,
+            // Same as the "Offer Applied" figure in the PDF export: discounts on non-cancelled orders
+            offerApplied: where.status === 'cancelled'
+                ? 0
+                : await Order.sum('discountAmount', { where: { ...where, status: where.status || { [Op.ne]: 'cancelled' } } }) || 0
         };
 
         res.json({

@@ -77,6 +77,9 @@ export default function Orders() {
     const [orderStep, setOrderStep] = useState(1);
     const [productSearch, setProductSearch] = useState('');
     const [productCategory, setProductCategory] = useState('all');
+    // Delivery fee on the manual order: blank input = the branch's automatic fee, a number overrides it
+    const [deliveryQuote, setDeliveryQuote] = useState(null);
+    const [deliveryFeeInput, setDeliveryFeeInput] = useState('');
     const [customerAddresses, setCustomerAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [showAddAddress, setShowAddAddress] = useState(false);
@@ -291,7 +294,7 @@ export default function Orders() {
     };
 
     const selectCustomer = (customer) => {
-        setFormData({ ...formData, customerPhone: customer.phone, customerName: customer.name, address: '', formattedAddress: '' });
+        setFormData({ ...formData, customerPhone: customer.phone, customerName: customer.name, address: '', formattedAddress: '', deliveryLatitude: null, deliveryLongitude: null });
         setCustomerSearchOpen(false);
         setSelectedAddressId(null);
         setShowAddAddress(false);
@@ -302,7 +305,7 @@ export default function Orders() {
                 setCustomerAddresses(data || []);
                 if (data && data.length > 0) {
                     setSelectedAddressId(data[0].id);
-                    setFormData(prev => ({ ...prev, address: data[0].address, formattedAddress: data[0].formattedAddress || data[0].address }));
+                    setFormData(prev => ({ ...prev, address: data[0].address, formattedAddress: data[0].formattedAddress || data[0].address, deliveryLatitude: data[0].latitude ?? null, deliveryLongitude: data[0].longitude ?? null }));
                 }
             })
             .catch(() => setCustomerAddresses([]));
@@ -376,6 +379,35 @@ export default function Orders() {
         return formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     };
 
+    // Live delivery fee quote for step 2 (branch rules, order amount after discount, address location)
+    const afterDiscount = Math.max(0, calculateTotal() - (parseFloat(formData.discountAmount) || 0));
+    useEffect(() => {
+        if (!modalOpen || orderStep !== 2) return;
+        let cancelled = false;
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`${API_ENDPOINTS.ORDERS}/delivery-fee-quote`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        branchId: formData.branchId || null,
+                        subtotal: afterDiscount,
+                        lat: formData.deliveryLatitude ?? null,
+                        lng: formData.deliveryLongitude ?? null
+                    })
+                });
+                const quote = res.ok ? await res.json() : null;
+                if (!cancelled) setDeliveryQuote(quote);
+            } catch {
+                if (!cancelled) setDeliveryQuote(null);
+            }
+        }, 300);
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [modalOpen, orderStep, formData.branchId, afterDiscount, formData.deliveryLatitude, formData.deliveryLongitude]);
+
+    const autoDeliveryFee = deliveryQuote?.fee ?? 0;
+    const deliveryFee = deliveryFeeInput === '' ? autoDeliveryFee : (parseFloat(deliveryFeeInput) || 0);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.items.length === 0) return alert('Please add at least one product');
@@ -390,12 +422,16 @@ export default function Orders() {
                 ...formData,
                 // image and stock are only used by the product picker
                 items: formData.items.map(({ image, stock, ...item }) => item),
-                discountAmount, subtotalBeforeTax: subtotal, total
+                discountAmount, subtotalBeforeTax: subtotal, total,
+                // blank = let the server apply the branch's automatic fee
+                deliveryFee: deliveryFeeInput === '' ? undefined : (parseFloat(deliveryFeeInput) || 0)
             })
         });
 
         setModalOpen(false);
         setOrderStep(1);
+        setDeliveryFeeInput('');
+        setDeliveryQuote(null);
         setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId });
         setCustomerAddresses([]);
         setSelectedAddressId(null);
@@ -481,7 +517,7 @@ export default function Orders() {
                     <button className="btn-outline" onClick={handleExportPdf}>
                         <FileText size={18} /> Export PDF
                     </button>
-                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId }); setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText(''); setOrderStep(1); setProductSearch(''); setProductCategory('all'); setModalOpen(true); }}>
+                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId }); setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText(''); setOrderStep(1); setProductSearch(''); setProductCategory('all'); setDeliveryFeeInput(''); setDeliveryQuote(null); setModalOpen(true); }}>
                         <Plus size={18} /> Manual Order
                     </button>
                 </div>
@@ -900,7 +936,7 @@ export default function Orders() {
                                                         key={addr.id}
                                                         onClick={() => {
                                                             setSelectedAddressId(addr.id);
-                                                            setFormData({ ...formData, address: addr.address, formattedAddress: addr.formattedAddress || addr.address });
+                                                            setFormData({ ...formData, address: addr.address, formattedAddress: addr.formattedAddress || addr.address, deliveryLatitude: addr.latitude ?? null, deliveryLongitude: addr.longitude ?? null });
                                                             setShowAddAddress(false);
                                                         }}
                                                         style={{
@@ -952,7 +988,7 @@ export default function Orders() {
                                                             const newAddr = await res.json();
                                                             setCustomerAddresses(prev => [newAddr, ...prev]);
                                                             setSelectedAddressId(newAddr.id);
-                                                            setFormData(prev => ({ ...prev, address: newAddr.address, formattedAddress: newAddr.formattedAddress || newAddr.address }));
+                                                            setFormData(prev => ({ ...prev, address: newAddr.address, formattedAddress: newAddr.formattedAddress || newAddr.address, deliveryLatitude: newAddr.latitude ?? null, deliveryLongitude: newAddr.longitude ?? null }));
                                                             setNewAddressText('');
                                                             setShowAddAddress(false);
                                                         }
@@ -977,7 +1013,7 @@ export default function Orders() {
                                     )}
                                     <div className="input-group">
                                         <label>Full Address</label>
-                                        <textarea style={{ height: '100px' }} value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} required />
+                                        <textarea style={{ height: '100px' }} value={formData.address} onChange={e => { setSelectedAddressId(null); setFormData({ ...formData, address: e.target.value, deliveryLatitude: null, deliveryLongitude: null }); }} required />
                                     </div>
                                     <div className="input-group">
                                         <label>Payment Mode</label>
@@ -989,6 +1025,22 @@ export default function Orders() {
                                     <div className="input-group">
                                         <label>Discount Amount (₹)</label>
                                         <input type="number" min="0" step="0.01" placeholder="0" value={formData.discountAmount} onChange={e => setFormData({ ...formData, discountAmount: e.target.value })} />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Delivery Fee (₹)</label>
+                                        <input type="number" min="0" step="0.01" placeholder={`Auto: ₹${autoDeliveryFee}`} value={deliveryFeeInput} onChange={e => setDeliveryFeeInput(e.target.value)} />
+                                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
+                                            {deliveryFeeInput !== ''
+                                                ? 'Using the fee you entered. Clear it to go back to the automatic fee.'
+                                                : deliveryQuote?.enabled
+                                                    ? 'Calculated from the branch delivery fee rules. Type an amount to change it, or 0 for free delivery.'
+                                                    : 'This branch has no delivery fee set. Type an amount to charge one.'}
+                                        </p>
+                                        {deliveryQuote?.usesDistance && deliveryQuote.distanceKm == null && (
+                                            <p style={{ fontSize: '12px', color: '#854d0e', background: '#fef9c3', borderRadius: '8px', padding: '8px 10px', margin: '8px 0 0' }}>
+                                                This address has no map location, so the distance can't be worked out. The automatic fee assumes the nearest zone. Enter the delivery fee yourself if it should be different.
+                                            </p>
+                                        )}
                                     </div>
                                     {(role === 'superadmin' || role === 'tenant') && (
                                         <div className="input-group">
@@ -1046,9 +1098,13 @@ export default function Orders() {
                                                     <span>-₹{parseFloat(formData.discountAmount).toFixed(2)}</span>
                                                 </div>
                                             )}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: deliveryFee > 0 ? 'var(--text-muted)' : 'var(--success)' }}>
+                                                <span>Delivery Fee{deliveryFeeInput === '' && deliveryQuote?.distanceKm != null ? ` (${deliveryQuote.distanceKm} km)` : ''}</span>
+                                                <span>{deliveryFee > 0 ? `+₹${deliveryFee}` : 'Free (₹0)'}</span>
+                                            </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 800 }}>
                                                 <span>Total Amount</span>
-                                                <span>₹{Math.max(0, calculateTotal() - (parseFloat(formData.discountAmount) || 0))}</span>
+                                                <span>₹{afterDiscount + deliveryFee}</span>
                                             </div>
                                         </div>
                                     </div>

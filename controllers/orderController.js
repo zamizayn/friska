@@ -5,6 +5,7 @@ const { sendTemplateMessage, sendTextMessage, sendButtonMessage, uploadMedia, se
 const { generateInvoice } = require('../services/invoiceService');
 const { generateOrdersReport } = require('../services/orderExportService');
 const orderService = require('../services/orderService');
+const { calculateDeliveryFee } = require('../services/deliveryFeeService');
 const fs = require('fs');
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -18,8 +19,59 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
+// Loads the branch for a manual order / fee quote and enforces who may use it.
+// Returns the branch, null when no branchId was given, or false after sending a 403/404.
+const loadBranchForOrder = async (req, res, branchId) => {
+    const id = req.user?.role === 'branch' ? req.user.branchId : branchId;
+    if (id === undefined || id === null || id === '') return null;
+    const branch = await Branch.findByPk(id);
+    if (!branch) { res.status(404).json({ error: 'Branch not found' }); return false; }
+    if (req.user?.role === 'tenant' && branch.tenantId !== req.user.tenantId) {
+        res.status(403).json({ error: 'Access denied' }); return false;
+    }
+    return branch;
+};
+
+// Live delivery fee for the manual order form
+const quoteDeliveryFee = async (req, res) => {
+    try {
+        const { branchId, subtotal, lat, lng } = req.body;
+        const branch = await loadBranchForOrder(req, res, branchId);
+        if (branch === false) return;
+        const config = branch?.deliveryFeeConfig;
+        const { fee, distanceKm } = calculateDeliveryFee({ branch, subtotal: Number(subtotal) || 0, lat, lng });
+        res.json({
+            fee,
+            distanceKm: distanceKm == null ? null : Math.round(distanceKm * 100) / 100,
+            enabled: !!(config && config.enabled !== false),
+            // True when part of the fee depends on distance (so a missing location makes the fee a guess)
+            usesDistance: !!(config && config.enabled !== false && config.distanceSlabs)
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
 const createOrder = async (req, res) => {
     try {
+        const branch = await loadBranchForOrder(req, res, req.body.branchId);
+        if (branch === false) return;
+
+        // `total` from the form is the amount after discount. Add the delivery fee on top: the branch's
+        // automatic fee, unless the admin typed an override (including 0 to waive it).
+        const afterDiscount = Math.max(0, Number(req.body.total) || 0);
+        const { fee: autoFee, distanceKm } = calculateDeliveryFee({
+            branch, subtotal: afterDiscount, lat: req.body.deliveryLatitude, lng: req.body.deliveryLongitude
+        });
+        let deliveryFee = autoFee;
+        const override = req.body.deliveryFee;
+        if (override !== undefined && override !== null && override !== '') {
+            deliveryFee = Number(override);
+            if (!Number.isFinite(deliveryFee) || deliveryFee < 0) {
+                return res.status(400).json({ error: 'deliveryFee must be a number of 0 or more' });
+            }
+        }
+
         const existingCustomer = await Customer.findOne({
             where: { phone: req.body.customerPhone }
         });
@@ -39,6 +91,10 @@ const createOrder = async (req, res) => {
 
         const order = await Order.create({
             ...req.body,
+            ...(req.user?.role === 'branch' ? { branchId: req.user.branchId } : {}),
+            total: afterDiscount + deliveryFee,
+            deliveryFee,
+            deliveryDistanceKm: distanceKm == null ? null : Math.round(distanceKm * 100) / 100,
             isNewCustomer: !existingCustomer
         });
 
@@ -356,6 +412,7 @@ const trySendStatusNotification = async (order, status) => {
 
 module.exports = {
     createOrder,
+    quoteDeliveryFee,
     getOrderById,
     getAllOrders,
     updateOrderStatus,

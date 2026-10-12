@@ -31,6 +31,7 @@ const { createPaymentLink } = require('../services/paymentService');
 const aiService = require('../services/aiService');
 const { calculateDistance } = require('../utils/distance');
 const { calculateDeliveryFee } = require('../services/deliveryFeeService');
+const { getLaunchStatus } = require('../services/launchService');
 
 // =========================
 // In-Memory State
@@ -228,15 +229,13 @@ const buildPaymentButtons = (tenant) => {
 
 // =========================
 // Helper: Check Launch Status
-// When LAUNCHED=false the shop counts as closed: the Hi/menu greeting and every shop, cart and
-// checkout step reply with LAUNCHED_MESSAGE instead.
+// When the shop is not launched (Platform Settings) it counts as closed: the Hi/menu greeting and every shop, cart and
+// checkout step reply with the launch message instead.
 // =========================
-const isShopLaunched = () => String(process.env.LAUNCHED ?? 'true').trim().toLowerCase() !== 'false';
-
 const checkLaunchStatus = async (from, config) => {
-    if (!isShopLaunched()) {
-        const msg = process.env.LAUNCHED_MESSAGE || 'We\'re currently preparing for launch! 🚀 Orders are not yet available. Please check back with us soon!';
-        await sendTextMessage(from, msg, config);
+    const { launched, message } = await getLaunchStatus();
+    if (!launched) {
+        await sendTextMessage(from, message, config);
         return false;
     }
     return true;

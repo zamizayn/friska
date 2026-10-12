@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings, Save, Phone, IndianRupee, Loader2, Globe, MessageSquare } from 'lucide-react';
+import { Settings, Save, Phone, IndianRupee, Loader2, Globe, MessageSquare, Rocket } from 'lucide-react';
 import { API_ENDPOINTS, getHeaders } from '../apiConfig';
 
 export default function PlatformSettings() {
@@ -7,8 +7,12 @@ export default function PlatformSettings() {
     const [saving, setSaving] = useState(false);
     const [configs, setConfigs] = useState({
         registrationFee: '',
-        superAdminWhatsApp: ''
+        superAdminWhatsApp: '',
+        launched: 'true',
+        launchedMessage: ''
     });
+    // The launch switch is stored as the strings 'true' / 'false'; anything but 'false' means launched
+    const isLaunched = String(configs.launched ?? 'true').trim().toLowerCase() !== 'false';
 
     useEffect(() => {
         const fetchConfigs = async () => {
@@ -84,6 +88,45 @@ export default function PlatformSettings() {
                             />
                             <p className="input-help">Amount in INR that new tenants must pay to activate their account.</p>
                         </div>
+                    </div>
+
+                    <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                            <h3 style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
+                                <Rocket size={20} className="text-accent" />
+                                Shop Launch
+                            </h3>
+                            <span className={`status-pill ${isLaunched ? 'success' : 'warning'}`}>{isLaunched ? 'Launched' : 'Not launched'}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <input
+                                type="checkbox"
+                                id="launched"
+                                checked={isLaunched}
+                                onChange={e => setConfigs({ ...configs, launched: e.target.checked ? 'true' : 'false' })}
+                                style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                            />
+                            <label htmlFor="launched" style={{ cursor: 'pointer', fontWeight: 600 }}>Shops are open for customers</label>
+                        </div>
+                        <p className="input-help" style={{ marginLeft: '30px' }}>
+                            {isLaunched
+                                ? 'Customers can browse and order on WhatsApp and the web catalog.'
+                                : 'Shops are treated as closed. When a customer says Hi, or tries to browse or order, they get the message below instead.'}
+                        </p>
+
+                        {!isLaunched && (
+                            <div className="input-group" style={{ marginTop: '24px', marginBottom: 0 }}>
+                                <label>Message customers see</label>
+                                <textarea
+                                    style={{ height: '110px' }}
+                                    placeholder="We're currently preparing for launch! 🚀 Orders are not yet available. Please check back with us soon!"
+                                    value={configs.launchedMessage || ''}
+                                    onChange={e => setConfigs({ ...configs, launchedMessage: e.target.value })}
+                                />
+                                <p className="input-help">Leave it blank to use the default message shown above.</p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="white-card" style={{ padding: '32px', marginBottom: '32px' }}>

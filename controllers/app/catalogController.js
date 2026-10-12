@@ -1,4 +1,5 @@
 const { Tenant, Branch, Product, Category, Banner } = require('../../models');
+const { getLaunchStatus } = require('../../services/launchService');
 
 /**
  * Fetches the public catalog for a tenant by their username
@@ -51,9 +52,10 @@ const getPublicCatalog = async (req, res) => {
         });
 
         // 6. Build response
+        const launch = await getLaunchStatus();
         res.json({
-            launched: process.env.LAUNCHED !== 'false',
-            launchedMessage: process.env.LAUNCHED_MESSAGE || null,
+            launched: launch.launched,
+            launchedMessage: launch.message,
             tenant: {
                 name: tenant.name,
                 username: tenant.username,

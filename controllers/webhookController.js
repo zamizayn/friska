@@ -228,10 +228,13 @@ const buildPaymentButtons = (tenant) => {
 
 // =========================
 // Helper: Check Launch Status
-// When LAUNCHED=false, sends the configured message and blocks checkout flows.
+// When LAUNCHED=false the shop counts as closed: the Hi/menu greeting and every shop, cart and
+// checkout step reply with LAUNCHED_MESSAGE instead.
 // =========================
+const isShopLaunched = () => String(process.env.LAUNCHED ?? 'true').trim().toLowerCase() !== 'false';
+
 const checkLaunchStatus = async (from, config) => {
-    if (process.env.LAUNCHED === 'false') {
+    if (!isShopLaunched()) {
         const msg = process.env.LAUNCHED_MESSAGE || 'We\'re currently preparing for launch! 🚀 Orders are not yet available. Please check back with us soon!';
         await sendTextMessage(from, msg, config);
         return false;
@@ -402,6 +405,9 @@ const handleHomeMenu = async (from, session, tenant, customer) => {
     session.state = 'START';
     session.categoryId = null;
     session.page = 1;
+
+    // Not launched yet: answer "Hi" with the launch message instead of the shop menu
+    if (!await checkLaunchStatus(from, session.config)) return;
 
     const welcomeMsg = customer?.name
         ? getTenantMessage(tenant, 'welcomeReturning',
@@ -748,6 +754,7 @@ const handleChangeBranch = async (from, session, tenant) => {
 // Helper: Validate shop open
 // =========================
 const validateShopOpen = async (from, session) => {
+    if (!await checkLaunchStatus(from, session.config)) return false;
     if (!session.branchId) return true;
     const branch = await Branch.findByPk(session.branchId);
     if (!branch) return true;
@@ -1438,6 +1445,7 @@ const sendPaymentPrompt = async (from, session, tenant) => {
 // Handler: Payment Selection
 // =========================
 const handlePaymentSelection = async (from, text, session, tenant) => {
+    if (!await checkLaunchStatus(from, session.config)) return;
     const branch = await Branch.findByPk(session.branchId);
     if (branch && branch.isOpen === false) {
         return await sendTextMessage(from, 'Sorry! The shop is currently closed. Please try again later.', session.config);

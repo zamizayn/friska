@@ -593,6 +593,7 @@ export default function OfferBroadcast() {
                                         style={{ height: '40px', padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '13.5px', background: 'white', cursor: 'pointer', color: 'var(--text-main)' }}
                                     >
                                         <option value="all">All Customers</option>
+                                        <option value="withOrders">Customers with Orders</option>
                                         <option value="most">Most Orders First</option>
                                         <option value="least">Least Orders First</option>
                                         <option value="spend">Highest Spend</option>

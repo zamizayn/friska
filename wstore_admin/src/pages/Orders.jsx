@@ -73,8 +73,11 @@ export default function Orders() {
         ? localStorage.getItem('branchId') || ''
         : localStorage.getItem('selectedBranchId') || '';
     const [products, setProducts] = useState([]);
-    // Manual order is two popups: 1 = pick products from a catalog grid, 2 = customer details + selected items
+    // Manual order popups: 0 = choose the branch (superadmin / multi-branch tenant only), 1 = pick products
+    // from a catalog grid, 2 = customer details + selected items
     const [orderStep, setOrderStep] = useState(1);
+    const [branchChoice, setBranchChoice] = useState('');
+    const [productsLoading, setProductsLoading] = useState(false);
     const [productSearch, setProductSearch] = useState('');
     const [productCategory, setProductCategory] = useState('all');
     // Delivery fee on the manual order: blank input = the branch's automatic fee, a number overrides it
@@ -127,13 +130,18 @@ export default function Orders() {
         if (result.summary) setSummary(result.summary);
     };
 
-    const fetchProducts = async () => {
-        const branchId = localStorage.getItem('selectedBranchId') || '';
-        const res = await fetch(`${API_ENDPOINTS.PRODUCTS_BASIC}?branchId=${branchId}`, {
-            headers: getHeaders()
-        });
-        const result = await res.json();
-        setProducts(result || []);
+    // Products for the branch the manual order is being placed for
+    const fetchProducts = async (branchId) => {
+        setProductsLoading(true);
+        try {
+            const res = await fetch(`${API_ENDPOINTS.PRODUCTS_BASIC}?branchId=${branchId || ''}`, { headers: getHeaders() });
+            const result = res.ok ? await res.json() : [];
+            setProducts(Array.isArray(result) ? result : []);
+        } catch {
+            setProducts([]);
+        } finally {
+            setProductsLoading(false);
+        }
     };
 
     const fetchDeliveryBoys = async () => {
@@ -153,7 +161,6 @@ export default function Orders() {
 
     useEffect(() => {
         fetchOrders();
-        fetchProducts();
         fetchDeliveryBoys();
     }, [filters]);
 
@@ -379,6 +386,52 @@ export default function Orders() {
         return formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     };
 
+    const canPickBranch = role === 'superadmin' || role === 'tenant';
+    // Shown unless there is exactly one branch to use (or it is a branch login, which has its own)
+    const branchStepShown = canPickBranch && branches.length !== 1;
+    const orderBranch = branches.find(b => String(b.id) === String(formData.branchId));
+    const productsStepNo = branchStepShown ? 2 : 1;
+    const detailsStepNo = branchStepShown ? 3 : 2;
+    const totalSteps = branchStepShown ? 3 : 2;
+
+    const blankOrder = (branchId) => ({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId });
+
+    // Opens the manual order. The branch step is skipped when there is nothing to choose:
+    // a branch login, or a tenant with a single branch, goes straight to the products.
+    const openManualOrder = () => {
+        let branchId = defaultBranchId;
+        if (canPickBranch && branches.length === 1) branchId = String(branches[0].id);
+        if (branchStepShown && !branches.some(b => String(b.id) === String(branchId))) branchId = '';
+
+        setFormData(blankOrder(branchStepShown ? '' : branchId));
+        setBranchChoice(branchStepShown ? branchId : '');
+        setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText('');
+        setProductSearch(''); setProductCategory('all'); setDeliveryFeeInput(''); setDeliveryQuote(null);
+        setProducts([]);
+        if (branchStepShown) {
+            setOrderStep(0);
+        } else {
+            setOrderStep(1);
+            fetchProducts(branchId);
+        }
+        setModalOpen(true);
+    };
+
+    // Continue from the branch step: load that branch's products. Switching branch drops the selected
+    // products, since they belong to the previous branch.
+    const confirmBranch = () => {
+        if (!branchChoice) return;
+        const changed = String(formData.branchId) !== String(branchChoice);
+        setFormData(prev => ({ ...prev, branchId: branchChoice, items: changed ? [] : prev.items }));
+        if (changed || products.length === 0) {
+            setProducts([]);
+            setProductSearch('');
+            setProductCategory('all');
+            fetchProducts(branchChoice);
+        }
+        setOrderStep(1);
+    };
+
     // Live delivery fee quote for step 2 (branch rules, order amount after discount, address location)
     const afterDiscount = Math.max(0, calculateTotal() - (parseFloat(formData.discountAmount) || 0));
     useEffect(() => {
@@ -517,7 +570,7 @@ export default function Orders() {
                     <button className="btn-outline" onClick={handleExportPdf}>
                         <FileText size={18} /> Export PDF
                     </button>
-                    <button className="btn-primary" onClick={() => { setFormData({ customerPhone: '', customerName: '', address: '', formattedAddress: '', items: [], status: 'pending', paymentMethod: 'Cash on Delivery', discountAmount: '', branchId: defaultBranchId }); setCustomerAddresses([]); setSelectedAddressId(null); setShowAddAddress(false); setNewAddressText(''); setOrderStep(1); setProductSearch(''); setProductCategory('all'); setDeliveryFeeInput(''); setDeliveryQuote(null); setModalOpen(true); }}>
+                    <button className="btn-primary" onClick={openManualOrder}>
                         <Plus size={18} /> Manual Order
                     </button>
                 </div>
@@ -785,7 +838,58 @@ export default function Orders() {
                 </div>
             </div>
 
-            {/* Manual Order, step 1: pick products from a catalog-style grid */}
+            {/* Manual Order, branch step: the branch decides which products are listed and where the order goes */}
+            {modalOpen && orderStep === 0 && (
+                <div className="modal-overlay active">
+                    <div className="modal" style={{ maxWidth: '520px', width: '92%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <div>
+                                <h3 style={{ margin: 0 }}>Create Manual Order</h3>
+                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Step 1 of {totalSteps} · Choose branch</p>
+                            </div>
+                            <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setModalOpen(false)}>✕</button>
+                        </div>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+                            Products shown and the order itself will belong to this branch.
+                        </p>
+                        {branches.length === 0 && (
+                            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px' }}>No branches found yet. If you just opened this, give it a moment.</p>
+                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '45vh', overflowY: 'auto' }}>
+                            {branches.map(b => {
+                                const active = String(branchChoice) === String(b.id);
+                                return (
+                                    <button key={b.id} type="button" onClick={() => setBranchChoice(String(b.id))}
+                                        style={{
+                                            textAlign: 'left', padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
+                                            border: `2px solid ${active ? 'var(--accent)' : 'var(--border-color)'}`,
+                                            background: active ? 'var(--accent-light)' : 'white', color: 'var(--text-main)'
+                                        }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '14px' }}>
+                                            <MapPin size={16} /> {b.name}
+                                        </div>
+                                        {b.address && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{b.address}</div>}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {formData.items.length > 0 && String(branchChoice) !== String(formData.branchId) && (
+                            <p style={{ fontSize: '12px', color: '#854d0e', background: '#fef9c3', borderRadius: '8px', padding: '8px 10px', margin: '16px 0 0' }}>
+                                Switching branch clears the products you already selected.
+                            </p>
+                        )}
+                        <div className="modal-actions" style={{ marginTop: '24px' }}>
+                            <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setModalOpen(false)}>Cancel</button>
+                            <button type="button" className="btn-primary" style={{ flex: 2, justifyContent: 'center', ...(branchChoice ? {} : { opacity: 0.5, cursor: 'not-allowed' }) }}
+                                disabled={!branchChoice} onClick={confirmBranch}>
+                                Continue <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Manual Order, products step: pick products from a catalog-style grid */}
             {modalOpen && orderStep === 1 && (() => {
                 const categoryOptions = [...new Map(products.filter(p => p.category).map(p => [p.category.id, p.category.name])).entries()];
                 const query = productSearch.trim().toLowerCase();
@@ -805,7 +909,11 @@ export default function Orders() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                                     <div>
                                         <h3 style={{ margin: 0 }}>Create Manual Order</h3>
-                                        <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Step 1 of 2 · Choose products</p>
+                                        <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                            Step {productsStepNo} of {totalSteps} · Choose products
+                                            {orderBranch && <> · <MapPin size={12} style={{ verticalAlign: '-1px' }} /> {orderBranch.name}</>}
+                                            {branchStepShown && <> · <button type="button" onClick={() => { setBranchChoice(String(formData.branchId)); setOrderStep(0); }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 600, fontSize: '13px', cursor: 'pointer', padding: 0 }}>Change</button></>}
+                                        </p>
                                     </div>
                                     <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setModalOpen(false)}>✕</button>
                                 </div>
@@ -825,10 +933,12 @@ export default function Orders() {
                             </div>
 
                             <div style={{ flex: 1, overflowY: 'auto', padding: '8px 32px 24px' }}>
-                                {visibleProducts.length === 0 ? (
+                                {productsLoading ? (
+                                    <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>Loading products...</div>
+                                ) : visibleProducts.length === 0 ? (
                                     <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
                                         <PackageOpen size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />
-                                        <p>{products.length === 0 ? 'No products available.' : 'No products match your search.'}</p>
+                                        <p>{products.length === 0 ? 'No products available for this branch.' : 'No products match your search.'}</p>
                                     </div>
                                 ) : (
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '16px' }}>
@@ -902,7 +1012,7 @@ export default function Orders() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                             <div>
                                 <h3 style={{ margin: 0 }}>Create Manual Order</h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Step 2 of 2 · Customer details</p>
+                                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>Step {detailsStepNo} of {totalSteps} · Customer details</p>
                             </div>
                             <button className="btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setModalOpen(false)}>✕</button>
                         </div>
@@ -1042,15 +1152,15 @@ export default function Orders() {
                                             </p>
                                         )}
                                     </div>
-                                    {(role === 'superadmin' || role === 'tenant') && (
+                                    {orderBranch && (
                                         <div className="input-group">
                                             <label>Branch</label>
-                                            <select value={formData.branchId || ''} onChange={e => setFormData({ ...formData, branchId: e.target.value })}>
-                                                <option value="">Select Branch...</option>
-                                                {branches.map(b => (
-                                                    <option key={b.id} value={b.id}>{b.name}</option>
-                                                ))}
-                                            </select>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', fontSize: '14px', fontWeight: 600 }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={16} /> {orderBranch.name}</span>
+                                                {branchStepShown && (
+                                                    <button type="button" onClick={() => { setBranchChoice(String(formData.branchId)); setOrderStep(0); }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Change</button>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>

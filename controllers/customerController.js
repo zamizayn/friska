@@ -3,11 +3,13 @@ const { Customer, CustomerAddress, Order, CustomerLog, Category, Product, sequel
 const { getTenantConfig } = require('../utils/tenantHelpers');
 const { sendTextMessage } = require('../services/whatsappService');
 
-const allTimeOrderCountSubquery = `(
+// Orders of any status except cancelled, optionally limited to a date range
+const nonCancelledOrderCountSubquery = (dateClause = '') => `(
     SELECT COUNT(*) FROM "Orders"
     WHERE "Orders"."customerPhone" = "Customer"."phone"
-      AND "Orders".status != 'cancelled'
+      AND "Orders".status != 'cancelled'${dateClause}
 )`;
+const allTimeOrderCountSubquery = nonCancelledOrderCountSubquery();
 
 const isValidDate = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d);
 
@@ -59,6 +61,9 @@ const getAllCustomers = async (req, res) => {
 
         if (orderFilter === 'none') {
             where[Op.and] = sequelize.literal(allTimeOrderCountSubquery + ' = 0');
+        } else if (orderFilter === 'withOrders') {
+            // The opposite of "No Orders": placed at least one order (not cancelled), within the dates if given
+            where[Op.and] = sequelize.literal(nonCancelledOrderCountSubquery(dateClause) + ' > 0');
         } else if (dateClause) {
             where[Op.and] = sequelize.literal(orderCountSubquery(dateClause) + ' > 0');
         }

@@ -57,8 +57,11 @@ const getAllProducts = async (req, res) => {
 
 const getBasicProducts = async (req, res) => {
     try {
-        const { search, categoryId } = req.query;
+        const { search, categoryId, branchId } = req.query;
         const where = await req.getScope();
+
+        // getScope only narrows to a branch for tenants; let a superadmin pick one too
+        if (req.user.role === 'superadmin' && branchId) where.branchId = branchId;
 
         if (search) {
             where.name = { [Op.iLike]: `%${search}%` };

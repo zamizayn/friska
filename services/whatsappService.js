@@ -51,6 +51,24 @@ const sendButtonMessage = async (to, bodyText, buttons, config = {}) => {
     }
 };
 
+// WhatsApp rejects a whole list that has more than 10 rows, titles over 24 characters or
+// descriptions over 72. Trim to those limits so an oversized list degrades instead of failing.
+const fitListSections = (sections) => {
+    let remaining = 10;
+    return sections
+        .map(s => {
+            const rows = (s.rows || []).slice(0, Math.max(remaining, 0)).map(r => ({
+                ...r,
+                title: String(r.title || '').slice(0, 24),
+                ...(r.description ? { description: String(r.description).slice(0, 72) } : {})
+            }));
+            if ((s.rows || []).length > rows.length) console.warn(`[WhatsApp] List had ${s.rows.length} rows, trimmed to ${rows.length}`);
+            remaining -= rows.length;
+            return { ...s, title: (s.title || '').slice(0, 24), rows };
+        })
+        .filter(s => s.rows.length > 0);
+};
+
 const sendListMessage = async (to, bodyText, buttonText, sections, config = {}) => {
     try {
         await axios.post(getUrl(config), {
@@ -62,10 +80,7 @@ const sendListMessage = async (to, bodyText, buttonText, sections, config = {}) 
                 body: { text: bodyText },
                 action: {
                     button: (buttonText || 'Select').slice(0, 20),
-                    sections: sections.map(s => ({
-                        ...s,
-                        title: (s.title || '').slice(0, 24)
-                    }))
+                    sections: fitListSections(sections)
                 }
             }
         }, { headers: getHeaders(config) });

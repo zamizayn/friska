@@ -32,6 +32,7 @@ const aiService = require('../services/aiService');
 const { calculateDistance } = require('../utils/distance');
 const { calculateDeliveryFee } = require('../services/deliveryFeeService');
 const { getLaunchStatus } = require('../services/launchService');
+const { findSameAddress, buildAddressRows } = require('../utils/addressBook');
 
 // =========================
 // In-Memory State
@@ -247,23 +248,28 @@ const checkLaunchStatus = async (from, config) => {
 // =========================
 const sendAddressSelectionOrRequest = async (from, session, tenant, { addressIdPrefix, newAddressId, nextState }) => {
     if (!await checkLaunchStatus(from, session.config)) return;
-    const addresses = await CustomerAddress.findAll({ where: { customerPhone: from } });
-
-    if (addresses.length > 0) {
-        session.state = nextState + '_SELECT';
-        const rows = addresses.map(addr => ({
-            id: `${addressIdPrefix}${addr.id}`,
-            title: addr.label || 'Saved Address',
-            description: (addr.formattedAddress || addr.address).substring(0, 72)
-        }));
-        rows.push({ id: newAddressId, title: '📍 Share Location', description: 'Share your current location via WhatsApp' });
-
-        const msgText = getTenantMessage(tenant, 'selectAddressMessage', 'Where should we deliver? Select a saved address or add a new one.');
-        await sendListMessage(from, msgText, 'View Addresses', [{ title: 'Saved Addresses', rows }], session.config);
-    } else {
+    const addresses = await CustomerAddress.findAll({ where: { customerPhone: from }, order: [['updatedAt', 'DESC']] });
+    const askForLocation = async () => {
         session.state = nextState;
         const msg = getTenantMessage(tenant, 'enterAddressMessage', '📍 Please share your location for delivery');
         await sendLocationRequest(from, msg, session.config);
+    };
+
+    if (addresses.length > 0) {
+        session.state = nextState + '_SELECT';
+        // WhatsApp lists hold at most 10 rows: the 9 most recent addresses plus Share Location
+        const rows = buildAddressRows(addresses, { idPrefix: addressIdPrefix, newAddressId });
+
+        const msgText = getTenantMessage(tenant, 'selectAddressMessage', 'Where should we deliver? Select a saved address or add a new one.');
+        try {
+            await sendListMessage(from, msgText, 'View Addresses', [{ title: 'Saved Addresses', rows }], session.config);
+        } catch (e) {
+            // Never leave the customer waiting: if the list can't be sent, ask for a location instead
+            console.error('[Address] Could not send the address list, asking for a location instead:', e.response?.data?.error?.message || e.message);
+            await askForLocation();
+        }
+    } else {
+        await askForLocation();
     }
 };
 
@@ -384,6 +390,20 @@ const findNearestBranch = async (tenantId, latitude, longitude) => {
 // =========================
 const saveCustomerAddress = async (from, text, formattedAddress, latitude, longitude) => {
     try {
+        // A shared GPS location is never byte-identical twice, so match by text or by distance (50 m)
+        // and reuse that address, moving it to the top of the list, instead of adding a row per order.
+        const existing = await CustomerAddress.findAll({ where: { customerPhone: from } });
+        const same = findSameAddress(existing, { address: text, latitude, longitude });
+        if (same) {
+            await same.update({
+                address: text,
+                formattedAddress: formattedAddress || same.formattedAddress || null,
+                latitude: latitude || same.latitude || null,
+                longitude: longitude || same.longitude || null,
+                updatedAt: new Date()
+            });
+            return;
+        }
         await CustomerAddress.create({
             customerPhone: from,
             address: text,
@@ -1825,6 +1845,9 @@ const receiveWebhook = async (req, res) => {
     // Acknowledge immediately — WhatsApp requires a fast 200
     res.sendStatus(200);
 
+    // Who to apologise to if something unexpected fails while handling this message
+    let replyTarget = null;
+
     try {
         const entry = req.body.entry?.[0];
         const change = entry?.changes?.[0];
@@ -1880,6 +1903,8 @@ const receiveWebhook = async (req, res) => {
             whatsappToken: tenant.whatsappToken,
             displayMode: tenant.displayMode || 'catalog'
         };
+
+        replyTarget = { from, config: tenantConfig };
 
         // Typing indicator (non-blocking)
         sendTypingIndicator(from, tenantConfig).catch(() => { });
@@ -2348,6 +2373,14 @@ const receiveWebhook = async (req, res) => {
 
     } catch (error) {
         console.error('[Webhook] Unhandled error:', error.response?.data || error.message, error.stack);
+        // Don't leave the customer staring at a silent chat
+        if (replyTarget) {
+            try {
+                await sendTextMessage(replyTarget.from, 'Sorry, something went wrong on our side. 🙏 Please try again in a moment.', replyTarget.config);
+            } catch (e) {
+                console.error('[Webhook] Could not send the error reply:', e.message);
+            }
+        }
     }
 };
 
